@@ -9,6 +9,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
+  { ignores: [".vinxi", ".output"] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
@@ -24,6 +25,11 @@ export default [
       "react-compiler/react-compiler": "error",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+    },
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": "warn",
     },
   },
   eslintConfigPrettier,

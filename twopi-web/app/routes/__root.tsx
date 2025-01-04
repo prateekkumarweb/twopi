@@ -8,6 +8,8 @@ import type { ReactNode } from "react";
 import React from "react";
 import css from "../style.css?url";
 
+import "../style.css";
+
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
     ? () => null
@@ -31,7 +33,10 @@ export const Route = createRootRoute({
         title: "TwoPi",
       },
     ],
-    links: [{ rel: "stylesheet", href: css }],
+    links: [
+      // FIXME: Hack because in build, the css is getting stripped off.
+      { rel: "stylesheet", href: css },
+    ],
   }),
   component: RootComponent,
   notFoundComponent: NotFoundComponent,

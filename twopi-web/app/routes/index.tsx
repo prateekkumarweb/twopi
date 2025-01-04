@@ -1,7 +1,8 @@
 import * as fs from "node:fs";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import clsx from "clsx";
+import { authClient } from "~/lib/auth-client";
 
 const filePath = "/tmp/count.txt";
 
@@ -26,7 +27,15 @@ const updateCount = createServerFn({ method: "POST" })
 
 export const Route = createFileRoute("/")({
   component: Home,
-  loader: async () => await getCount(),
+  loader: async () => {
+    const count = await getCount();
+    const { data, error } = await authClient.getSession();
+    if (error) {
+      return { session: null, count };
+    } else {
+      return { session: data, count };
+    }
+  },
 });
 
 function Home() {
@@ -35,8 +44,33 @@ function Home() {
 
   const btn = clsx("rounded bg-blue-800 px-4 py-2 text-white");
 
+  if (!state.session?.user) {
+    return (
+      <div className="m-4 flex flex-col gap-4">
+        <Link to="/signin" className={btn}>
+          Sign in
+        </Link>
+        <Link to="/signup" className={btn}>
+          Sign up
+        </Link>
+      </div>
+    );
+  }
+
+  const signOut = async () => {
+    await authClient.signOut();
+    router.invalidate();
+    router.navigate({ to: "/" });
+  };
+
   return (
-    <div className="flex h-screen w-full items-center justify-center gap-4">
+    <div className="m-4 flex h-screen w-full flex-col items-center justify-center gap-4">
+      <div>
+        <div>{JSON.stringify(state.session?.user.name)}</div>
+        <button className={btn} onClick={signOut}>
+          Sign out
+        </button>
+      </div>
       <button
         type="button"
         onClick={() => {
@@ -46,7 +80,7 @@ function Home() {
         }}
         className={btn}
       >
-        Add 1 to {state}?
+        Add 1 to {state.count}?
       </button>
       <button
         type="button"
@@ -57,7 +91,7 @@ function Home() {
         }}
         className={btn}
       >
-        Sub 1 from {state}?
+        Sub 1 from {state.count}?
       </button>
     </div>
   );
