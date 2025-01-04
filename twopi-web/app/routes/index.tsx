@@ -27,14 +27,9 @@ const updateCount = createServerFn({ method: "POST" })
 
 export const Route = createFileRoute("/")({
   component: Home,
-  loader: async () => {
+  loader: async ({ context }) => {
     const count = await getCount();
-    const { data, error } = await authClient.getSession();
-    if (error) {
-      return { session: null, count };
-    } else {
-      return { session: data, count };
-    }
+    return { session: context.session, count };
   },
 });
 
@@ -59,8 +54,8 @@ function Home() {
 
   const signOut = async () => {
     await authClient.signOut();
-    router.invalidate();
-    router.navigate({ to: "/" });
+    await router.invalidate();
+    await router.navigate({ to: "/" });
   };
 
   return (

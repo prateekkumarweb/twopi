@@ -1,21 +1,24 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { authClient } from "~/lib/auth-client";
 import { useState } from "react";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { z } from "zod";
+
+const signinSearchParamsSchema = z.object({
+  redirect: z.string().optional(),
+});
 
 export const Route = createFileRoute("/signin")({
   component: RouteComponent,
-  loader: async () => {
-    const { data, error } = await authClient.getSession();
-    if (error) {
-      return { session: null };
-    } else {
-      return { session: data };
-    }
+  validateSearch: zodValidator(signinSearchParamsSchema),
+  loader: async ({ context }) => {
+    return { session: context.session };
   },
 });
 
 function RouteComponent() {
   const state = Route.useLoaderData();
+  const search = Route.useSearch();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,8 +36,12 @@ function RouteComponent() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      router.invalidate();
-      router.navigate({ to: "/" });
+      await router.invalidate();
+      if (search.redirect) {
+        router.navigate({ to: search.redirect });
+      } else {
+        router.navigate({ to: "/" });
+      }
     }
   };
 

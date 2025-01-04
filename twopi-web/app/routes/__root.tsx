@@ -3,12 +3,21 @@ import {
   ScrollRestoration,
   createRootRoute,
 } from "@tanstack/react-router";
-import { Meta, Scripts } from "@tanstack/start";
+import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import type { ReactNode } from "react";
 import React from "react";
 import css from "../style.css?url";
 
 import "../style.css";
+import { auth } from "~/lib/server/auth";
+import { getWebRequest } from "vinxi/http";
+
+const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
+  const session = await auth.api.getSession({
+    headers: getWebRequest().headers,
+  });
+  return { session };
+});
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -38,6 +47,10 @@ export const Route = createRootRoute({
       { rel: "stylesheet", href: css },
     ],
   }),
+  beforeLoad: async () => {
+    const { session } = await fetchAuth();
+    return { session };
+  },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });

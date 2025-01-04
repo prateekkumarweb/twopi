@@ -4,13 +4,8 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
-  loader: async () => {
-    const { data, error } = await authClient.getSession();
-    if (error) {
-      return { session: null };
-    } else {
-      return { session: data };
-    }
+  loader: async ({ context }) => {
+    return { session: context.session };
   },
 });
 
@@ -35,8 +30,8 @@ function RouteComponent() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      router.invalidate();
-      router.navigate({ to: "/" });
+      await router.invalidate();
+      await router.navigate({ to: "/" });
     }
   };
 
