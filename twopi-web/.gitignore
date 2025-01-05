@@ -4,3 +4,4 @@ node_modules
 app/*.gen.ts
 *.env
 auth.db
+database
