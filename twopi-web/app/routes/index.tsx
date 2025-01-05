@@ -3,6 +3,8 @@ import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import clsx from "clsx";
 import { authClient } from "~/lib/auth-client";
+import { getDbClient } from "~/lib/server/db";
+import { User } from "better-auth";
 
 const filePath = "/tmp/count.txt";
 
@@ -14,7 +16,11 @@ async function readCount() {
 
 const getCount = createServerFn({
   method: "GET",
-}).handler(() => {
+}).handler(async () => {
+  const a = await (
+    await getDbClient({ id: "generic" } as User)
+  ).currency.findMany();
+  console.log(a);
   return readCount();
 });
 

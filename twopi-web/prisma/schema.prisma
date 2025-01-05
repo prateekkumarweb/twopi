@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Currency {
+  code            String            @id
+  name            String
+  base            Int
+  Account         Account[]
+  TransactionItem TransactionItem[]
+}
+
+model Account {
+  id              String            @id @default(uuid())
+  name            String
+  accountType     String
+  currency        Currency          @relation(fields: [currencyCode], references: [code])
+  currencyCode    String
+  startingBalance Int
+  createdAt       DateTime          @default(now())
+  accountExtra    String?
+  TransactionItem TransactionItem[]
+}
+
+model Category {
+  name        String        @id
+  group       String?
+  Transaction Transaction[]
+}
+
+model Transaction {
+  id           String            @id @default(uuid())
+  category     Category          @relation(fields: [categoryName], references: [name])
+  categoryName String
+  timestamp    DateTime          @default(now())
+  transactions TransactionItem[]
+}
+
+model TransactionItem {
+  id            String      @id @default(uuid())
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
+  account       Account     @relation(fields: [accountId], references: [id])
+  accountId     String
+  amount        Int
+  currency      Currency    @relation(fields: [currencyCode], references: [code])
+  currencyCode  String
+  currencyAmout Int
+}

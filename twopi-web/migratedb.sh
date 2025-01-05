@@ -1,8 +1,7 @@
 #!/bin/bash
 
-files=$(ls ./)
-
-for file in $files
+for file in ./prisma/database/*.db
 do
+  file=$(basename $file)
   DATABASE_URL="file:./database/$file" pnpm run db:migrate
 done
