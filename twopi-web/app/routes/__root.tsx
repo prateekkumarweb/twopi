@@ -11,6 +11,7 @@ import css from "../style.css?url";
 import "../style.css";
 import { auth } from "~/lib/server/auth";
 import { getWebRequest } from "vinxi/http";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
   const session = await auth.api.getSession({
@@ -60,6 +61,7 @@ function RootComponent() {
     <RootDocument>
       <Outlet />
       <TanStackRouterDevtools />
+      <ReactQueryDevtools />
     </RootDocument>
   );
 }

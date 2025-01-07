@@ -14,6 +14,9 @@ importers:
       '@prisma/client':
         specifier: ^6.1.0
         version: 6.1.0(prisma@6.1.0)
+      '@tanstack/react-query':
+        specifier: ^5.62.16
+        version: 5.62.16(react@19.0.0)
       '@tanstack/react-router':
         specifier: ^1.95.1
         version: 1.95.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -51,6 +54,12 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.0.0-beta.8
         version: 4.0.0-beta.8(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.28.2)(terser@5.37.0)(tsx@4.19.2))
+      '@tanstack/eslint-plugin-query':
+        specifier: ^5.62.16
+        version: 5.62.16(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.2)
+      '@tanstack/react-query-devtools':
+        specifier: ^5.62.16
+        version: 5.62.16(@tanstack/react-query@5.62.16(react@19.0.0))(react@19.0.0)
       '@tanstack/router-devtools':
         specifier: ^1.95.1
         version: 1.95.1(@tanstack/react-router@1.95.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(csstype@3.1.3)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -1339,15 +1348,37 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6
 
+  '@tanstack/eslint-plugin-query@5.62.16':
+    resolution: {integrity: sha512-VhnHSQ/hc62olLzGhlLJ4BJGWynwjs3cDMsByasKJ3zjW1YZ+6raxOv0gHHISm+VEnAY42pkMowmSWrXfL4NTw==}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+
   '@tanstack/history@1.95.0':
     resolution: {integrity: sha512-w1/yWuIBqmG0Z0MPMf1OuOCce7FXyVH4L4dIA4rvpnjIUCH8qRUgloFAVg37nTMUbOmhMsY2NZDxCpKBv+CLJg==}
     engines: {node: '>=12'}
+
+  '@tanstack/query-core@5.62.16':
+    resolution: {integrity: sha512-9Sgft7Qavcd+sN0V25xVyo0nfmcZXBuODy3FVG7BMWTg1HMLm8wwG5tNlLlmSic1u7l1v786oavn+STiFaPH2g==}
+
+  '@tanstack/query-devtools@5.62.16':
+    resolution: {integrity: sha512-3ff6UBJr0H3nIhfLSl9911rvKqXf0u4B58jl0uYdDWLqPk9pCvYIbxC35cGxK2+8INl4IaFVUHb/IdgWrNkg3Q==}
 
   '@tanstack/react-cross-context@1.87.6':
     resolution: {integrity: sha512-roKUsTChxywpIDKhJbUcnGm5ql05TzIrcwjFlOZenHRUqIEqxzINHkDMmQQdm280q4oxjkyu7CsnXKIDaPZrqA==}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
+
+  '@tanstack/react-query-devtools@5.62.16':
+    resolution: {integrity: sha512-EjF0tgHnWYcqhk8KxGKnmGlYcnldhWjW3bbH2WZqxo7t41ytzkIQtZ/UyLph//YMmZZE/RVTmSo3rGq/EG9iCA==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.62.16
+      react: ^18 || ^19
+
+  '@tanstack/react-query@5.62.16':
+    resolution: {integrity: sha512-XJIZNj65d2IdvU8VBESmrPakfIm6FSdHDzrS1dPrAwmq3ZX+9riMh/ZfbNQHAWnhrgmq7KoXpgZSRyXnqMYT9A==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@tanstack/react-router@1.95.1':
     resolution: {integrity: sha512-P5x4yNhcdkYsCEoYeGZP8Q9Jlxf0WXJa4G/xvbmM905seZc9FqJqvCSRvX3dWTPOXRABhl4g+8DHqfft0c/AvQ==}
@@ -5214,12 +5245,35 @@ snapshots:
       tailwindcss: 4.0.0-beta.8
       vite: 6.0.7(@types/node@22.10.5)(jiti@2.4.2)(lightningcss@1.28.2)(terser@5.37.0)(tsx@4.19.2)
 
+  '@tanstack/eslint-plugin-query@5.62.16(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.2)':
+    dependencies:
+      '@typescript-eslint/utils': 8.19.0(eslint@9.17.0(jiti@2.4.2))(typescript@5.7.2)
+      eslint: 9.17.0(jiti@2.4.2)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@tanstack/history@1.95.0': {}
+
+  '@tanstack/query-core@5.62.16': {}
+
+  '@tanstack/query-devtools@5.62.16': {}
 
   '@tanstack/react-cross-context@1.87.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
+
+  '@tanstack/react-query-devtools@5.62.16(@tanstack/react-query@5.62.16(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@tanstack/query-devtools': 5.62.16
+      '@tanstack/react-query': 5.62.16(react@19.0.0)
+      react: 19.0.0
+
+  '@tanstack/react-query@5.62.16(react@19.0.0)':
+    dependencies:
+      '@tanstack/query-core': 5.62.16
+      react: 19.0.0
 
   '@tanstack/react-router@1.95.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:

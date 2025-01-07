@@ -1,4 +1,5 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { useState } from "react";
 import { getWebRequest } from "vinxi/http";
@@ -41,20 +42,40 @@ const getCurrencies = createServerFn({ method: "GET" }).handler(async () => {
 
 export const Route = createFileRoute("/app/")({
   component: RouteComponent,
-  loader: async () => {
-    const currencies = await getCurrencies();
-    return currencies;
-  },
 });
 
 function RouteComponent() {
-  const router = useRouter();
-  const state = Route.useLoaderData();
   const [createCurrencyForm, setCreateCurrency] = useState({
     code: "",
     name: "",
     base: 100,
   });
+  const queryClient = useQueryClient();
+  const { isPending, error, data, isFetching } = useQuery({
+    queryKey: ["currencyData"],
+    queryFn: async () => {
+      return await getCurrencies();
+    },
+  });
+  const mutation = useMutation({
+    mutationFn: (data: { code: string; name: string; base: number }) =>
+      createCurrency({ data }).then(() => {
+        setCreateCurrency({
+          code: "",
+          name: "",
+          base: 100,
+        });
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currencyData"] });
+    },
+  });
+
+  if (isPending) return "Loading...";
+
+  if (isFetching) return "Fetching...";
+
+  if (error) return "An error has occurred: " + error.message;
 
   return (
     <>
@@ -68,8 +89,8 @@ function RouteComponent() {
           </tr>
         </thead>
         <tbody>
-          {state.currencies
-            ? state.currencies.map((currency) => (
+          {data.currencies
+            ? data.currencies.map((currency) => (
                 <tr key={currency.code}>
                   <td>{currency.code}</td>
                   <td>{currency.name}</td>
@@ -109,14 +130,7 @@ function RouteComponent() {
         />
         <button
           onClick={() => {
-            createCurrency({ data: createCurrencyForm }).then(() => {
-              setCreateCurrency({
-                code: "",
-                name: "",
-                base: 100,
-              });
-              router.invalidate();
-            });
+            mutation.mutate(createCurrencyForm);
           }}
         >
           Save
