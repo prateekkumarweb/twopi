@@ -78,7 +78,7 @@ function RouteComponent() {
   if (error) return "An error has occurred: " + error.message;
 
   return (
-    <>
+    <div className="m-4">
       <div>Currency</div>
       <table>
         <thead>
@@ -136,6 +136,6 @@ function RouteComponent() {
           Save
         </button>
       </div>
-    </>
+    </div>
   );
 }
