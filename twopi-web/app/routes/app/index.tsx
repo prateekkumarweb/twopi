@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
+import clsx from "clsx";
 import { useState } from "react";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
+import Button from "~/components/Button";
 import { auth } from "~/lib/server/auth";
 import { getDbClient } from "~/lib/server/db";
 
@@ -100,7 +102,7 @@ function RouteComponent() {
             : null}
         </tbody>
       </table>
-      <div>
+      <div className={clsx("my-4 flex gap-4")}>
         <input
           type="text"
           value={createCurrencyForm.code}
@@ -128,13 +130,13 @@ function RouteComponent() {
           }
           placeholder="base"
         />
-        <button
+        <Button
           onClick={() => {
             mutation.mutate(createCurrencyForm);
           }}
         >
           Save
-        </button>
+        </Button>
       </div>
     </div>
   );

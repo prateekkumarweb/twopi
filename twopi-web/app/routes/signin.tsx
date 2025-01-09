@@ -3,6 +3,7 @@ import { authClient } from "~/lib/auth-client";
 import { useState } from "react";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
+import Button from "~/components/Button";
 
 const signinSearchParamsSchema = z.object({
   redirect: z.string().optional(),
@@ -61,9 +62,7 @@ function RouteComponent() {
         placeholder="Password"
       />
       <div className="text-red-600">{errorMsg}</div>
-      <button className="bg-blue-800 px-4 py-2 text-white" onClick={signIn}>
-        Sign in
-      </button>
+      <Button onClick={signIn}>Sign in</Button>
     </div>
   );
 }

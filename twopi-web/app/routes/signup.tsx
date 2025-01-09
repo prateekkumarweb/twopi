@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { authClient } from "~/lib/auth-client";
 import { useState } from "react";
+import Button from "~/components/Button";
 
 export const Route = createFileRoute("/signup")({
   component: RouteComponent,
@@ -60,9 +61,7 @@ function RouteComponent() {
         onChange={(e) => setPassword(e.target.value)}
         placeholder="Password"
       />
-      <button className="bg-blue-800 px-4 py-2 text-white" onClick={signUp}>
-        Sign Up
-      </button>
+      <Button onClick={signUp}>Sign up</Button>
     </div>
   );
 }

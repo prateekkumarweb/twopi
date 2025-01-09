@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import clsx from "clsx";
+import Button from "~/components/Button";
 import { authClient } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/")({
@@ -13,15 +13,13 @@ function Home() {
   const router = useRouter();
   const state = Route.useLoaderData();
 
-  const btn = clsx("rounded bg-blue-800 px-4 py-2 text-white");
-
   if (!state.session?.user) {
     return (
       <div className="m-4 flex flex-col gap-4">
-        <Link to="/signin" className={btn}>
+        <Link to="/signin" className="underline">
           Sign in
         </Link>
-        <Link to="/signup" className={btn}>
+        <Link to="/signup" className="underline">
           Sign up
         </Link>
       </div>
@@ -37,12 +35,8 @@ function Home() {
   return (
     <div className="m-4 flex h-screen w-full flex-col items-center justify-center gap-4">
       <div>{JSON.stringify(state.session?.user.name)}</div>
-      <button className={btn} onClick={signOut}>
-        Sign out
-      </button>
-      <a href="/app" className={btn}>
-        Go to app
-      </a>
+      <Button onClick={signOut}>Sign out</Button>
+      <Link to="/app">Go to app</Link>
     </div>
   );
 }
