@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import Button from "~/components/Button";
 import { authClient } from "~/lib/auth-client";
 
 export const Route = createFileRoute("/")({
@@ -35,7 +34,9 @@ function Home() {
   return (
     <div className="m-4 flex h-screen w-full flex-col items-center justify-center gap-4">
       <div>{JSON.stringify(state.session?.user.name)}</div>
-      <Button onClick={signOut}>Sign out</Button>
+      <button className="btn btn-primary" onClick={signOut}>
+        Sign out
+      </button>
       <Link to="/app">Go to app</Link>
     </div>
   );

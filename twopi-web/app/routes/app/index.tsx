@@ -5,7 +5,6 @@ import clsx from "clsx";
 import { useState } from "react";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
-import Button from "~/components/Button";
 import { auth } from "~/lib/server/auth";
 import { getDbClient } from "~/lib/server/db";
 
@@ -130,13 +129,14 @@ function RouteComponent() {
           }
           placeholder="base"
         />
-        <Button
+        <button
+          className="btn btn-primary"
           onClick={() => {
             mutation.mutate(createCurrencyForm);
           }}
         >
           Save
-        </Button>
+        </button>
       </div>
     </div>
   );
