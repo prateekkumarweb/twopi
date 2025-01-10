@@ -11,8 +11,10 @@ function getDbName(user: User) {
 }
 
 export async function getDbClient(user: User) {
-  const url = `file:./database/${getDbName(user)}.db`;
-  if (!existsSync(`./prisma/database/${getDbName(user)}.db`)) {
+  const base = process.env.DATABASE_ABS_PATH ?? "/tmp/database";
+  const url = `file:${base}/${getDbName(user)}.db`;
+  console.log("Database", url);
+  if (!existsSync(`${base}/${getDbName(user)}.db`)) {
     const output = await execAsync(
       `DATABASE_URL=${url} npx prisma migrate deploy`,
     );

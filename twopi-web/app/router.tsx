@@ -7,6 +7,8 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import NotFound from "./components/NotFound";
+import { DefaultCatchBoundary } from "./components/DefaultCatchBoundary";
 
 export function createRouter() {
   const queryClient = new QueryClient();
@@ -16,6 +18,10 @@ export function createRouter() {
     context: {
       queryClient,
     },
+    defaultPreload: "intent",
+    defaultPreloadStaleTime: 0,
+    defaultErrorComponent: DefaultCatchBoundary,
+    defaultNotFoundComponent: () => <NotFound />,
     dehydrate: () => {
       return {
         queryClientState: dehydrate(queryClient),

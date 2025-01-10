@@ -4,15 +4,24 @@ import {
   createRootRoute,
 } from "@tanstack/react-router";
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
-import { type ReactNode } from "react";
-import React from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { auth } from "~/lib/server/auth";
 import { getWebRequest } from "vinxi/http";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Layout from "~/components/Layout";
 import css from "../app.css?url";
 
-import "../app.css";
+import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
+import NotFound from "~/components/NotFound";
+
+const TanStackRouterDevtools =
+  process.env.NODE_ENV === "production"
+    ? () => null
+    : lazy(() =>
+        import("@tanstack/router-devtools").then((res) => ({
+          default: res.TanStackRouterDevtools,
+        })),
+      );
 
 const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
   const session = await auth.api.getSession({
@@ -20,15 +29,6 @@ const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
   });
   return { session };
 });
-
-const TanStackRouterDevtools =
-  process.env.NODE_ENV === "production"
-    ? () => null
-    : React.lazy(() =>
-        import("@tanstack/router-devtools").then((res) => ({
-          default: res.TanStackRouterDevtools,
-        })),
-      );
 
 export const Route = createRootRoute({
   head: () => ({
@@ -44,10 +44,7 @@ export const Route = createRootRoute({
         title: "TwoPi",
       },
     ],
-    links: [
-      // FIXME: Hack because in build, the css is getting stripped off.
-      { rel: "stylesheet", href: css },
-    ],
+    links: [{ rel: "stylesheet", href: css }],
   }),
   beforeLoad: async () => {
     const { session } = await fetchAuth();
@@ -57,7 +54,14 @@ export const Route = createRootRoute({
     return { session: context.session };
   },
   component: RootComponent,
-  notFoundComponent: NotFoundComponent,
+  errorComponent: (props) => {
+    return (
+      <RootDocument>
+        <DefaultCatchBoundary {...props} />
+      </RootDocument>
+    );
+  },
+  notFoundComponent: () => <NotFound />,
 });
 
 function RootComponent() {
@@ -68,8 +72,6 @@ function RootComponent() {
       <Layout user={state.session?.user}>
         <Outlet />
       </Layout>
-      <TanStackRouterDevtools />
-      <ReactQueryDevtools />
     </RootDocument>
   );
 }
@@ -83,12 +85,12 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <body>
         {children}
         <ScrollRestoration />
+        <Suspense>
+          <TanStackRouterDevtools />
+        </Suspense>
+        <ReactQueryDevtools />
         <Scripts />
       </body>
     </html>
   );
-}
-
-function NotFoundComponent() {
-  return <div>Not Found</div>;
 }

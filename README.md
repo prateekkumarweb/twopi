@@ -7,8 +7,9 @@
 ```txt
 BASE_URL=http://localhost:3000
 BETTER_AUTH_SECRET=<auth_secret>
-TURSO_DATABASE_URL=libsql://localhost:8080?tls=0
+TURSO_AUTH_DATABASE_URL=libsql://localhost:8080?tls=0
 TURSO_AUTH_TOKEN=<secret_token>
+DATABASE_ABS_PATH=/tmp/database
 ```
 
 ```sh
