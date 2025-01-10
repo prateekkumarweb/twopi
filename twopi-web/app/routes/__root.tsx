@@ -11,9 +11,6 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Layout from "~/components/Layout";
 import css from "../app.css?url";
 
-import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
-import NotFound from "~/components/NotFound";
-
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
     ? () => null
@@ -54,14 +51,6 @@ export const Route = createRootRoute({
     return { session: context.session };
   },
   component: RootComponent,
-  errorComponent: (props) => {
-    return (
-      <RootDocument>
-        <DefaultCatchBoundary {...props} />
-      </RootDocument>
-    );
-  },
-  notFoundComponent: () => <NotFound />,
 });
 
 function RootComponent() {

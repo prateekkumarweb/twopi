@@ -25,7 +25,7 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
               role="button"
               className="btn btn-ghost btn-circle"
             >
-              <Menu></Menu>
+              <Menu />
             </div>
             <ul
               tabIndex={0}
