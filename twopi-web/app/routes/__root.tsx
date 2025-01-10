@@ -6,13 +6,13 @@ import {
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import { type ReactNode } from "react";
 import React from "react";
-import css from "../app.css?url";
-
-import "../app.css";
 import { auth } from "~/lib/server/auth";
 import { getWebRequest } from "vinxi/http";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Layout from "~/components/Layout";
+import css from "../app.css?url";
+
+import "../app.css";
 
 const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
   const session = await auth.api.getSession({
@@ -53,14 +53,19 @@ export const Route = createRootRoute({
     const { session } = await fetchAuth();
     return { session };
   },
+  loader: async ({ context }) => {
+    return { session: context.session };
+  },
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
 
 function RootComponent() {
+  const state = Route.useLoaderData();
+
   return (
     <RootDocument>
-      <Layout>
+      <Layout user={state.session?.user}>
         <Outlet />
       </Layout>
       <TanStackRouterDevtools />

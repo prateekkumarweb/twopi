@@ -2,4 +2,6 @@
 
 @plugin "@tailwindcss/forms";
 @plugin "@tailwindcss/typography";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: light --default;
+}
