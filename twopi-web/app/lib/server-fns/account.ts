@@ -3,17 +3,11 @@ import { z } from "zod";
 import { auth } from "../server/auth";
 import { getWebRequest } from "vinxi/http";
 import { getDbClient } from "../server/db";
+import { accountTypeIds } from "../account-type";
 
 const createAccountValidator = z.object({
   name: z.string(),
-  accountType: z.enum([
-    "savings",
-    "current",
-    "loan",
-    "credit",
-    "wallet",
-    "person",
-  ]),
+  accountType: z.enum(accountTypeIds),
   currencyCode: z.string(),
   startingBalance: z.number().default(0),
 });

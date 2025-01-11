@@ -1,6 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { accountTypes, getAccountType } from "~/lib/account-type";
 import { createAccount, getAccounts } from "~/lib/server-fns/account";
 import { getCurrencies } from "~/lib/server-fns/currency";
 
@@ -75,15 +76,22 @@ function RouteComponent() {
           name="accountType"
           // eslint-disable-next-line react/no-children-prop
           children={(field) => (
-            <input
-              type="text"
+            <select
               className="w-full"
-              placeholder="Account Type"
               name={field.name}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-            />
+            >
+              <option disabled value="">
+                Select account type
+              </option>
+              {accountTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
           )}
         />
         <form.Field
@@ -142,9 +150,9 @@ function RouteComponent() {
               <h2 className="d-card-title">{account.name}</h2>
               <div className="flex gap-2">
                 <div className="d-badge d-badge-sm d-badge-info">
-                  {account.accountType}
+                  {getAccountType(account.accountType)?.name}
                 </div>
-                <div className="d-badge d-badge-sm d-badge-info">
+                <div className="d-badge d-badge-sm d-badge-neutral">
                   {account.currencyCode} {account.startingBalance}
                 </div>
               </div>
