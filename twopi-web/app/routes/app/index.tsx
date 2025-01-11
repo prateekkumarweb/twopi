@@ -7,7 +7,7 @@ import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "~/lib/server/auth";
 import { getDbClient } from "~/lib/server/db";
-import { Trash, Plus, Save } from "lucide-react";
+import { Trash, Save } from "lucide-react";
 
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
