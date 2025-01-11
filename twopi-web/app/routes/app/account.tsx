@@ -1,53 +1,11 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/start";
-import { getWebRequest } from "vinxi/http";
-import { z } from "zod";
-import { auth } from "~/lib/server/auth";
-import { getDbClient } from "~/lib/server/db";
+import { createAccount, getAccounts } from "~/lib/server-fns/account";
+import { getCurrencies } from "~/lib/server-fns/currency";
 
 export const Route = createFileRoute("/app/account")({
   component: RouteComponent,
-});
-
-const createAccountValidator = z.object({
-  name: z.string(),
-  accountType: z.enum([
-    "savings",
-    "current",
-    "loan",
-    "credit",
-    "wallet",
-    "person",
-  ]),
-  currencyCode: z.string(),
-  startingBalance: z.number().default(0),
-});
-
-const createAccount = createServerFn({ method: "POST" })
-  .validator((account: unknown) => createAccountValidator.parse(account))
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
-    const db = await getDbClient(session?.user);
-    await db.account.create({ data });
-    return { success: true };
-  });
-
-const getAccounts = createServerFn({ method: "GET" }).handler(async () => {
-  const session = await auth.api.getSession({
-    headers: getWebRequest().headers,
-  });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  const db = await getDbClient(session?.user);
-  return { accounts: await db.account.findMany() };
 });
 
 function RouteComponent() {
@@ -55,7 +13,9 @@ function RouteComponent() {
   const { isPending, error, data, isFetching } = useQuery({
     queryKey: ["accountData"],
     queryFn: async () => {
-      return await getAccounts();
+      const accounts = await getAccounts();
+      const currencies = await getCurrencies();
+      return { accounts: accounts.accounts, currencies: currencies.currencies };
     },
   });
   const form = useForm({
@@ -77,6 +37,7 @@ function RouteComponent() {
       startingBalance: number;
     }) => {
       await createAccount({ data });
+      form.reset();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accountData"] });
@@ -134,15 +95,22 @@ function RouteComponent() {
           name="currencyCode"
           // eslint-disable-next-line react/no-children-prop
           children={(field) => (
-            <input
-              type="text"
-              className="w-full"
-              placeholder="Currency"
+            <select
+              className="select w-full"
               name={field.name}
               value={field.state.value}
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
-            />
+            >
+              <option disabled value="">
+                Select currency
+              </option>
+              {data.currencies.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.code} - {currency.name}
+                </option>
+              ))}
+            </select>
           )}
         />
         <form.Field
