@@ -1,13 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import clsx from "clsx";
-import { useState } from "react";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "~/lib/server/auth";
 import { getDbClient } from "~/lib/server/db";
 import { Trash, Save } from "lucide-react";
+import { useForm } from "@tanstack/react-form";
 
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
@@ -62,11 +61,31 @@ export const Route = createFileRoute("/app/")({
   component: RouteComponent,
 });
 
+// const formOpts = formOptions({
+//   defaultValues: {
+//     code: "",
+//     name: "",
+//     base: 100,
+//   },
+// });
+
+// const serverValidate = createServerValidate({
+//   ...formOpts,
+//   onServerValidate: ({value}) => {
+
+//   }
+// })
+
 function RouteComponent() {
-  const [createCurrencyForm, setCreateCurrency] = useState({
-    code: "",
-    name: "",
-    base: 100,
+  const form = useForm({
+    defaultValues: {
+      code: "",
+      name: "",
+      base: 100,
+    },
+    onSubmit: async ({ value }) => {
+      mutation.mutate(value);
+    },
   });
   const queryClient = useQueryClient();
   const { isPending, error, data, isFetching } = useQuery({
@@ -78,11 +97,7 @@ function RouteComponent() {
   const mutation = useMutation({
     mutationFn: (data: { code: string; name: string; base: number }) =>
       createCurrency({ data }).then(() => {
-        setCreateCurrency({
-          code: "",
-          name: "",
-          base: 100,
-        });
+        form.reset();
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currencyData"] });
@@ -102,96 +117,109 @@ function RouteComponent() {
 
   if (error) return "An error has occurred: " + error.message;
 
-  const cellClasses = clsx("border border-slate-300 p-2");
-
   return (
     <div className="w-full">
       <h2 className="my-4 text-xl font-bold">Currency</h2>
-      <table className="w-full table-auto border-collapse border border-slate-400">
-        <thead>
-          <tr>
-            <th className={cellClasses}>Code</th>
-            <th className={cellClasses}>Name</th>
-            <th className={cellClasses}>Base</th>
-            <th className={cellClasses}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td className={cellClasses}>
-              <input
-                type="text"
-                className="w-full"
-                value={createCurrencyForm.code}
-                onChange={(e) =>
-                  setCreateCurrency({
-                    ...createCurrencyForm,
-                    code: e.target.value,
-                  })
-                }
-                placeholder="code"
-              />
-            </td>
-            <td className={cellClasses}>
-              <input
-                type="text"
-                className="w-full"
-                value={createCurrencyForm.name}
-                onChange={(e) =>
-                  setCreateCurrency({
-                    ...createCurrencyForm,
-                    name: e.target.value,
-                  })
-                }
-                placeholder="name"
-              />
-            </td>
-            <td className={cellClasses}>
-              <input
-                type="number"
-                className="w-full"
-                value={createCurrencyForm.base}
-                onChange={(e) =>
-                  setCreateCurrency({
-                    ...createCurrencyForm,
-                    base: Number(e.target.value),
-                  })
-                }
-                placeholder="base"
-              />
-            </td>
-            <td className={cellClasses}>
-              <button
-                className="btn btn-primary"
-                onClick={() => {
-                  mutation.mutate(createCurrencyForm);
-                }}
-              >
-                <Save />
-              </button>
-            </td>
-          </tr>
-          {data.currencies
-            ? data.currencies.map((currency) => (
-                <tr key={currency.code}>
-                  <td className={cellClasses}>{currency.code}</td>
-                  <td className={cellClasses}>{currency.name}</td>
-                  <td className={cellClasses}>{currency.base}</td>
-                  <td className={cellClasses}>
-                    <button
-                      className="btn btn-error"
-                      onClick={() => {
-                        deleteMutation.mutate(currency.code);
-                      }}
-                    >
-                      <Trash />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            : null}
-        </tbody>
-      </table>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
+      >
+        <table className="table w-full">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Base</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <form.Field
+                  name="code"
+                  // eslint-disable-next-line react/no-children-prop
+                  children={(field) => (
+                    <input
+                      type="text"
+                      className="w-full"
+                      placeholder="Code"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  )}
+                />
+              </td>
+              <td>
+                <form.Field
+                  name="name"
+                  // eslint-disable-next-line react/no-children-prop
+                  children={(field) => (
+                    <input
+                      type="text"
+                      className="w-full"
+                      placeholder="Name"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  )}
+                />
+              </td>
+              <td>
+                <form.Field
+                  name="base"
+                  // eslint-disable-next-line react/no-children-prop
+                  children={(field) => (
+                    <input
+                      type="number"
+                      className="w-full"
+                      placeholder="Base"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) =>
+                        field.handleChange(Number(e.target.value))
+                      }
+                    />
+                  )}
+                />
+              </td>
+              <td>
+                <button type="submit" className="btn btn-primary">
+                  <Save />
+                </button>
+              </td>
+            </tr>
+            {data.currencies
+              ? data.currencies.map((currency) => (
+                  <tr key={currency.code}>
+                    <td>{currency.code}</td>
+                    <td>{currency.name}</td>
+                    <td>{currency.base}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn btn-error"
+                        onClick={() => {
+                          deleteMutation.mutate(currency.code);
+                        }}
+                      >
+                        <Trash />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              : null}
+          </tbody>
+        </table>
+      </form>
     </div>
   );
 }
