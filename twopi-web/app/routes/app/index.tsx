@@ -61,21 +61,6 @@ export const Route = createFileRoute("/app/")({
   component: RouteComponent,
 });
 
-// const formOpts = formOptions({
-//   defaultValues: {
-//     code: "",
-//     name: "",
-//     base: 100,
-//   },
-// });
-
-// const serverValidate = createServerValidate({
-//   ...formOpts,
-//   onServerValidate: ({value}) => {
-
-//   }
-// })
-
 function RouteComponent() {
   const form = useForm({
     defaultValues: {
