@@ -4,4 +4,5 @@
 @plugin "@tailwindcss/typography";
 @plugin "daisyui" {
   themes: light --default;
+  prefix: "d-";
 }

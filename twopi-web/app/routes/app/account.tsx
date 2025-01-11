@@ -30,12 +30,7 @@ function RouteComponent() {
     },
   });
   const mutation = useMutation({
-    mutationFn: async (data: {
-      name: string;
-      accountType: string;
-      currencyCode: string;
-      startingBalance: number;
-    }) => {
+    mutationFn: async (data: unknown) => {
       await createAccount({ data });
       form.reset();
     },
@@ -128,20 +123,28 @@ function RouteComponent() {
             />
           )}
         />
-        <button type="submit" className="btn btn-primary">
+        <button
+          type="submit"
+          className="d-btn d-btn-primary"
+          disabled={mutation.isPending}
+        >
           Create
         </button>
+        {mutation.isPending && <p className="text-info">Creating...</p>}
+        {mutation.isError && (
+          <p className="text-error">{mutation.error?.message}</p>
+        )}
       </form>
       <div className="mt-4 flex flex-col gap-4">
         {data.accounts.map((account) => (
-          <div className="card bg-base-100 shadow-sm" key={account.id}>
-            <div className="card-body">
-              <h2 className="card-title">{account.name}</h2>
+          <div className="d-card bg-base-100 shadow-sm" key={account.id}>
+            <div className="d-card-body">
+              <h2 className="d-card-title">{account.name}</h2>
               <div className="flex gap-2">
-                <div className="badge badge-sm badge-info">
+                <div className="d-badge d-badge-sm d-badge-info">
                   {account.accountType}
                 </div>
-                <div className="badge badge-sm badge-info">
+                <div className="d-badge d-badge-sm d-badge-info">
                   {account.currencyCode} {account.startingBalance}
                 </div>
               </div>
