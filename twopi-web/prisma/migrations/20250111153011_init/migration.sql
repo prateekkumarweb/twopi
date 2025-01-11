@@ -38,7 +38,7 @@ CREATE TABLE "TransactionItem" (
     "accountId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
     "currencyCode" TEXT NOT NULL,
-    "currencyAmout" INTEGER NOT NULL,
+    "currencyAmount" INTEGER NOT NULL,
     CONSTRAINT "TransactionItem_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "TransactionItem_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "TransactionItem_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES "Currency" ("code") ON DELETE RESTRICT ON UPDATE CASCADE

@@ -46,13 +46,13 @@ model Transaction {
 }
 
 model TransactionItem {
-  id            String      @id @default(uuid())
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-  transactionId String
-  account       Account     @relation(fields: [accountId], references: [id])
-  accountId     String
-  amount        Int
-  currency      Currency    @relation(fields: [currencyCode], references: [code])
-  currencyCode  String
-  currencyAmout Int
+  id             String      @id @default(uuid())
+  transaction    Transaction @relation(fields: [transactionId], references: [id])
+  transactionId  String
+  account        Account     @relation(fields: [accountId], references: [id])
+  accountId      String
+  amount         Int
+  currency       Currency    @relation(fields: [currencyCode], references: [code])
+  currencyCode   String
+  currencyAmount Int
 }

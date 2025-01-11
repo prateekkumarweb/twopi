@@ -4,8 +4,6 @@ import { type ReactNode } from "react";
 import { authClient } from "~/lib/auth-client";
 import { Menu } from "lucide-react";
 
-// import "../app.css";
-
 export default function Layout(props: { user?: User; children: ReactNode }) {
   const router = useRouter();
 
@@ -33,6 +31,9 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
             >
               <li>
                 <Link to="/app">App</Link>
+              </li>
+              <li>
+                <Link to="/app/account">Account</Link>
               </li>
             </ul>
           </div>
