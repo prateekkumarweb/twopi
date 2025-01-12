@@ -19,7 +19,7 @@ function RouteComponent() {
       name: "",
       base: 100,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
       mutation.mutate(value);
     },
   });

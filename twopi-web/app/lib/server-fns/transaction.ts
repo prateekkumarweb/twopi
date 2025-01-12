@@ -54,7 +54,11 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
     return {
       transactions: await db.transaction.findMany({
         include: {
-          transactions: true,
+          transactions: {
+            include: {
+              account: true,
+            },
+          },
           category: true,
         },
       }),

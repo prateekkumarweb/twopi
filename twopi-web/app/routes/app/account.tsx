@@ -26,7 +26,7 @@ function RouteComponent() {
       currencyCode: "",
       startingBalance: 0,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
       mutation.mutate(value);
     },
   });

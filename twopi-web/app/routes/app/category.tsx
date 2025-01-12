@@ -32,7 +32,7 @@ function RouteComponent() {
       name: "",
       group: "",
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: ({ value }) => {
       mutation.mutate(value);
     },
   });
