@@ -1,9 +1,10 @@
 import { AccountType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { createAccount, getAccounts } from "~/lib/server-fns/account";
-import { getCurrencies } from "~/lib/server-fns/currency";
+import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
+import { createAccount } from "~/lib/server-fns/account";
+import { isDefined } from "~/lib/utils";
 
 export const Route = createFileRoute("/app/account")({
   component: RouteComponent,
@@ -11,12 +12,17 @@ export const Route = createFileRoute("/app/account")({
 
 function RouteComponent() {
   const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ["accountData"],
-    queryFn: async () => {
-      const accounts = await getAccounts();
-      const currencies = await getCurrencies();
-      return { accounts: accounts.accounts, currencies: currencies.currencies };
+  const { isPending, errors, data } = useQueries({
+    queries: [currencyQueryOptions(), accountQueryOptions()],
+    combine: (results) => {
+      return {
+        data: {
+          currencies: results[0].data?.currencies,
+          accounts: results[1].data?.accounts,
+        },
+        isPending: results.some((result) => result.isPending),
+        errors: results.map((result) => result.error).filter(isDefined),
+      };
     },
   });
   const form = useForm({
@@ -36,15 +42,23 @@ function RouteComponent() {
       form.reset();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accountData"] });
+      queryClient.invalidateQueries({
+        queryKey: accountQueryOptions().queryKey,
+      });
     },
   });
 
   if (isPending) return "Loading...";
 
-  if (isFetching) return "Fetching...";
-
-  if (error) return "An error has occurred: " + error.message;
+  if (errors.length)
+    return (
+      <div>
+        Error occurred:
+        {errors.map((error, i) => (
+          <div key={i}>{error.message}</div>
+        ))}
+      </div>
+    );
 
   return (
     <div className="w-full">
@@ -102,7 +116,7 @@ function RouteComponent() {
               <option disabled value="">
                 Select currency
               </option>
-              {data.currencies.map((currency) => (
+              {data.currencies?.map((currency) => (
                 <option key={currency.code} value={currency.code}>
                   {currency.code} - {currency.name}
                 </option>
@@ -136,7 +150,7 @@ function RouteComponent() {
         )}
       </form>
       <div className="mt-4 flex flex-col gap-4">
-        {data.accounts.map((account) => (
+        {data.accounts?.map((account) => (
           <div className="d-card bg-base-100 shadow-sm" key={account.id}>
             <div className="d-card-body">
               <h2 className="d-card-title">{account.name}</h2>

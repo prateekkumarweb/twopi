@@ -2,11 +2,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Save, Trash } from "lucide-react";
-import {
-  createCurrency,
-  deleteCurrency,
-  getCurrencies,
-} from "~/lib/server-fns/currency";
+import { currencyQueryOptions } from "~/lib/query-options";
+import { createCurrency, deleteCurrency } from "~/lib/server-fns/currency";
 
 export const Route = createFileRoute("/app/currency")({
   component: RouteComponent,
@@ -24,26 +21,27 @@ function RouteComponent() {
     },
   });
   const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ["currencyData"],
-    queryFn: async () => {
-      return await getCurrencies();
-    },
-  });
+  const { isPending, error, data, isFetching } = useQuery(
+    currencyQueryOptions(),
+  );
   const mutation = useMutation({
     mutationFn: (data: unknown) =>
       createCurrency({ data }).then(() => {
         form.reset();
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["currencyData"] });
+      queryClient.invalidateQueries({
+        queryKey: currencyQueryOptions().queryKey,
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (code: unknown) => deleteCurrency({ data: code }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["currencyData"] });
+      queryClient.invalidateQueries({
+        queryKey: currencyQueryOptions().queryKey,
+      });
     },
   });
 

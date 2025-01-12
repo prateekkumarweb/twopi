@@ -1,14 +1,15 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trash } from "lucide-react";
-import { getAccounts } from "~/lib/server-fns/account";
-import { getCategories } from "~/lib/server-fns/category";
-import { getCurrencies } from "~/lib/server-fns/currency";
 import {
-  createTransaction,
-  getTransactions,
-} from "~/lib/server-fns/transaction";
+  accountQueryOptions,
+  categoryQueryOptions,
+  currencyQueryOptions,
+  transactionQueryOptions,
+} from "~/lib/query-options";
+import { createTransaction } from "~/lib/server-fns/transaction";
+import { isDefined } from "~/lib/utils";
 
 export const Route = createFileRoute("/app/transaction")({
   component: RouteComponent,
@@ -16,16 +17,28 @@ export const Route = createFileRoute("/app/transaction")({
 
 function RouteComponent() {
   const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ["transactionData"],
-    queryFn: async () => {
-      const { transactions } = await getTransactions();
-      const { categories } = await getCategories();
-      const { accounts } = await getAccounts();
-      const { currencies } = await getCurrencies();
-      return { transactions, categories, accounts, currencies };
+
+  const { isPending, errors, data } = useQueries({
+    queries: [
+      categoryQueryOptions(),
+      currencyQueryOptions(),
+      accountQueryOptions(),
+      transactionQueryOptions(),
+    ],
+    combine: (results) => {
+      return {
+        data: {
+          categories: results[0].data?.categories,
+          currencies: results[1].data?.currencies,
+          accounts: results[2].data?.accounts,
+          transactions: results[3].data?.transactions,
+        },
+        isPending: results.some((result) => result.isPending),
+        errors: results.map((result) => result.error).filter(isDefined),
+      };
     },
   });
+
   const form = useForm({
     defaultValues: {
       name: "",
@@ -52,15 +65,23 @@ function RouteComponent() {
         form.reset();
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transactionData"] });
+      queryClient.invalidateQueries({
+        queryKey: transactionQueryOptions().queryKey,
+      });
     },
   });
 
   if (isPending) return "Loading...";
 
-  if (isFetching) return "Fetching...";
-
-  if (error) return "An error has occurred: " + error.message;
+  if (errors.length)
+    return (
+      <div>
+        Error occurred:
+        {errors.map((error, i) => (
+          <div key={i}>{error.message}</div>
+        ))}
+      </div>
+    );
 
   return (
     <div className="w-full">
@@ -98,7 +119,7 @@ function RouteComponent() {
               <option disabled value="">
                 Select category
               </option>
-              {data.categories.map((category) => (
+              {data.categories?.map((category) => (
                 <option key={category.name} value={category.name}>
                   {category.group} - {category.name}
                 </option>
@@ -142,7 +163,7 @@ function RouteComponent() {
                           <option disabled value="">
                             Select account
                           </option>
-                          {data.accounts.map((account) => (
+                          {data.accounts?.map((account) => (
                             <option key={account.id} value={account.id}>
                               {account.name} - {account.currencyCode}
                             </option>
@@ -179,7 +200,7 @@ function RouteComponent() {
                           <option disabled value="">
                             Select currency
                           </option>
-                          {data.currencies.map((currency) => (
+                          {data.currencies?.map((currency) => (
                             <option key={currency.code} value={currency.code}>
                               {currency.code} - {currency.name}
                             </option>
@@ -245,7 +266,7 @@ function RouteComponent() {
         </form.Subscribe>
       </form>
       <div className="mt-4 flex flex-col gap-4">
-        {data.transactions.map((transaction) => (
+        {data.transactions?.map((transaction) => (
           <div className="d-card bg-base-100 shadow-sm" key={transaction.id}>
             <div className="d-card-body">
               <h2 className="d-card-title">{transaction.name}</h2>

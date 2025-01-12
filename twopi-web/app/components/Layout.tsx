@@ -30,7 +30,7 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
               className="d-menu d-menu-sm d-dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
             >
               <li>
-                <Link to="/app">App</Link>
+                <Link to="/app">Home</Link>
               </li>
               <li>
                 <Link to="/app/currency">Currency</Link>

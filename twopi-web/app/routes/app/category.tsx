@@ -2,11 +2,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trash } from "lucide-react";
-import {
-  createCategory,
-  deleteCategory,
-  getCategories,
-} from "~/lib/server-fns/category";
+import { categoryQueryOptions } from "~/lib/query-options";
+import { createCategory, deleteCategory } from "~/lib/server-fns/category";
 
 export const Route = createFileRoute("/app/category")({
   component: RouteComponent,
@@ -14,19 +11,9 @@ export const Route = createFileRoute("/app/category")({
 
 function RouteComponent() {
   const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery({
-    queryKey: ["categoryData"],
-    queryFn: async () => {
-      const categories = (await getCategories()).categories;
-      const groups = Array.from(
-        new Set(categories.map((category) => category.group)),
-      ).map((group) => ({
-        group,
-        categories: categories.filter((c) => c.group === group),
-      }));
-      return { categories, groups };
-    },
-  });
+  const { isPending, error, data, isFetching } = useQuery(
+    categoryQueryOptions(),
+  );
   const form = useForm({
     defaultValues: {
       name: "",
@@ -42,14 +29,18 @@ function RouteComponent() {
         form.reset();
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categoryData"] });
+      queryClient.invalidateQueries({
+        queryKey: categoryQueryOptions().queryKey,
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (name: unknown) => deleteCategory({ data: name }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categoryData"] });
+      queryClient.invalidateQueries({
+        queryKey: categoryQueryOptions().queryKey,
+      });
     },
   });
 
