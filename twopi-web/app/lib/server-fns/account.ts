@@ -3,11 +3,11 @@ import { z } from "zod";
 import { auth } from "../server/auth";
 import { getWebRequest } from "vinxi/http";
 import { getDbClient } from "../server/db";
-import { accountTypeIds } from "../account-type";
+import { AccountType } from "@prisma/client";
 
 const createAccountValidator = z.object({
   name: z.string(),
-  accountType: z.enum(accountTypeIds),
+  accountType: z.nativeEnum(AccountType),
   currencyCode: z.string(),
   startingBalance: z.number().default(0),
 });

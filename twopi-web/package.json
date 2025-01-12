@@ -17,11 +17,11 @@
   "dependencies": {
     "@libsql/kysely-libsql": "^0.4.1",
     "@prisma/client": "^6.2.1",
-    "@tanstack/react-form": "^0.41.0",
+    "@tanstack/react-form": "^0.41.1",
     "@tanstack/react-query": "^5.63.0",
     "@tanstack/react-router": "^1.95.3",
     "@tanstack/zod-adapter": "^1.95.3",
-    "@tanstack/zod-form-adapter": "^0.41.0",
+    "@tanstack/zod-form-adapter": "^0.41.1",
     "better-auth": "^1.1.10",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
@@ -32,7 +32,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.17.0",
+    "@eslint/js": "^9.18.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "4.0.0-beta.9",
     "@tailwindcss/typography": "^0.5.16",
@@ -45,7 +45,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "babel-plugin-react-compiler": "19.0.0-beta-63e3235-20250105",
     "daisyui": "5.0.0-beta.1",
-    "eslint": "^9.17.0",
+    "eslint": "^9.18.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.37.3",
     "eslint-plugin-react-compiler": "19.0.0-beta-63e3235-20250105",

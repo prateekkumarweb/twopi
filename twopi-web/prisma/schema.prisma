@@ -19,10 +19,19 @@ model Currency {
   TransactionItem TransactionItem[]
 }
 
+enum AccountType {
+  Cash
+  Wallet
+  Bank
+  CreditCard
+  Loan
+  Person
+}
+
 model Account {
   id              String            @id @default(uuid())
   name            String
-  accountType     String
+  accountType     AccountType
   currency        Currency          @relation(fields: [currencyCode], references: [code])
   currencyCode    String
   startingBalance Int

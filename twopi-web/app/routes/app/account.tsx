@@ -1,7 +1,7 @@
+import { AccountType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { accountTypes, getAccountType } from "~/lib/account-type";
 import { createAccount, getAccounts } from "~/lib/server-fns/account";
 import { getCurrencies } from "~/lib/server-fns/currency";
 
@@ -86,9 +86,9 @@ function RouteComponent() {
               <option disabled value="">
                 Select account type
               </option>
-              {accountTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
+              {Object.values(AccountType).map((type) => (
+                <option key={type} value={type}>
+                  {type}
                 </option>
               ))}
             </select>
@@ -150,7 +150,7 @@ function RouteComponent() {
               <h2 className="d-card-title">{account.name}</h2>
               <div className="flex gap-2">
                 <div className="d-badge d-badge-sm d-badge-info">
-                  {getAccountType(account.accountType)?.name}
+                  {account.accountType}
                 </div>
                 <div className="d-badge d-badge-sm d-badge-neutral">
                   {account.currencyCode} {account.startingBalance}
