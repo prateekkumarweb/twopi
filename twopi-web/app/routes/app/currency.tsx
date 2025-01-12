@@ -41,7 +41,7 @@ function RouteComponent() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (code: string) => deleteCurrency({ data: code }),
+    mutationFn: (code: unknown) => deleteCurrency({ data: code }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["currencyData"] });
     },

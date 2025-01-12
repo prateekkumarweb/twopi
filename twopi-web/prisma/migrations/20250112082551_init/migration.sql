@@ -26,6 +26,7 @@ CREATE TABLE "Category" (
 -- CreateTable
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
     "categoryName" TEXT NOT NULL,
     "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "Transaction_categoryName_fkey" FOREIGN KEY ("categoryName") REFERENCES "Category" ("name") ON DELETE RESTRICT ON UPDATE CASCADE
@@ -34,6 +35,7 @@ CREATE TABLE "Transaction" (
 -- CreateTable
 CREATE TABLE "TransactionItem" (
     "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,

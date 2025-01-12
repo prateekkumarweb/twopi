@@ -36,6 +36,9 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
                 <Link to="/app/currency">Currency</Link>
               </li>
               <li>
+                <Link to="/app/category">Category</Link>
+              </li>
+              <li>
                 <Link to="/app/account">Account</Link>
               </li>
               <li>

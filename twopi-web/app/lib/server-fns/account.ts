@@ -22,8 +22,8 @@ export const createAccount = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
     const db = await getDbClient(session?.user);
-    await db.account.create({ data });
-    return { success: true };
+    const value = await db.account.create({ data });
+    return { success: true, value };
   });
 
 export const getAccounts = createServerFn({ method: "GET" }).handler(
