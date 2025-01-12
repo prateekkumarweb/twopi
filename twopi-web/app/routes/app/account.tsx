@@ -2,6 +2,7 @@ import { AccountType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import dayjs from "dayjs";
 import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
@@ -25,10 +26,15 @@ function RouteComponent() {
       };
     },
   });
+
+  const createdAt = new Date();
+  createdAt.setMilliseconds(0);
+  createdAt.setSeconds(0);
   const form = useForm({
     defaultValues: {
       name: "",
       accountType: "savings",
+      createdAt,
       currencyCode: "",
       startingBalance: 0,
     },
@@ -104,6 +110,21 @@ function RouteComponent() {
             </select>
           )}
         </form.Field>
+        <form.Field name="createdAt">
+          {(field) => (
+            <input
+              type="datetime-local"
+              className="w-full"
+              placeholder="Date/Time"
+              name={field.name}
+              value={dayjs(field.state.value).format("YYYY-MM-DDTHH:mm")}
+              onBlur={field.handleBlur}
+              onChange={(e) =>
+                field.handleChange(dayjs(e.target.value).toDate())
+              }
+            />
+          )}
+        </form.Field>
         <form.Field name="currencyCode">
           {(field) => (
             <select
@@ -160,6 +181,9 @@ function RouteComponent() {
                 </div>
                 <div className="d-badge d-badge-sm d-badge-neutral">
                   {account.currencyCode} {account.startingBalance}
+                </div>
+                <div className="d-badge d-badge-sm d-badge-ghost">
+                  {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
                 </div>
               </div>
             </div>

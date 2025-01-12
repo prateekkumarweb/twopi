@@ -40,6 +40,9 @@ function RouteComponent() {
     },
   });
 
+  const timestamp = new Date();
+  timestamp.setMilliseconds(0);
+  timestamp.setSeconds(0);
   const form = useForm({
     defaultValues: {
       name: "",
@@ -53,7 +56,7 @@ function RouteComponent() {
           currencyAmount: 0,
         },
       ],
-      timestamp: new Date(),
+      timestamp,
     },
     onSubmit({ value }) {
       mutation.mutate(value);

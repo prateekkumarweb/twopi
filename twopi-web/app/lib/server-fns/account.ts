@@ -10,6 +10,7 @@ const createAccountValidator = z.object({
   accountType: z.nativeEnum(AccountType),
   currencyCode: z.string(),
   startingBalance: z.number().default(0),
+  createdAt: z.date().optional(),
 });
 
 export const createAccount = createServerFn({ method: "POST" })
