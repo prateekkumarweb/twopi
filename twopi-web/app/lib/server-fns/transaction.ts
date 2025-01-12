@@ -16,6 +16,7 @@ const createTransactionValidtor = z.object({
       currencyAmount: z.number(),
     }),
   ),
+  timestamp: z.date().optional(),
 });
 
 export const createTransaction = createServerFn({ method: "POST" })
@@ -37,6 +38,7 @@ export const createTransaction = createServerFn({ method: "POST" })
         transactions: {
           create: data.transactions,
         },
+        timestamp: data.timestamp,
       },
     });
     return { success: true, value };

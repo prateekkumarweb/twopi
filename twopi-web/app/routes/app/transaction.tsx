@@ -1,6 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import dayjs from "dayjs";
 import { Trash } from "lucide-react";
 import {
   accountQueryOptions,
@@ -52,6 +53,7 @@ function RouteComponent() {
           currencyAmount: 0,
         },
       ],
+      timestamp: new Date(),
     },
     onSubmit({ value }) {
       mutation.mutate(value);
@@ -125,6 +127,21 @@ function RouteComponent() {
                 </option>
               ))}
             </select>
+          )}
+        </form.Field>
+        <form.Field name="timestamp">
+          {(field) => (
+            <input
+              type="datetime-local"
+              className="w-full"
+              placeholder="Date/Time"
+              name={field.name}
+              value={dayjs(field.state.value).format("YYYY-MM-DDTHH:mm")}
+              onBlur={field.handleBlur}
+              onChange={(e) =>
+                field.handleChange(dayjs(e.target.value).toDate())
+              }
+            />
           )}
         </form.Field>
         <form.Field name="transactions" mode="array">
@@ -269,15 +286,20 @@ function RouteComponent() {
         {data.transactions?.map((transaction) => (
           <div className="d-card bg-base-100 shadow-sm" key={transaction.id}>
             <div className="d-card-body">
-              <h2 className="d-card-title">{transaction.name}</h2>
               <div className="flex gap-2">
-                <div className="d-badge d-badge-sm d-badge-info">
-                  {transaction.categoryName}
+                <h2 className="d-card-title grow">{transaction.name}</h2>
+                <div className="flex gap-2">
+                  <div className="d-badge d-badge-sm d-badge-info">
+                    {transaction.categoryName}
+                  </div>
+                  <div className="d-badge d-badge-sm d-badge-ghost">
+                    {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
+                  </div>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 {transaction.transactions.map((item) => (
-                  <div key={item.id} className="flex w-full p-4 shadow-sm">
+                  <div key={item.id} className="flex w-full">
                     <div className="grow">{item.name}</div>
                     <div className="d-badge d-badge-sm d-badge-neutral">
                       {item.account.currencyCode} {item.amount}

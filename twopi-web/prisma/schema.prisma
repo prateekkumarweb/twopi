@@ -29,7 +29,7 @@ enum AccountType {
 }
 
 model Account {
-  id              String            @id @default(uuid())
+  id              String            @id @default(ulid())
   name            String
   accountType     AccountType
   currency        Currency          @relation(fields: [currencyCode], references: [code])
@@ -47,7 +47,7 @@ model Category {
 }
 
 model Transaction {
-  id           String            @id @default(uuid())
+  id           String            @id @default(ulid())
   name         String
   category     Category          @relation(fields: [categoryName], references: [name])
   categoryName String
@@ -56,7 +56,7 @@ model Transaction {
 }
 
 model TransactionItem {
-  id             String      @id @default(uuid())
+  id             String      @id @default(ulid())
   name           String
   transaction    Transaction @relation(fields: [transactionId], references: [id])
   transactionId  String
