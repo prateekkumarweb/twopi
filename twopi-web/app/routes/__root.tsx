@@ -40,8 +40,15 @@ export const Route = createRootRoute({
       {
         title: "TwoPi",
       },
+      {
+        name: "theme-color",
+        content: "#123456",
+      },
     ],
-    links: [{ rel: "stylesheet", href: css }],
+    links: [
+      { rel: "icon", href: "/2pi.svg" },
+      { rel: "stylesheet", href: css },
+    ],
   }),
   beforeLoad: async () => {
     const { session } = await fetchAuth();
