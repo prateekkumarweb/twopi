@@ -1,9 +1,9 @@
+import { AccountType } from "@prisma/client";
 import { createServerFn } from "@tanstack/start";
+import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "../server/auth";
-import { getWebRequest } from "vinxi/http";
 import { getDbClient } from "../server/db";
-import { AccountType } from "@prisma/client";
 
 const createAccountValidator = z.object({
   name: z.string(),

@@ -1,8 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { User } from "better-auth";
-import util from "node:util";
+import { type User } from "better-auth";
 import { exec } from "node:child_process";
 import { existsSync } from "node:fs";
+import util from "node:util";
 
 const execAsync = util.promisify(exec);
 

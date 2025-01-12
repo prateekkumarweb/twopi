@@ -1,14 +1,14 @@
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
+  createRootRoute,
   Outlet,
   ScrollRestoration,
-  createRootRoute,
 } from "@tanstack/react-router";
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import { lazy, Suspense, type ReactNode } from "react";
-import { auth } from "~/lib/server/auth";
 import { getWebRequest } from "vinxi/http";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import Layout from "~/components/Layout";
+import { auth } from "~/lib/server/auth";
 import css from "../app.css?url";
 
 const TanStackRouterDevtools =

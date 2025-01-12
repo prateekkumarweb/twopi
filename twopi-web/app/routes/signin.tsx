@@ -1,9 +1,9 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { authClient } from "~/lib/auth-client";
-import { useState } from "react";
-import { zodValidator } from "@tanstack/zod-adapter";
-import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { useState } from "react";
+import { z } from "zod";
+import { authClient } from "~/lib/auth-client";
 
 const signinSearchParamsSchema = z.object({
   redirect: z.string().optional(),

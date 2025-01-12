@@ -4,8 +4,8 @@ import {
   rootRouteId,
   useMatch,
   useRouter,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
-import type { ErrorComponentProps } from "@tanstack/react-router";
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   const router = useRouter();

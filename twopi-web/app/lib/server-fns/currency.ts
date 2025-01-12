@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/start";
+import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "../server/auth";
-import { getWebRequest } from "vinxi/http";
 import { getDbClient } from "../server/db";
 
 export const createCurrencyValidator = z.object({

@@ -1,11 +1,11 @@
-import globals from "globals";
 import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
+import pluginQuery from "@tanstack/eslint-plugin-query";
+import eslintConfigPrettier from "eslint-config-prettier";
 import pluginReact from "eslint-plugin-react";
 import reactCompiler from "eslint-plugin-react-compiler";
 import pluginReactHooks from "eslint-plugin-react-hooks";
-import pluginQuery from "@tanstack/eslint-plugin-query";
-import eslintConfigPrettier from "eslint-config-prettier";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -32,6 +32,7 @@ export default [
   {
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/consistent-type-imports": "error",
     },
   },
   eslintConfigPrettier,

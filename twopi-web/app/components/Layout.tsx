@@ -1,8 +1,8 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { User } from "better-auth";
+import { type User } from "better-auth";
+import { Menu } from "lucide-react";
 import { type ReactNode } from "react";
 import { authClient } from "~/lib/auth-client";
-import { Menu } from "lucide-react";
 
 export default function Layout(props: { user?: User; children: ReactNode }) {
   const router = useRouter();
