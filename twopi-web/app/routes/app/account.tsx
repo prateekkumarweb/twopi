@@ -57,10 +57,8 @@ function RouteComponent() {
           form.handleSubmit();
         }}
       >
-        <form.Field
-          name="name"
-          // eslint-disable-next-line react/no-children-prop
-          children={(field) => (
+        <form.Field name="name">
+          {(field) => (
             <input
               type="text"
               className="w-full"
@@ -71,11 +69,9 @@ function RouteComponent() {
               onChange={(e) => field.handleChange(e.target.value)}
             />
           )}
-        />
-        <form.Field
-          name="accountType"
-          // eslint-disable-next-line react/no-children-prop
-          children={(field) => (
+        </form.Field>
+        <form.Field name="accountType">
+          {(field) => (
             <select
               className="w-full"
               name={field.name}
@@ -93,11 +89,9 @@ function RouteComponent() {
               ))}
             </select>
           )}
-        />
-        <form.Field
-          name="currencyCode"
-          // eslint-disable-next-line react/no-children-prop
-          children={(field) => (
+        </form.Field>
+        <form.Field name="currencyCode">
+          {(field) => (
             <select
               className="select w-full"
               name={field.name}
@@ -115,11 +109,9 @@ function RouteComponent() {
               ))}
             </select>
           )}
-        />
-        <form.Field
-          name="startingBalance"
-          // eslint-disable-next-line react/no-children-prop
-          children={(field) => (
+        </form.Field>
+        <form.Field name="startingBalance">
+          {(field) => (
             <input
               type="text"
               className="w-full"
@@ -130,7 +122,7 @@ function RouteComponent() {
               onChange={(e) => field.handleChange(Number(e.target.value))}
             />
           )}
-        />
+        </form.Field>
         <button
           type="submit"
           className="d-btn d-btn-primary"

@@ -79,10 +79,8 @@ function RouteComponent() {
             signInForm.handleSubmit();
           }}
         >
-          <signInForm.Field
-            name="email"
-            // eslint-disable-next-line react/no-children-prop
-            children={(field) => (
+          <signInForm.Field name="email">
+            {(field) => (
               <input
                 type="email"
                 placeholder="Email"
@@ -92,11 +90,9 @@ function RouteComponent() {
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             )}
-          />
-          <signInForm.Field
-            name="password"
-            // eslint-disable-next-line react/no-children-prop
-            children={(field) => (
+          </signInForm.Field>
+          <signInForm.Field name="password">
+            {(field) => (
               <input
                 type="password"
                 placeholder="Password"
@@ -106,7 +102,7 @@ function RouteComponent() {
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             )}
-          />
+          </signInForm.Field>
           <div className="text-red-600">{signInError}</div>
           <button type="submit" className="d-btn d-btn-primary">
             Sign in
@@ -123,10 +119,8 @@ function RouteComponent() {
             signUpForm.handleSubmit();
           }}
         >
-          <signUpForm.Field
-            name="name"
-            // eslint-disable-next-line react/no-children-prop
-            children={(field) => (
+          <signUpForm.Field name="name">
+            {(field) => (
               <input
                 type="text"
                 placeholder="Name"
@@ -136,11 +130,9 @@ function RouteComponent() {
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             )}
-          />
-          <signUpForm.Field
-            name="email"
-            // eslint-disable-next-line react/no-children-prop
-            children={(field) => (
+          </signUpForm.Field>
+          <signUpForm.Field name="email">
+            {(field) => (
               <input
                 type="email"
                 placeholder="Email"
@@ -150,11 +142,9 @@ function RouteComponent() {
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             )}
-          />
-          <signUpForm.Field
-            name="password"
-            // eslint-disable-next-line react/no-children-prop
-            children={(field) => (
+          </signUpForm.Field>
+          <signUpForm.Field name="password">
+            {(field) => (
               <input
                 type="password"
                 placeholder="Password"
@@ -164,7 +154,7 @@ function RouteComponent() {
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             )}
-          />
+          </signUpForm.Field>
           <div className="text-red-600">{signUpError}</div>
           <button type="submit" className="d-btn d-btn-primary">
             Sign up

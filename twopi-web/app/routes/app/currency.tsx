@@ -79,10 +79,8 @@ function RouteComponent() {
           <tbody>
             <tr>
               <td>
-                <form.Field
-                  name="code"
-                  // eslint-disable-next-line react/no-children-prop
-                  children={(field) => (
+                <form.Field name="code">
+                  {(field) => (
                     <input
                       type="text"
                       className="w-full"
@@ -93,13 +91,11 @@ function RouteComponent() {
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
                   )}
-                />
+                </form.Field>
               </td>
               <td>
-                <form.Field
-                  name="name"
-                  // eslint-disable-next-line react/no-children-prop
-                  children={(field) => (
+                <form.Field name="name">
+                  {(field) => (
                     <input
                       type="text"
                       className="w-full"
@@ -110,13 +106,11 @@ function RouteComponent() {
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
                   )}
-                />
+                </form.Field>
               </td>
               <td>
-                <form.Field
-                  name="base"
-                  // eslint-disable-next-line react/no-children-prop
-                  children={(field) => (
+                <form.Field name="base">
+                  {(field) => (
                     <input
                       type="number"
                       className="w-full"
@@ -129,7 +123,7 @@ function RouteComponent() {
                       }
                     />
                   )}
-                />
+                </form.Field>
               </td>
               <td>
                 <button type="submit" className="d-btn d-btn-primary">
