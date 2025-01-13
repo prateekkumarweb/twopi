@@ -21,3 +21,10 @@ $ pnpm run dev
 $ pnpm run build
 $ pnpm run start
 ```
+
+Running `currency-cache`:
+
+```sh
+$ cd currency-cache
+$ CURRENCY_DATA=data CURRENCY_API_KEY=abcxyz RUST_LOG=debug cargo run --release
+```
