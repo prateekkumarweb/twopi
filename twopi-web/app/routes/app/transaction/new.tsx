@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Trash } from "lucide-react";
 import {
@@ -12,7 +12,7 @@ import {
 import { createTransaction } from "~/lib/server-fns/transaction";
 import { isDefined } from "~/lib/utils";
 
-export const Route = createFileRoute("/app/transaction")({
+export const Route = createFileRoute("/app/transaction/new")({
   component: RouteComponent,
 });
 
@@ -24,7 +24,6 @@ function RouteComponent() {
       categoryQueryOptions(),
       currencyQueryOptions(),
       accountQueryOptions(),
-      transactionQueryOptions(),
     ],
     combine: (results) => {
       return {
@@ -32,7 +31,6 @@ function RouteComponent() {
           categories: results[0].data?.categories,
           currencies: results[1].data?.currencies,
           accounts: results[2].data?.accounts,
-          transactions: results[3].data?.transactions,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
@@ -88,9 +86,14 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h2 className="my-4 text-xl font-bold">Transaction</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="my-2 grow text-xl font-bold">New Transaction</h2>
+        <Link to=".." className="d-btn d-btn-sm d-btn-secondary">
+          Back
+        </Link>
+      </div>
       <form
-        className="flex flex-col gap-4"
+        className="my-2 flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -247,35 +250,6 @@ function RouteComponent() {
           )}
         </form.Subscribe>
       </form>
-      <div className="mt-4 flex flex-col gap-4">
-        {data.transactions?.map((transaction) => (
-          <div className="d-card bg-base-100 shadow-sm" key={transaction.id}>
-            <div className="d-card-body">
-              <div className="flex gap-2">
-                <h2 className="d-card-title grow">{transaction.name}</h2>
-                <div className="flex gap-2">
-                  <div className="d-badge d-badge-sm d-badge-ghost">
-                    {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                {transaction.transactions.map((item) => (
-                  <div key={item.id} className="flex w-full gap-2">
-                    <div className="grow">{item.notes}</div>
-                    <div className="d-badge d-badge-sm d-badge-neutral">
-                      {item.account.currency.symbol} {item.amount}
-                    </div>
-                    <div className="d-badge d-badge-sm d-badge-info">
-                      {item.categoryName}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

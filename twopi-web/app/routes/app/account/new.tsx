@@ -1,25 +1,25 @@
 import { AccountType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
 
-export const Route = createFileRoute("/app/account")({
+export const Route = createFileRoute("/app/account/new")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { isPending, errors, data } = useQueries({
-    queries: [currencyQueryOptions(), accountQueryOptions()],
+    queries: [currencyQueryOptions()],
     combine: (results) => {
       return {
         data: {
           currencies: results[0].data?.currencies,
-          accounts: results[1].data?.accounts,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
@@ -40,6 +40,9 @@ function RouteComponent() {
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
+      navigate({
+        to: "..",
+      });
     },
   });
   const mutation = useMutation({
@@ -68,9 +71,14 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h2 className="my-4 text-xl font-bold">Account</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="my-2 grow text-xl font-bold">New Account</h2>
+        <Link to=".." className="d-btn d-btn-sm d-btn-secondary">
+          Back
+        </Link>
+      </div>
       <form
-        className="flex flex-col gap-4"
+        className="my-2 flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -170,24 +178,6 @@ function RouteComponent() {
           <p className="text-error">{mutation.error?.message}</p>
         )}
       </form>
-      <div className="mt-4 flex flex-col gap-4">
-        {data.accounts?.map((account) => (
-          <div className="d-card bg-base-100 shadow-sm" key={account.id}>
-            <div className="d-card-body flex flex-row gap-2">
-              <h2 className="d-card-title grow">{account.name}</h2>
-              <div className="d-badge d-badge-sm d-badge-info">
-                {account.accountType}
-              </div>
-              <div className="d-badge d-badge-sm d-badge-neutral">
-                {account.currency.symbol} {account.startingBalance}
-              </div>
-              <div className="d-badge d-badge-sm d-badge-ghost">
-                {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
