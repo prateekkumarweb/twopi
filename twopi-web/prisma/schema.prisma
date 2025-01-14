@@ -12,12 +12,11 @@ datasource db {
 }
 
 model Currency {
-  code            String            @id
-  name            String
-  symbol          String
-  base            Int
-  Account         Account[]
-  TransactionItem TransactionItem[]
+  code    String    @id
+  name    String
+  symbol  String
+  base    Int
+  Account Account[]
 }
 
 enum AccountType {
@@ -42,29 +41,27 @@ model Account {
 }
 
 model Category {
-  name        String        @id
-  group       String?
-  Transaction Transaction[]
+  name            String            @id
+  icon            String?
+  group           String?
+  TransactionItem TransactionItem[]
 }
 
 model Transaction {
   id           String            @id @default(ulid())
   name         String
-  category     Category          @relation(fields: [categoryName], references: [name])
-  categoryName String
   timestamp    DateTime          @default(now())
   transactions TransactionItem[]
 }
 
 model TransactionItem {
-  id             String      @id @default(ulid())
-  name           String
-  transaction    Transaction @relation(fields: [transactionId], references: [id])
-  transactionId  String
-  account        Account     @relation(fields: [accountId], references: [id])
-  accountId      String
-  amount         Int
-  currency       Currency    @relation(fields: [currencyCode], references: [code])
-  currencyCode   String
-  currencyAmount Int
+  id            String      @id @default(ulid())
+  notes         String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
+  account       Account     @relation(fields: [accountId], references: [id])
+  accountId     String
+  amount        Int
+  category      Category    @relation(fields: [categoryName], references: [name])
+  categoryName  String
 }

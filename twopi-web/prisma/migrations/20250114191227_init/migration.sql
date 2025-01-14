@@ -21,6 +21,7 @@ CREATE TABLE "Account" (
 -- CreateTable
 CREATE TABLE "Category" (
     "name" TEXT NOT NULL PRIMARY KEY,
+    "icon" TEXT,
     "group" TEXT
 );
 
@@ -28,21 +29,18 @@ CREATE TABLE "Category" (
 CREATE TABLE "Transaction" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "categoryName" TEXT NOT NULL,
-    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Transaction_categoryName_fkey" FOREIGN KEY ("categoryName") REFERENCES "Category" ("name") ON DELETE RESTRICT ON UPDATE CASCADE
+    "timestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "TransactionItem" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
+    "notes" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
-    "currencyCode" TEXT NOT NULL,
-    "currencyAmount" INTEGER NOT NULL,
+    "categoryName" TEXT NOT NULL,
     CONSTRAINT "TransactionItem_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "TransactionItem_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "TransactionItem_currencyCode_fkey" FOREIGN KEY ("currencyCode") REFERENCES "Currency" ("code") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "TransactionItem_categoryName_fkey" FOREIGN KEY ("categoryName") REFERENCES "Category" ("name") ON DELETE RESTRICT ON UPDATE CASCADE
 );

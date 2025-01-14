@@ -173,18 +173,16 @@ function RouteComponent() {
       <div className="mt-4 flex flex-col gap-4">
         {data.accounts?.map((account) => (
           <div className="d-card bg-base-100 shadow-sm" key={account.id}>
-            <div className="d-card-body">
-              <h2 className="d-card-title">{account.name}</h2>
-              <div className="flex gap-2">
-                <div className="d-badge d-badge-sm d-badge-info">
-                  {account.accountType}
-                </div>
-                <div className="d-badge d-badge-sm d-badge-neutral">
-                  {account.currency.symbol} {account.startingBalance}
-                </div>
-                <div className="d-badge d-badge-sm d-badge-ghost">
-                  {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
-                </div>
+            <div className="d-card-body flex flex-row gap-2">
+              <h2 className="d-card-title grow">{account.name}</h2>
+              <div className="d-badge d-badge-sm d-badge-info">
+                {account.accountType}
+              </div>
+              <div className="d-badge d-badge-sm d-badge-neutral">
+                {account.currency.symbol} {account.startingBalance}
+              </div>
+              <div className="d-badge d-badge-sm d-badge-ghost">
+                {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
               </div>
             </div>
           </div>

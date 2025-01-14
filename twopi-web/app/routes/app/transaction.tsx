@@ -46,14 +46,12 @@ function RouteComponent() {
   const form = useForm({
     defaultValues: {
       name: "",
-      categoryName: "",
       transactions: [
         {
-          name: "",
+          notes: "",
           accountId: "",
           amount: 0,
-          currencyCode: "",
-          currencyAmount: 0,
+          categoryName: "",
         },
       ],
       timestamp,
@@ -112,26 +110,6 @@ function RouteComponent() {
             />
           )}
         </form.Field>
-        <form.Field name="categoryName">
-          {(field) => (
-            <select
-              className="select w-full"
-              name={field.name}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-            >
-              <option disabled value="">
-                Select category
-              </option>
-              {data.categories?.map((category) => (
-                <option key={category.name} value={category.name}>
-                  {category.group} - {category.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </form.Field>
         <form.Field name="timestamp">
           {(field) => (
             <input
@@ -154,7 +132,7 @@ function RouteComponent() {
               {field.state.value.map((_, i) => (
                 <div className="flex gap-2" key={i}>
                   <div className="flex grow flex-col gap-2">
-                    <form.Field name={`transactions[${i}].name`}>
+                    <form.Field name={`transactions[${i}].notes`}>
                       {(subField) => (
                         <input
                           type="text"
@@ -206,7 +184,7 @@ function RouteComponent() {
                         />
                       )}
                     </form.Field>
-                    <form.Field name={`transactions[${i}].currencyCode`}>
+                    <form.Field name={`transactions[${i}].categoryName`}>
                       {(subField) => (
                         <select
                           className="select w-full"
@@ -218,29 +196,14 @@ function RouteComponent() {
                           }
                         >
                           <option disabled value="">
-                            Select currency
+                            Select category
                           </option>
-                          {data.currencies?.map((currency) => (
-                            <option key={currency.code} value={currency.code}>
-                              {currency.code} - {currency.name}
+                          {data.categories?.map((category) => (
+                            <option key={category.name} value={category.name}>
+                              {category.group} - {category.name}
                             </option>
                           ))}
                         </select>
-                      )}
-                    </form.Field>
-                    <form.Field name={`transactions[${i}].currencyAmount`}>
-                      {(subField) => (
-                        <input
-                          type="number"
-                          className="w-full"
-                          placeholder="Currency amount"
-                          name={subField.name}
-                          value={subField.state.value}
-                          onBlur={subField.handleBlur}
-                          onChange={(e) =>
-                            subField.handleChange(Number(e.target.value))
-                          }
-                        />
                       )}
                     </form.Field>
                   </div>
@@ -258,11 +221,10 @@ function RouteComponent() {
                 className="d-btn d-btn-secondary mt-2"
                 onClick={() =>
                   field.pushValue({
-                    name: "",
+                    notes: "",
                     accountId: "",
                     amount: 0,
-                    currencyCode: "",
-                    currencyAmount: 0,
+                    categoryName: "",
                   })
                 }
               >
@@ -292,9 +254,6 @@ function RouteComponent() {
               <div className="flex gap-2">
                 <h2 className="d-card-title grow">{transaction.name}</h2>
                 <div className="flex gap-2">
-                  <div className="d-badge d-badge-sm d-badge-info">
-                    {transaction.categoryName}
-                  </div>
                   <div className="d-badge d-badge-sm d-badge-ghost">
                     {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
                   </div>
@@ -302,10 +261,13 @@ function RouteComponent() {
               </div>
               <div className="flex flex-col gap-2">
                 {transaction.transactions.map((item) => (
-                  <div key={item.id} className="flex w-full">
-                    <div className="grow">{item.name}</div>
+                  <div key={item.id} className="flex w-full gap-2">
+                    <div className="grow">{item.notes}</div>
                     <div className="d-badge d-badge-sm d-badge-neutral">
                       {item.account.currency.symbol} {item.amount}
+                    </div>
+                    <div className="d-badge d-badge-sm d-badge-info">
+                      {item.categoryName}
                     </div>
                   </div>
                 ))}

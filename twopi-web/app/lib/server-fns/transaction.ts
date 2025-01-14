@@ -6,14 +6,12 @@ import { getDbClient } from "../server/db";
 
 const createTransactionValidtor = z.object({
   name: z.string(),
-  categoryName: z.string(),
   transactions: z.array(
     z.object({
-      name: z.string(),
+      notes: z.string(),
       accountId: z.string(),
       amount: z.number(),
-      currencyCode: z.string(),
-      currencyAmount: z.number(),
+      categoryName: z.string(),
     }),
   ),
   timestamp: z.date().optional(),
@@ -34,7 +32,6 @@ export const createTransaction = createServerFn({ method: "POST" })
     const value = await db.transaction.create({
       data: {
         name: data.name,
-        categoryName: data.categoryName,
         transactions: {
           create: data.transactions,
         },
@@ -63,9 +60,9 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
                   currency: true,
                 },
               },
+              category: true,
             },
           },
-          category: true,
         },
       }),
     };
