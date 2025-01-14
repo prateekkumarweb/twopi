@@ -1,6 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { Trash } from "lucide-react";
 import {
@@ -17,8 +17,8 @@ export const Route = createFileRoute("/app/transaction/new")({
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-
   const { isPending, errors, data } = useQueries({
     queries: [
       categoryQueryOptions(),
@@ -56,6 +56,9 @@ function RouteComponent() {
     },
     onSubmit({ value }) {
       mutation.mutate(value);
+      navigate({
+        to: "..",
+      });
     },
   });
   const mutation = useMutation({

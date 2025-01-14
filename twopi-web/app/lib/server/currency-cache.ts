@@ -19,3 +19,14 @@ export async function getCurrenciesCache() {
   const data = (await response.json()).data as CurrenciesResponse;
   return data;
 }
+
+export async function getCurrenciesLatestCache() {
+  const response = await fetch(`${currencyCacheUrl}/latest`);
+  const data = (await response.json()).data as {
+    [key: string]: {
+      code: string;
+      value: number;
+    };
+  };
+  return data;
+}

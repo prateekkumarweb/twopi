@@ -1,7 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { getAccounts } from "./server-fns/account";
 import { getCategories } from "./server-fns/category";
-import { getCurrencies } from "./server-fns/currency";
+import { getCurrencies, getCurrencyExchangeRates } from "./server-fns/currency";
 import { getTransactions } from "./server-fns/transaction";
 
 export function currencyQueryOptions() {
@@ -9,6 +9,15 @@ export function currencyQueryOptions() {
     queryKey: ["currency"],
     queryFn: async () => {
       return await getCurrencies();
+    },
+  });
+}
+
+export function currencyRatesQueryOptions() {
+  return queryOptions({
+    queryKey: ["currencyRates"],
+    queryFn: async () => {
+      return await getCurrencyExchangeRates();
     },
   });
 }

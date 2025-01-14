@@ -2,7 +2,10 @@ import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "../server/auth";
-import { getCurrenciesCache } from "../server/currency-cache";
+import {
+  getCurrenciesCache,
+  getCurrenciesLatestCache,
+} from "../server/currency-cache";
 import { getDbClient } from "../server/db";
 
 const createCurrencyValidator = z.object({
@@ -85,3 +88,15 @@ export const syncCurrencies = createServerFn({ method: "POST" }).handler(
     }
   },
 );
+
+export const getCurrencyExchangeRates = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const session = await auth.api.getSession({
+    headers: getWebRequest().headers,
+  });
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+  return await getCurrenciesLatestCache();
+});
