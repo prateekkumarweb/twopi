@@ -49,6 +49,13 @@ function RouteComponent() {
       account.startingBalance /
       (data.currencyRates?.[account.currencyCode].value ?? 1);
   });
+  data.transactions?.forEach((transaction) => {
+    transaction.transactions.forEach((t) => {
+      wealth +=
+        t.amount / (data.currencyRates?.[t.account.currencyCode].value ?? 1);
+      console.log(wealth);
+    });
+  });
   const wealthInUSD = wealth;
   const wealthInINR = wealth * (data.currencyRates?.INR.value ?? 1);
   const wealthInEUR = wealth * (data.currencyRates?.EUR.value ?? 1);
