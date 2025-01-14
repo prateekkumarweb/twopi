@@ -26,10 +26,6 @@ impl CacheManager {
     pub async fn latest(&mut self) -> anyhow::Result<Value> {
         let timestamp = Self::get_nearest_date(&Timestamp::now().to_string())?;
         let date = &timestamp.to_string()[..10];
-        let json = self.historical.get(date);
-        if let Some(json) = json {
-            return Ok(json.clone());
-        }
         self.historical(date).await
     }
 

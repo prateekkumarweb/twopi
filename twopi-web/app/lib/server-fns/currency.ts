@@ -2,11 +2,13 @@ import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { auth } from "../server/auth";
+import { getCurrenciesCache } from "../server/currency-cache";
 import { getDbClient } from "../server/db";
 
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
   name: z.string().min(1).max(100),
+  symbol: z.string().min(1).max(10),
   base: z.number().min(1),
 });
 
@@ -52,5 +54,34 @@ export const getCurrencies = createServerFn({ method: "GET" }).handler(
     }
     const db = await getDbClient(session?.user);
     return { currencies: await db.currency.findMany() };
+  },
+);
+
+export const syncCurrencies = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    const currencies = Object.values(await getCurrenciesCache());
+    for (const currency of currencies) {
+      if (currency.type !== "fiat") {
+        continue;
+      }
+      const currencyObj = {
+        name: currency.name,
+        code: currency.code,
+        base: Math.pow(10, currency.decimal_digits),
+        symbol: currency.code === "INR" ? "₹" : currency.symbol,
+      };
+      await db.currency.upsert({
+        where: { code: currency.code },
+        create: currencyObj,
+        update: currencyObj,
+      });
+    }
   },
 );

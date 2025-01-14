@@ -58,7 +58,11 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
         include: {
           transactions: {
             include: {
-              account: true,
+              account: {
+                include: {
+                  currency: true,
+                },
+              },
             },
           },
           category: true,

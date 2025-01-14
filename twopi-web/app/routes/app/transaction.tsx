@@ -305,7 +305,7 @@ function RouteComponent() {
                   <div key={item.id} className="flex w-full">
                     <div className="grow">{item.name}</div>
                     <div className="d-badge d-badge-sm d-badge-neutral">
-                      {item.account.currencyCode} {item.amount}
+                      {item.account.currency.symbol} {item.amount}
                     </div>
                   </div>
                 ))}

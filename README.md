@@ -10,6 +10,7 @@ BETTER_AUTH_SECRET=<auth_secret>
 TURSO_AUTH_DATABASE_URL=libsql://localhost:8080?tls=0
 TURSO_AUTH_TOKEN=<secret_token>
 DATABASE_ABS_PATH=/tmp/database
+CURRENCY_CACHE_URL=http://localhost:4670
 ```
 
 ```sh

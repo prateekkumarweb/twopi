@@ -3,7 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Save, Trash } from "lucide-react";
 import { currencyQueryOptions } from "~/lib/query-options";
-import { createCurrency, deleteCurrency } from "~/lib/server-fns/currency";
+import {
+  createCurrency,
+  deleteCurrency,
+  syncCurrencies,
+} from "~/lib/server-fns/currency";
 
 export const Route = createFileRoute("/app/currency")({
   component: RouteComponent,
@@ -14,6 +18,7 @@ function RouteComponent() {
     defaultValues: {
       code: "",
       name: "",
+      symbol: "",
       base: 100,
     },
     onSubmit: ({ value }) => {
@@ -70,6 +75,7 @@ function RouteComponent() {
             <tr>
               <th>Code</th>
               <th>Name</th>
+              <th>Symbol</th>
               <th>Base</th>
               <th>Actions</th>
             </tr>
@@ -107,6 +113,21 @@ function RouteComponent() {
                 </form.Field>
               </td>
               <td>
+                <form.Field name="symbol">
+                  {(field) => (
+                    <input
+                      type="number"
+                      className="w-full"
+                      placeholder="Base"
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  )}
+                </form.Field>
+              </td>
+              <td>
                 <form.Field name="base">
                   {(field) => (
                     <input
@@ -134,6 +155,7 @@ function RouteComponent() {
                   <tr key={currency.code}>
                     <td>{currency.code}</td>
                     <td>{currency.name}</td>
+                    <td>{currency.symbol}</td>
                     <td>{currency.base}</td>
                     <td>
                       <button
@@ -152,6 +174,17 @@ function RouteComponent() {
           </tbody>
         </table>
       </form>
+      <button
+        className="d-btn d-btn-accent"
+        onClick={async () => {
+          await syncCurrencies();
+          await queryClient.invalidateQueries({
+            queryKey: currencyQueryOptions().queryKey,
+          });
+        }}
+      >
+        Sync currencies
+      </button>
     </div>
   );
 }

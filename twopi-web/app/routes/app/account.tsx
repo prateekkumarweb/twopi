@@ -180,7 +180,7 @@ function RouteComponent() {
                   {account.accountType}
                 </div>
                 <div className="d-badge d-badge-sm d-badge-neutral">
-                  {account.currencyCode} {account.startingBalance}
+                  {account.currency.symbol} {account.startingBalance}
                 </div>
                 <div className="d-badge d-badge-sm d-badge-ghost">
                   {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}

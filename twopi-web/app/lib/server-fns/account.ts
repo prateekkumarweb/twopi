@@ -36,6 +36,12 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(
       throw new Error("Unauthorized");
     }
     const db = await getDbClient(session?.user);
-    return { accounts: await db.account.findMany() };
+    return {
+      accounts: await db.account.findMany({
+        include: {
+          currency: true,
+        },
+      }),
+    };
   },
 );
