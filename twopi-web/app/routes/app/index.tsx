@@ -1,5 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   accountQueryOptions,
   currencyRatesQueryOptions,
@@ -53,7 +54,6 @@ function RouteComponent() {
     transaction.transactions.forEach((t) => {
       wealth +=
         t.amount / (data.currencyRates?.[t.account.currencyCode].value ?? 1);
-      console.log(wealth);
     });
   });
   const wealthInUSD = wealth;
@@ -63,11 +63,58 @@ function RouteComponent() {
   const wealthInJPY = wealth * (data.currencyRates?.JPY.value ?? 1);
   const wealthInAED = wealth * (data.currencyRates?.AED.value ?? 1);
 
+  const today = new Date();
+  const month = today.getUTCMonth();
+  const year = today.getUTCFullYear();
+  const daysInMonth = [];
+  daysInMonth.push();
+  const date = new Date(Date.UTC(year, month, 1));
+  while (date.getUTCMonth() === month) {
+    daysInMonth.push(new Date(date));
+    date.setDate(date.getUTCDate() + 1);
+  }
+  let cummulative = 0;
+  const chartData = daysInMonth.map((d) => {
+    const dateStart = d.getTime();
+    const dateEnd = dateStart + 24 * 60 * 60 * 1000;
+    let wealth = 0;
+    data.accounts
+      ?.filter(
+        (account) =>
+          dateStart <= account.createdAt.getTime() &&
+          account.createdAt.getTime() < dateEnd,
+      )
+      .forEach((account) => {
+        wealth +=
+          account.startingBalance /
+          (data.currencyRates?.[account.currencyCode].value ?? 1);
+      });
+    data.transactions
+      ?.filter(
+        (transaction) =>
+          dateStart <= transaction.timestamp.getTime() &&
+          transaction.timestamp.getTime() < dateEnd,
+      )
+      .forEach((transaction) => {
+        transaction.transactions.forEach((t) => {
+          wealth +=
+            t.amount /
+            (data.currencyRates?.[t.account.currencyCode].value ?? 1);
+        });
+      });
+    cummulative += wealth;
+    return {
+      date: `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`,
+      todaysWealth: wealth,
+      wealth: cummulative,
+    };
+  });
+
   return (
     <div className="d-card bg-base-100 shadow-sm">
       <div className="d-card-body">
         <h2 className="d-card-title">Total wealth</h2>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           <div className="bg-base-200 p-4 text-3xl shadow-sm">
             {new Intl.NumberFormat("en", {
               style: "currency",
@@ -104,6 +151,15 @@ function RouteComponent() {
               currency: "AED",
             }).format(wealthInAED)}
           </div>
+        </div>
+        <div className="m-4 flex flex-col items-center gap-4">
+          <h2 className="text-center text-lg font-bold">Wealth chart (USD)</h2>
+          <LineChart width={600} height={300} data={chartData}>
+            <Line type="monotone" dataKey="wealth" stroke="#8884d8" />
+            <CartesianGrid stroke="#ccc" />
+            <XAxis dataKey="date" />
+            <YAxis />
+          </LineChart>
         </div>
       </div>
     </div>

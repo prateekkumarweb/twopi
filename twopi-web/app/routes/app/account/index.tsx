@@ -45,15 +45,17 @@ function RouteComponent() {
       <div className="my-2 flex flex-col gap-4">
         {data.accounts?.map((account) => (
           <div className="d-card bg-base-100 shadow-sm" key={account.id}>
-            <div className="d-card-body flex flex-row gap-2">
-              <h2 className="d-card-title grow">{account.name}</h2>
+            <div className="d-card-body flex flex-row flex-wrap gap-2">
+              <h2 className="d-card-title grow text-ellipsis text-nowrap">
+                {account.name}
+              </h2>
               <div className="d-badge d-badge-sm d-badge-info">
                 {account.accountType}
               </div>
               <div className="d-badge d-badge-sm d-badge-neutral">
                 {account.currency.symbol} {account.startingBalance}
               </div>
-              <div className="d-badge d-badge-sm d-badge-ghost">
+              <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
                 {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
               </div>
             </div>

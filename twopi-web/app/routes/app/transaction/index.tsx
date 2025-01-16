@@ -50,9 +50,11 @@ function RouteComponent() {
           <div className="d-card bg-base-100 shadow-sm" key={transaction.id}>
             <div className="d-card-body">
               <div className="flex gap-2">
-                <h2 className="d-card-title grow">{transaction.name}</h2>
+                <h2 className="d-card-title grow text-ellipsis text-nowrap">
+                  {transaction.name}
+                </h2>
                 <div className="flex gap-2">
-                  <div className="d-badge d-badge-sm d-badge-ghost">
+                  <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
                     {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
                   </div>
                 </div>
