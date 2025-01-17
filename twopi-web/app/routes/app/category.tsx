@@ -93,27 +93,27 @@ function RouteComponent() {
       </form>
       <div className="mt-4 flex flex-col gap-4">
         {data.groups.map((group) => (
-          <div className="d-card bg-base-100 shadow-sm" key={group.group}>
-            <div className="d-card-body">
-              <h2 className="d-card-title">{group.group}</h2>
-              <div className="flex flex-col gap-2">
-                {group.categories.map((category) => (
-                  <div
-                    key={category.name}
-                    className="flex w-full p-4 shadow-sm"
-                  >
-                    <div className="grow">{category.name}</div>
-                    <button
-                      className="d-btn d-btn-error d-btn-sm"
-                      onClick={() => {
-                        deleteMutation.mutate(category.name);
-                      }}
-                    >
-                      <Trash />
-                    </button>
+          <div
+            className="bg-base-100 flex flex-col gap-4 p-2 shadow-sm"
+            key={group.group}
+          >
+            <h2 className="text-lg">{group.group}</h2>
+            <div className="flex flex-col gap-2">
+              {group.categories.map((category) => (
+                <div key={category.name} className="flex w-full">
+                  <div className="grow text-sm text-gray-500">
+                    {category.name}
                   </div>
-                ))}
-              </div>
+                  <button
+                    className="d-btn d-btn-error d-btn-outline d-btn-xs"
+                    onClick={() => {
+                      deleteMutation.mutate(category.name);
+                    }}
+                  >
+                    <Trash size={16} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         ))}

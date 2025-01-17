@@ -1,6 +1,14 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   accountQueryOptions,
   currencyRatesQueryOptions,
@@ -104,63 +112,86 @@ function RouteComponent() {
       });
     cummulative += wealth;
     return {
-      date: `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`,
+      date: `${d.getUTCDate()}`,
       todaysWealth: wealth,
       wealth: cummulative,
     };
   });
 
   return (
-    <div className="d-card bg-base-100 shadow-sm">
-      <div className="d-card-body">
-        <h2 className="d-card-title">Total wealth</h2>
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "USD",
-            }).format(wealthInUSD)}
-          </div>
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "INR",
-            }).format(wealthInINR)}
-          </div>
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "EUR",
-            }).format(wealthInEUR)}
-          </div>
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "GBP",
-            }).format(wealthInGBP)}
-          </div>
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "JPY",
-            }).format(wealthInJPY)}
-          </div>
-          <div className="bg-base-200 p-4 text-3xl shadow-sm">
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: "AED",
-            }).format(wealthInAED)}
-          </div>
+    <div className="bg-base-100 flex flex-col gap-4 p-4 shadow-sm">
+      <h2 className="text-center text-lg font-bold">Total wealth</h2>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "USD",
+          }).format(wealthInUSD)}
         </div>
-        <div className="m-4 flex flex-col items-center gap-4">
-          <h2 className="text-center text-lg font-bold">Wealth chart (USD)</h2>
-          <LineChart width={600} height={300} data={chartData}>
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "INR",
+          }).format(wealthInINR)}
+        </div>
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "EUR",
+          }).format(wealthInEUR)}
+        </div>
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "GBP",
+          }).format(wealthInGBP)}
+        </div>
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "JPY",
+          }).format(wealthInJPY)}
+        </div>
+        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: "AED",
+          }).format(wealthInAED)}
+        </div>
+      </div>
+      <div className="m-4 flex flex-col items-center gap-4">
+        <h2 className="text-center text-lg font-bold">
+          Wealth chart (USD) for{" "}
+          {Intl.DateTimeFormat("en", {
+            month: "long",
+            year: "numeric",
+          }).format(today)}
+        </h2>
+        <ResponsiveContainer width="100%" height={250}>
+          <LineChart data={chartData}>
             <Line type="monotone" dataKey="wealth" stroke="#8884d8" />
-            <CartesianGrid stroke="#ccc" />
+            <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
+            <Tooltip
+              labelFormatter={(value) => {
+                return Intl.DateTimeFormat("en", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                }).format(new Date(year, month, Number(value)));
+              }}
+              formatter={(value) => {
+                return [
+                  Intl.NumberFormat("en", {
+                    currency: "USD",
+                    style: "currency",
+                  }).format(Number(value)),
+                ];
+              }}
+            />
             <XAxis dataKey="date" />
             <YAxis />
           </LineChart>
-        </div>
+        </ResponsiveContainer>
       </div>
     </div>
   );

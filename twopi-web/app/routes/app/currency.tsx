@@ -118,7 +118,7 @@ function RouteComponent() {
                     <input
                       type="number"
                       className="w-full"
-                      placeholder="Base"
+                      placeholder="Symbol"
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -160,7 +160,7 @@ function RouteComponent() {
                     <td>
                       <button
                         type="button"
-                        className="d-btn d-btn-error"
+                        className="d-btn d-btn-error d-btn-outline"
                         onClick={() => {
                           deleteMutation.mutate(currency.code);
                         }}

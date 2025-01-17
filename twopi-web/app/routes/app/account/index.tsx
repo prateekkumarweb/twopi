@@ -44,11 +44,9 @@ function RouteComponent() {
       </div>
       <div className="my-2 flex flex-col gap-4">
         {data.accounts?.map((account) => (
-          <div className="d-card bg-base-100 shadow-sm" key={account.id}>
-            <div className="d-card-body flex flex-row flex-wrap gap-2">
-              <h2 className="d-card-title grow text-ellipsis text-nowrap">
-                {account.name}
-              </h2>
+          <div className="bg-base-100 p-2 shadow-sm" key={account.id}>
+            <div className="flex flex-row flex-wrap gap-2">
+              <h2 className="grow text-ellipsis text-nowrap">{account.name}</h2>
               <div className="d-badge d-badge-sm d-badge-info">
                 {account.accountType}
               </div>

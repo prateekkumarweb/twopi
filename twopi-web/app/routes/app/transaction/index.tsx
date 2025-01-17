@@ -45,33 +45,34 @@ function RouteComponent() {
           New
         </Link>
       </div>
-      <div className="my-2 flex flex-col gap-4">
+      <div className="my-2 flex flex-col gap-2">
         {data.transactions?.map((transaction) => (
-          <div className="d-card bg-base-100 shadow-sm" key={transaction.id}>
-            <div className="d-card-body">
+          <div
+            className="bg-base-100 flex flex-col gap-2 p-2 shadow-sm"
+            key={transaction.id}
+          >
+            <div className="flex gap-2">
+              <h2 className="grow text-ellipsis text-nowrap">
+                {transaction.name}
+              </h2>
               <div className="flex gap-2">
-                <h2 className="d-card-title grow text-ellipsis text-nowrap">
-                  {transaction.name}
-                </h2>
-                <div className="flex gap-2">
-                  <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
-                    {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
-                  </div>
+                <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
+                  {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                {transaction.transactions.map((item) => (
-                  <div key={item.id} className="flex w-full gap-2">
-                    <div className="grow">{item.notes}</div>
-                    <div className="d-badge d-badge-sm d-badge-neutral">
-                      {item.account.currency.symbol} {item.amount}
-                    </div>
-                    <div className="d-badge d-badge-sm d-badge-info">
-                      {item.categoryName}
-                    </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              {transaction.transactions.map((item) => (
+                <div key={item.id} className="flex w-full items-center gap-2">
+                  <div className="grow text-sm text-gray-500">{item.notes}</div>
+                  <div className="d-badge d-badge-sm d-badge-neutral">
+                    {item.account.currency.symbol} {item.amount}
                   </div>
-                ))}
-              </div>
+                  <div className="d-badge d-badge-sm d-badge-info">
+                    {item.categoryName}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
