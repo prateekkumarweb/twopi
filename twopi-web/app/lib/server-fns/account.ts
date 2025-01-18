@@ -23,6 +23,11 @@ export const createAccount = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
     const db = await getDbClient(session?.user);
+    const currency = await db.currency.findUnique({
+      where: { code: data.currencyCode },
+    });
+    data.startingBalance =
+      data.startingBalance * Math.pow(10, currency?.decimalDigits ?? 0);
     const value = await db.account.create({ data });
     return { success: true, value };
   });

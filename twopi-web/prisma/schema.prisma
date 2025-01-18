@@ -61,6 +61,6 @@ model TransactionItem {
   account       Account     @relation(fields: [accountId], references: [id])
   accountId     String
   amount        Int
-  category      Category    @relation(fields: [categoryName], references: [name])
-  categoryName  String
+  category      Category?   @relation(fields: [categoryName], references: [name])
+  categoryName  String?
 }

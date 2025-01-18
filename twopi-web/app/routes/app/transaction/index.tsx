@@ -72,9 +72,11 @@ function RouteComponent() {
                       currency: item.account.currencyCode,
                     }).format(item.amount)}
                   </div>
-                  <div className="d-badge d-badge-sm d-badge-info">
-                    {item.categoryName}
-                  </div>
+                  {item.categoryName && (
+                    <div className="d-badge d-badge-sm d-badge-info">
+                      {item.categoryName}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

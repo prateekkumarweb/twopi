@@ -38,8 +38,8 @@ CREATE TABLE "TransactionItem" (
     "transactionId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
-    "categoryName" TEXT NOT NULL,
+    "categoryName" TEXT,
     CONSTRAINT "TransactionItem_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "TransactionItem_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "TransactionItem_categoryName_fkey" FOREIGN KEY ("categoryName") REFERENCES "Category" ("name") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "TransactionItem_categoryName_fkey" FOREIGN KEY ("categoryName") REFERENCES "Category" ("name") ON DELETE SET NULL ON UPDATE CASCADE
 );

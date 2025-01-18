@@ -11,7 +11,7 @@ const createTransactionValidtor = z.object({
       notes: z.string(),
       accountId: z.string(),
       amount: z.number(),
-      categoryName: z.string(),
+      categoryName: z.string().optional(),
     }),
   ),
   timestamp: z.date().optional(),
@@ -29,6 +29,19 @@ export const createTransaction = createServerFn({ method: "POST" })
       throw new Error("Unauthorized");
     }
     const db = await getDbClient(session?.user);
+    for (const transaction of data.transactions) {
+      const account = await db.account.findUnique({
+        where: { id: transaction.accountId },
+        include: {
+          currency: true,
+        },
+      });
+      transaction.amount =
+        transaction.amount * Math.pow(10, account?.currency.decimalDigits ?? 0);
+      if (transaction.categoryName === "") {
+        transaction.categoryName = undefined;
+      }
+    }
     const value = await db.transaction.create({
       data: {
         name: data.name,
@@ -51,20 +64,30 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
     }
     const db = await getDbClient(session?.user);
     return {
-      transactions: await db.transaction.findMany({
-        include: {
-          transactions: {
-            include: {
-              account: {
-                include: {
-                  currency: true,
+      transactions: (
+        await db.transaction.findMany({
+          include: {
+            transactions: {
+              include: {
+                account: {
+                  include: {
+                    currency: true,
+                  },
                 },
+                category: true,
               },
-              category: true,
             },
           },
-        },
-      }),
+        })
+      ).map((transaction) => ({
+        ...transaction,
+        transactions: transaction.transactions.map((transactionItem) => ({
+          ...transactionItem,
+          amount:
+            transactionItem.amount /
+            Math.pow(10, transactionItem.account.currency.decimalDigits),
+        })),
+      })),
     };
   },
 );

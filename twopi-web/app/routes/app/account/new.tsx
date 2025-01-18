@@ -33,7 +33,7 @@ function RouteComponent() {
   const form = useForm({
     defaultValues: {
       name: "",
-      accountType: "savings",
+      accountType: "",
       createdAt,
       currencyCode: "",
       startingBalance: 0,
