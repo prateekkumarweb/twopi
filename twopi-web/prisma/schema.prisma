@@ -12,11 +12,10 @@ datasource db {
 }
 
 model Currency {
-  code    String    @id
-  name    String
-  symbol  String
-  base    Int
-  Account Account[]
+  code          String    @id
+  name          String
+  decimalDigits Int
+  Account       Account[]
 }
 
 enum AccountType {

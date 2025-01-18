@@ -40,15 +40,15 @@ function RouteComponent() {
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
-      navigate({
-        to: "..",
-      });
     },
   });
   const mutation = useMutation({
     mutationFn: async (data: unknown) => {
       await createAccount({ data });
       form.reset();
+      navigate({
+        to: "..",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

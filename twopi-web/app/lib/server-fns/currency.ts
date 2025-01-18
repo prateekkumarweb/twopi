@@ -11,8 +11,7 @@ import { getDbClient } from "../server/db";
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
   name: z.string().min(1).max(100),
-  symbol: z.string().min(1).max(10),
-  base: z.number().min(1),
+  decimalDigits: z.number().min(1),
 });
 
 export const createCurrency = createServerFn({ method: "POST" })
@@ -77,8 +76,7 @@ export const syncCurrencies = createServerFn({ method: "POST" }).handler(
       const currencyObj = {
         name: currency.name,
         code: currency.code,
-        base: Math.pow(10, currency.decimal_digits),
-        symbol: currency.code === "INR" ? "₹" : currency.symbol,
+        decimalDigits: currency.decimal_digits,
       };
       await db.currency.upsert({
         where: { code: currency.code },

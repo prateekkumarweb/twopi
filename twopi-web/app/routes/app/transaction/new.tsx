@@ -56,18 +56,18 @@ function RouteComponent() {
     },
     onSubmit({ value }) {
       mutation.mutate(value);
+    },
+  });
+  const mutation = useMutation({
+    mutationFn: async (data: unknown) => {
+      await createTransaction({
+        data,
+      });
+      form.reset();
       navigate({
         to: "..",
       });
     },
-  });
-  const mutation = useMutation({
-    mutationFn: (data: unknown) =>
-      createTransaction({
-        data,
-      }).then(() => {
-        form.reset();
-      }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: transactionQueryOptions().queryKey,
@@ -252,6 +252,9 @@ function RouteComponent() {
             </button>
           )}
         </form.Subscribe>
+        {mutation.isError && (
+          <p className="text-error">{mutation.error?.message}</p>
+        )}
       </form>
     </div>
   );

@@ -2,8 +2,7 @@
 CREATE TABLE "Currency" (
     "code" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "symbol" TEXT NOT NULL,
-    "base" INTEGER NOT NULL
+    "decimalDigits" INTEGER NOT NULL
 );
 
 -- CreateTable

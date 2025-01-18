@@ -90,6 +90,9 @@ function RouteComponent() {
         <button type="submit" className="d-btn d-btn-primary">
           Create
         </button>
+        {mutation.isError && (
+          <p className="text-error">{mutation.error?.message}</p>
+        )}
       </form>
       <div className="mt-4 flex flex-col gap-4">
         {data.groups.map((group) => (

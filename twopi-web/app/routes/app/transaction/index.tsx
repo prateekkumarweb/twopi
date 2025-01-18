@@ -46,6 +46,7 @@ function RouteComponent() {
         </Link>
       </div>
       <div className="my-2 flex flex-col gap-2">
+        {data.transactions?.length === 0 && <div>No transactions found</div>}
         {data.transactions?.map((transaction) => (
           <div
             className="bg-base-100 flex flex-col gap-2 p-2 shadow-sm"
@@ -66,7 +67,10 @@ function RouteComponent() {
                 <div key={item.id} className="flex w-full items-center gap-2">
                   <div className="grow text-sm text-gray-500">{item.notes}</div>
                   <div className="d-badge d-badge-sm d-badge-neutral">
-                    {item.account.currency.symbol} {item.amount}
+                    {Intl.NumberFormat("en", {
+                      style: "currency",
+                      currency: item.account.currencyCode,
+                    }).format(item.amount)}
                   </div>
                   <div className="d-badge d-badge-sm d-badge-info">
                     {item.categoryName}

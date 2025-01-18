@@ -43,6 +43,7 @@ function RouteComponent() {
         </Link>
       </div>
       <div className="my-2 flex flex-col gap-4">
+        {data.accounts?.length === 0 && <div>No accounts found</div>}
         {data.accounts?.map((account) => (
           <div className="bg-base-100 p-2 shadow-sm" key={account.id}>
             <div className="flex flex-row flex-wrap gap-2">
@@ -51,7 +52,10 @@ function RouteComponent() {
                 {account.accountType}
               </div>
               <div className="d-badge d-badge-sm d-badge-neutral">
-                {account.currency.symbol} {account.startingBalance}
+                {Intl.NumberFormat("en", {
+                  style: "currency",
+                  currency: account.currencyCode,
+                }).format(account.startingBalance)}
               </div>
               <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
                 {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}

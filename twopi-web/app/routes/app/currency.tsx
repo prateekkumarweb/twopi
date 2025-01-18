@@ -18,8 +18,7 @@ function RouteComponent() {
     defaultValues: {
       code: "",
       name: "",
-      symbol: "",
-      base: 100,
+      base: 0,
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
@@ -75,8 +74,7 @@ function RouteComponent() {
             <tr>
               <th>Code</th>
               <th>Name</th>
-              <th>Symbol</th>
-              <th>Base</th>
+              <th>Decimal Places</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -113,21 +111,6 @@ function RouteComponent() {
                 </form.Field>
               </td>
               <td>
-                <form.Field name="symbol">
-                  {(field) => (
-                    <input
-                      type="number"
-                      className="w-full"
-                      placeholder="Symbol"
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                    />
-                  )}
-                </form.Field>
-              </td>
-              <td>
                 <form.Field name="base">
                   {(field) => (
                     <input
@@ -155,8 +138,7 @@ function RouteComponent() {
                   <tr key={currency.code}>
                     <td>{currency.code}</td>
                     <td>{currency.name}</td>
-                    <td>{currency.symbol}</td>
-                    <td>{currency.base}</td>
+                    <td>{currency.decimalDigits}</td>
                     <td>
                       <button
                         type="button"
