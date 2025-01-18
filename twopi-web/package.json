@@ -11,6 +11,7 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "lint": "eslint .",
+    "auth:migrate": "pnpm dlx @better-auth/cli migrate --y",
     "db:gen": "prisma generate",
     "db:migrate": "prisma migrate deploy"
   },
@@ -23,6 +24,7 @@
     "@tanstack/zod-adapter": "^1.95.5",
     "@tanstack/zod-form-adapter": "^0.41.1",
     "better-auth": "^1.1.11",
+    "better-sqlite3": "^11.8.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
@@ -42,6 +44,7 @@
     "@tanstack/react-query-devtools": "^5.64.1",
     "@tanstack/router-devtools": "^1.95.5",
     "@tanstack/start": "^1.95.5",
+    "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^19.0.6",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
@@ -61,5 +64,10 @@
     "typescript-eslint": "^8.20.0",
     "vinxi": "^0.5.1",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
   }
 }

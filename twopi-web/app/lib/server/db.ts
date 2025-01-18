@@ -16,7 +16,7 @@ export async function getDbClient(user: User) {
   console.log("Database", url);
   if (!existsSync(`${base}/${getDbName(user)}.db`)) {
     const output = await execAsync(
-      `DATABASE_URL=${url} npx prisma migrate deploy`,
+      `DATABASE_URL=${url} pnpm dlx prisma migrate deploy`,
     );
     console.log(output);
   }
