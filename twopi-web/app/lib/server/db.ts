@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { type User } from "better-auth";
 import { exec } from "node:child_process";
 import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import util from "node:util";
 
 const execAsync = util.promisify(exec);
@@ -11,7 +12,8 @@ function getDbName(user: User) {
 }
 
 export async function getDbClient(user: User) {
-  const base = process.env.DATABASE_ABS_PATH ?? "/tmp/database";
+  const dbDir = process.env.TWOPI_DATA_DIR ?? "/tmp/data";
+  const base = resolve(dbDir, "database");
   const url = `file:${base}/${getDbName(user)}.db`;
   console.log("Database", url);
   if (!existsSync(`${base}/${getDbName(user)}.db`)) {

@@ -12,7 +12,8 @@ interface CurrenciesResponse {
   };
 }
 
-const currencyCacheUrl = process.env.CURRENCY_CACHE_URL ?? "";
+const currencyCacheUrl =
+  process.env.CURRENCY_CACHE_URL ?? "http://localhost:4670";
 
 export async function getCurrenciesCache() {
   const response = await fetch(`${currencyCacheUrl}/currencies`);

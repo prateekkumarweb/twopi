@@ -26,8 +26,8 @@ mod cache;
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
-    let data_dir = std::env::var("CURRENCY_DATA").context("CURRENCY_DATA env var not set")?;
-    let data_dir = PathBuf::from(data_dir);
+    let data_dir = std::env::var("TWOPI_DATA_DIR").context("TWOPI_DATA_DIR env var not set")?;
+    let data_dir = PathBuf::from(data_dir).join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 
     let cache = CacheManager::new(data_dir.clone(), api_key);

@@ -19,4 +19,4 @@ WORKDIR /app
 COPY --from=node_builder /app/twopi-web /app/twopi-web
 COPY --from=rust_builder /app/currency-cache/target/release/currency-cache /app/currency-cache
 WORKDIR /app/twopi-web
-CMD [ "./entrypoint.sh" ]
+ENTRYPOINT [ "./entrypoint.sh" ]

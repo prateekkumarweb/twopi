@@ -8,3 +8,4 @@
 **/*.db-journal
 currency-cache/data
 **/target
+/data

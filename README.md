@@ -6,10 +6,10 @@
 
 ```txt
 BASE_URL=http://localhost:3000
-BETTER_AUTH_DB_URL=/tmp/auth.db
 BETTER_AUTH_SECRET=<auth_secret>
-DATABASE_ABS_PATH=/tmp/database
+TWOPI_DATA_DIR=../data
 CURRENCY_CACHE_URL=http://localhost:4670
+CURRENCY_API_KEY=<currency_api_key>
 ```
 
 ```sh
@@ -26,5 +26,6 @@ Running `currency-cache`:
 
 ```sh
 $ cd currency-cache
-$ CURRENCY_DATA=data CURRENCY_API_KEY=abcxyz RUST_LOG=debug cargo run --release
+$ source .env
+$ RUST_LOG=debug cargo run --release
 ```
