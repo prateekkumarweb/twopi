@@ -18,7 +18,7 @@ function RouteComponent() {
     defaultValues: {
       code: "",
       name: "",
-      base: 0,
+      decimalDigits: 0,
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
@@ -111,12 +111,12 @@ function RouteComponent() {
                 </form.Field>
               </td>
               <td>
-                <form.Field name="base">
+                <form.Field name="decimalDigits">
                   {(field) => (
                     <input
                       type="number"
                       className="w-full"
-                      placeholder="Base"
+                      placeholder="Decimal Digits"
                       name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}

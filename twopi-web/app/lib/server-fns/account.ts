@@ -37,11 +37,18 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(
     }
     const db = await getDbClient(session?.user);
     return {
-      accounts: await db.account.findMany({
-        include: {
-          currency: true,
-        },
-      }),
+      accounts: (
+        await db.account.findMany({
+          include: {
+            currency: true,
+          },
+        })
+      ).map((account) => ({
+        ...account,
+        startingBalance:
+          account.startingBalance /
+          Math.pow(10, account.currency.decimalDigits),
+      })),
     };
   },
 );
