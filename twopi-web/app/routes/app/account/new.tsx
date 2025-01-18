@@ -1,8 +1,8 @@
-import { AccountType } from "@prisma/client";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
+import { AccountType } from "~/lib/hacks/account-type";
 import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";

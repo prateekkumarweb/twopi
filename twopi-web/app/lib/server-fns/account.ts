@@ -1,7 +1,7 @@
-import { AccountType } from "@prisma/client";
 import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
+import { AccountType } from "~/lib/hacks/account-type";
 import { auth } from "../server/auth";
 import { getDbClient } from "../server/db";
 
