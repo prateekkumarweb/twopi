@@ -37,7 +37,7 @@ function RouteComponent() {
   return (
     <div className="w-full">
       <div className="flex items-center gap-2">
-        <h2 className="my-2 grow text-xl font-bold">Account</h2>
+        <h1 className="my-2 grow text-xl font-bold">Account</h1>
         <Link to="/app/account/new" className="d-btn d-btn-sm d-btn-secondary">
           New
         </Link>

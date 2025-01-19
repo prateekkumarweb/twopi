@@ -52,7 +52,7 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h2 className="my-4 text-xl font-bold">Category</h2>
+      <h1 className="my-4 text-xl font-bold">Category</h1>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {

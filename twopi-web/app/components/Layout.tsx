@@ -44,6 +44,9 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
               <li>
                 <Link to="/app/transaction">Transaction</Link>
               </li>
+              <li>
+                <Link to="/app/import">Import</Link>
+              </li>
             </ul>
           </div>
         </div>

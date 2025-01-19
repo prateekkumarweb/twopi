@@ -57,7 +57,7 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h2 className="my-4 text-xl font-bold">Currency</h2>
+      <h1 className="my-4 text-xl font-bold">Currency</h1>
       {mutation.isPending && <p className="text-info">Creating...</p>}
       {mutation.isError && (
         <p className="text-error">{mutation.error?.message}</p>
