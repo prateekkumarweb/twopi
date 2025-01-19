@@ -21,8 +21,12 @@ function RouteComponent() {
       };
     },
   });
-  const [accountCsv, setAccountCsv] = useState("");
-  const [transactionCsv, setTransactionCsv] = useState("");
+  const [accountCsv, setAccountCsv] = useState(
+    "Account	Account Type	Starting Balance	Currency	Created At",
+  );
+  const [transactionCsv, setTransactionCsv] = useState(
+    "Date	Account	Amount	Currency	Notes",
+  );
   const [error, setError] = useState("");
   const router = useRouter();
 
