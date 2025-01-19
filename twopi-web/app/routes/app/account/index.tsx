@@ -1,7 +1,10 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
-import { accountQueryOptions } from "~/lib/query-options";
+import {
+  accountQueryOptions,
+  transactionQueryOptions,
+} from "~/lib/query-options";
 import { isDefined } from "~/lib/utils";
 
 export const Route = createFileRoute("/app/account/")({
@@ -10,17 +13,37 @@ export const Route = createFileRoute("/app/account/")({
 
 function RouteComponent() {
   const { isPending, errors, data } = useQueries({
-    queries: [accountQueryOptions()],
+    queries: [accountQueryOptions(), transactionQueryOptions()],
     combine: (results) => {
       return {
         data: {
           accounts: results[0].data?.accounts,
+          transactions: results[1].data?.transactions,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
       };
     },
   });
+
+  function calculateBalance(
+    account: Exclude<typeof data.accounts, undefined>[number],
+  ) {
+    return (
+      account.startingBalance +
+      (data.transactions
+        ?.map((transaction) => {
+          let amount = 0;
+          for (const item of transaction.transactions) {
+            if (item.accountId === account.id) {
+              amount += item.amount;
+            }
+          }
+          return amount;
+        })
+        .reduce((acc, curr) => acc + curr, 0) ?? 0)
+    );
+  }
 
   if (isPending) return "Loading...";
 
@@ -55,7 +78,7 @@ function RouteComponent() {
                 {Intl.NumberFormat("en", {
                   style: "currency",
                   currency: account.currencyCode,
-                }).format(account.startingBalance)}
+                }).format(calculateBalance(account))}
               </div>
               <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
                 {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
