@@ -66,6 +66,9 @@ function RouteComponent() {
               {transaction.transactions.map((item) => (
                 <div key={item.id} className="flex w-full items-center gap-2">
                   <div className="grow text-sm text-gray-500">{item.notes}</div>
+                  <div className="d-badge d-badge-sm d-badge-primary">
+                    {item.account.name}
+                  </div>
                   <div className="d-badge d-badge-sm d-badge-neutral">
                     {Intl.NumberFormat("en", {
                       style: "currency",

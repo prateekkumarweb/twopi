@@ -54,6 +54,48 @@ export const createTransaction = createServerFn({ method: "POST" })
     return { success: true, value };
   });
 
+export const createTransactions = createServerFn({ method: "POST" })
+  .validator((transactions: unknown) =>
+    z.array(createTransactionValidtor).parse(transactions),
+  )
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    for (const transaction of data) {
+      for (const transactionItem of transaction.transactions) {
+        const account = await db.account.findUnique({
+          where: { id: transactionItem.accountId },
+          include: {
+            currency: true,
+          },
+        });
+        transactionItem.amount =
+          transactionItem.amount *
+          Math.pow(10, account?.currency.decimalDigits ?? 0);
+        if (transactionItem.categoryName === "") {
+          transactionItem.categoryName = undefined;
+        }
+      }
+    }
+    const value = await db.$transaction([
+      ...data
+        .map((transaction) => ({
+          name: transaction.name,
+          transactions: {
+            create: transaction.transactions,
+          },
+          timestamp: transaction.timestamp,
+        }))
+        .map((data) => db.transaction.create({ data })),
+    ]);
+    return { success: true, value };
+  });
+
 export const getTransactions = createServerFn({ method: "GET" }).handler(
   async () => {
     const session = await auth.api.getSession({
