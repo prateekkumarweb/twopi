@@ -32,6 +32,29 @@ export const createAccount = createServerFn({ method: "POST" })
     return { success: true, value };
   });
 
+export const createAccounts = createServerFn({ method: "POST" })
+  .validator((accounts: unknown) =>
+    z.array(createAccountValidator).parse(accounts),
+  )
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    for (const item of data) {
+      const currency = await db.currency.findUnique({
+        where: { code: item.currencyCode },
+      });
+      item.startingBalance =
+        item.startingBalance * Math.pow(10, currency?.decimalDigits ?? 0);
+    }
+    const value = await db.account.createMany({ data });
+    return { success: true, value };
+  });
+
 export const getAccounts = createServerFn({ method: "GET" }).handler(
   async () => {
     const session = await auth.api.getSession({
