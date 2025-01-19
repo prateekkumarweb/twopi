@@ -64,6 +64,9 @@ function RouteComponent() {
   });
 
   if (state.session?.user) {
+    if (search.redirect) {
+      router.navigate({ to: search.redirect });
+    }
     return <div>You are already signed in</div>;
   }
 
