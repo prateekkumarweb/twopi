@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
+import TransactionRow from "~/components/TransactionRow";
 import { accountByIdQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/account/$id/")({
@@ -54,9 +55,13 @@ function RouteComponent() {
           currency: account.currencyCode,
         }).format(account.startingBalance)}
       />
-      <div className="mt-4">
+      <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
-        <p>TODO</p>
+        <div className="my-2 flex flex-col gap-2">
+          {account.TransactionItem.map(({ transaction }) => (
+            <TransactionRow key={transaction.id} transaction={transaction} />
+          ))}
+        </div>
       </div>
     </div>
   );

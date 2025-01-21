@@ -96,6 +96,24 @@ export const getAccount = createServerFn({ method: "GET" })
       where: { id: data },
       include: {
         currency: true,
+        TransactionItem: {
+          include: {
+            transaction: {
+              include: {
+                transactions: {
+                  include: {
+                    account: {
+                      include: {
+                        currency: true,
+                      },
+                    },
+                    category: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     if (!account) {
@@ -105,5 +123,12 @@ export const getAccount = createServerFn({ method: "GET" })
       ...account,
       startingBalance:
         account.startingBalance / Math.pow(10, account.currency.decimalDigits),
+      transactions: [
+        ...new Map(
+          account.TransactionItem.map(
+            (transaction) => transaction.transaction,
+          ).map((transaction) => [transaction.id, transaction]),
+        ).values(),
+      ],
     };
   });
