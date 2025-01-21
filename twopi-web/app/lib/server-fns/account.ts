@@ -1,3 +1,4 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
@@ -80,3 +81,29 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(
     };
   },
 );
+
+export const getAccount = createServerFn({ method: "GET" })
+  .validator((id: unknown) => z.string().parse(id))
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    const account = await db.account.findUnique({
+      where: { id: data },
+      include: {
+        currency: true,
+      },
+    });
+    if (!account) {
+      throw notFound({ data: "Account not found" });
+    }
+    return {
+      ...account,
+      startingBalance:
+        account.startingBalance / Math.pow(10, account.currency.decimalDigits),
+    };
+  });

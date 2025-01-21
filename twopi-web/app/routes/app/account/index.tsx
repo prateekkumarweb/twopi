@@ -1,6 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Edit, Trash } from "lucide-react";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -88,7 +87,7 @@ function AccountItem({
   currentBalance: number;
 }) {
   return (
-    <div className="bg-base-100 flex w-full gap-4 p-2 shadow-sm">
+    <div className="bg-base-100 w-full p-2 shadow-sm">
       <Link
         to="/app/account/$id"
         params={{ id: account.id }}
@@ -116,14 +115,6 @@ function AccountItem({
           </div>
         </div>
       </Link>
-      <div className="flex flex-col justify-between">
-        <Link to="/app/account/$id/edit" params={{ id: account.id }}>
-          <Edit className="text-primary" />
-        </Link>
-        <Link to="/app/account/$id/delete" params={{ id: account.id }}>
-          <Trash className="text-red-600" />
-        </Link>
-      </div>
     </div>
   );
 }

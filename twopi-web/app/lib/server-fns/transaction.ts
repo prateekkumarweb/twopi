@@ -134,6 +134,42 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
   },
 );
 
+export const getTransaction = createServerFn({ method: "GET" })
+  .validator((id: unknown) => z.string().parse(id))
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    const transaction = await db.transaction.findUnique({
+      where: { id: data },
+      include: {
+        transactions: {
+          include: {
+            account: {
+              include: {
+                currency: true,
+              },
+            },
+            category: true,
+          },
+        },
+      },
+    });
+    return {
+      ...transaction,
+      transactions: transaction?.transactions.map((transactionItem) => ({
+        ...transactionItem,
+        amount:
+          transactionItem.amount /
+          Math.pow(10, transactionItem.account.currency.decimalDigits),
+      })),
+    };
+  });
+
 export const deleteTransactionItem = createServerFn({
   method: "POST",
 })
