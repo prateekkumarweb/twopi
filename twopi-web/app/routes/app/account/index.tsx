@@ -1,15 +1,18 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import dayjs from "dayjs";
+import { Edit, Trash } from "lucide-react";
 import {
   accountQueryOptions,
   transactionQueryOptions,
 } from "~/lib/query-options";
+import type { getAccounts } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
 
 export const Route = createFileRoute("/app/account/")({
   component: RouteComponent,
 });
+
+type Account = Awaited<ReturnType<typeof getAccounts>>["accounts"][number];
 
 function RouteComponent() {
   const { isPending, errors, data } = useQueries({
@@ -26,9 +29,7 @@ function RouteComponent() {
     },
   });
 
-  function calculateBalance(
-    account: Exclude<typeof data.accounts, undefined>[number],
-  ) {
+  function calculateBalance(account: Account) {
     return (
       account.startingBalance +
       (data.transactions
@@ -65,27 +66,63 @@ function RouteComponent() {
           New
         </Link>
       </div>
-      <div className="my-2 flex flex-col gap-4">
+      <div className="my-2 flex flex-col gap-2">
         {data.accounts?.length === 0 && <div>No accounts found</div>}
         {data.accounts?.map((account) => (
-          <div className="bg-base-100 p-2 shadow-sm" key={account.id}>
-            <div className="flex flex-row flex-wrap gap-2">
-              <h2 className="grow text-ellipsis text-nowrap">{account.name}</h2>
-              <div className="d-badge d-badge-sm d-badge-info">
-                {account.accountType}
-              </div>
-              <div className="d-badge d-badge-sm d-badge-neutral">
-                {Intl.NumberFormat("en", {
-                  style: "currency",
-                  currency: account.currencyCode,
-                }).format(calculateBalance(account))}
-              </div>
-              <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
-                {dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
-              </div>
+          <AccountItem
+            account={account}
+            currentBalance={calculateBalance(account)}
+            key={account.id}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AccountItem({
+  account,
+  currentBalance,
+}: {
+  account: Account;
+  currentBalance: number;
+}) {
+  return (
+    <div className="bg-base-100 flex w-full gap-4 p-2 shadow-sm">
+      <Link
+        to="/app/account/$id"
+        params={{ id: account.id }}
+        className="flex grow flex-col gap-2"
+      >
+        <div className="flex gap-2">
+          <div className="grow">{account.name}</div>
+          <div>
+            <div className="d-badge d-badge-ghost">
+              {Intl.NumberFormat("en", {
+                style: "currency",
+                currency: account.currencyCode,
+              }).format(currentBalance)}
             </div>
           </div>
-        ))}
+        </div>
+        <div className="flex gap-2">
+          <div className="grow">
+            <div className="d-badge d-badge-info">{account.accountType}</div>
+          </div>
+          <div>
+            <div className="d-badge d-badge-neutral">
+              {account.currencyCode}
+            </div>
+          </div>
+        </div>
+      </Link>
+      <div className="flex flex-col justify-between">
+        <Link to="/app/account/$id/edit" params={{ id: account.id }}>
+          <Edit className="text-primary" />
+        </Link>
+        <Link to="/app/account/$id/delete" params={{ id: account.id }}>
+          <Trash className="text-red-600" />
+        </Link>
       </div>
     </div>
   );
