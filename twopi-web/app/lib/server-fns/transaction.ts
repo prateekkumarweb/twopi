@@ -1,3 +1,4 @@
+import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
@@ -159,6 +160,9 @@ export const getTransaction = createServerFn({ method: "GET" })
         },
       },
     });
+    if (!transaction) {
+      throw notFound({ data: "Account not found" });
+    }
     return {
       ...transaction,
       transactions: transaction?.transactions.map((transactionItem) => ({

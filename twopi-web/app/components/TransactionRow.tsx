@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import type { getTransaction } from "~/lib/server-fns/transaction";
 
@@ -9,36 +10,42 @@ export default function TransactionRow({
   transaction: Transaction;
 }) {
   return (
-    <div className="bg-base-100 flex flex-col gap-2 p-2 shadow-sm">
-      <div className="flex gap-2">
-        <h2 className="grow text-ellipsis text-nowrap">{transaction.name}</h2>
+    <div className="bg-base-100 p-2 shadow-sm">
+      <Link
+        to="/app/transaction/$id"
+        params={{ id: transaction.id }}
+        className="flex flex-col gap-2"
+      >
         <div className="flex gap-2">
-          <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
-            {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
+          <h2 className="grow text-ellipsis text-nowrap">{transaction.name}</h2>
+          <div className="flex gap-2">
+            <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
+              {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        {transaction.transactions?.map((item) => (
-          <div key={item.id} className="flex w-full items-center gap-2">
-            <div className="grow text-sm text-gray-500">{item.notes}</div>
-            <div className="d-badge d-badge-sm d-badge-primary">
-              {item.account.name}
-            </div>
-            <div className="d-badge d-badge-sm d-badge-neutral">
-              {Intl.NumberFormat("en", {
-                style: "currency",
-                currency: item.account.currencyCode,
-              }).format(item.amount)}
-            </div>
-            {item.categoryName && (
-              <div className="d-badge d-badge-sm d-badge-info">
-                {item.categoryName}
+        <div className="flex flex-col gap-2">
+          {transaction.transactions?.map((item) => (
+            <div key={item.id} className="flex w-full items-center gap-2">
+              <div className="grow text-sm text-gray-500">{item.notes}</div>
+              <div className="d-badge d-badge-sm d-badge-primary text-nowrap">
+                {item.account.name}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+              <div className="d-badge d-badge-sm d-badge-neutral text-nowrap">
+                {Intl.NumberFormat("en", {
+                  style: "currency",
+                  currency: item.account.currencyCode,
+                }).format(item.amount)}
+              </div>
+              {item.categoryName && (
+                <div className="d-badge d-badge-sm d-badge-info text-nowrap">
+                  {item.categoryName}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </Link>
     </div>
   );
 }

@@ -25,7 +25,7 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-2">
       <div className="mb-2 flex items-center gap-2">
-        <Link to="/app/account">
+        <Link to="..">
           <ArrowLeft size={16} />
         </Link>
         <h1 className="grow text-xl font-bold">Account details</h1>
