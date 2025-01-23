@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
+import LabelAndValue from "~/components/LabelAndValue";
 import TransactionRow from "~/components/TransactionRow";
 import { accountByIdQueryOptions } from "~/lib/query-options";
 
@@ -50,10 +52,23 @@ function RouteComponent() {
       <LabelAndValue label="Currency" value={account.currencyCode} />
       <LabelAndValue
         label="Starting balance"
-        value={Intl.NumberFormat("en", {
-          style: "currency",
-          currency: account.currencyCode,
-        }).format(account.startingBalance)}
+        value={
+          <span
+            className={clsx(
+              "d-badge d-badge-sm text-nowrap",
+              account.startingBalance > 0
+                ? "d-badge-success"
+                : account.startingBalance < 0
+                  ? "d-badge-error"
+                  : "d-badge-neutral",
+            )}
+          >
+            {Intl.NumberFormat("en", {
+              style: "currency",
+              currency: account.currencyCode,
+            }).format(account.startingBalance)}
+          </span>
+        }
       />
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
@@ -62,17 +77,6 @@ function RouteComponent() {
             <TransactionRow key={transaction.id} transaction={transaction} />
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function LabelAndValue({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-nowrap items-center gap-2">
-      <div className="grow font-light">{label}</div>
-      <div className="overflow-hidden text-ellipsis text-nowrap text-sm text-gray-700">
-        {value}
       </div>
     </div>
   );

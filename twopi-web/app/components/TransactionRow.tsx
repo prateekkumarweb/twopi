@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import type { getTransaction } from "~/lib/server-fns/transaction";
 
@@ -10,14 +11,16 @@ export default function TransactionRow({
   transaction: Transaction;
 }) {
   return (
-    <div className="bg-base-100 p-2 shadow-sm">
+    <div className="bg-base-100 shadow-xs p-2">
       <Link
         to="/app/transaction/$id"
         params={{ id: transaction.id }}
         className="flex flex-col gap-2"
       >
         <div className="flex gap-2">
-          <h2 className="grow text-ellipsis text-nowrap">{transaction.name}</h2>
+          <h2 className="grow overflow-hidden text-ellipsis text-nowrap">
+            {transaction.name}
+          </h2>
           <div className="flex gap-2">
             <div className="d-badge d-badge-sm d-badge-ghost text-nowrap">
               {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
@@ -27,11 +30,22 @@ export default function TransactionRow({
         <div className="flex flex-col gap-2">
           {transaction.transactions?.map((item) => (
             <div key={item.id} className="flex w-full items-center gap-2">
-              <div className="grow text-sm text-gray-500">{item.notes}</div>
+              <div className="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
+                {item.notes}
+              </div>
               <div className="d-badge d-badge-sm d-badge-primary text-nowrap">
                 {item.account.name}
               </div>
-              <div className="d-badge d-badge-sm d-badge-neutral text-nowrap">
+              <div
+                className={clsx(
+                  "d-badge d-badge-sm text-nowrap",
+                  item.amount > 0
+                    ? "d-badge-success"
+                    : item.amount < 0
+                      ? "d-badge-error"
+                      : "d-badge-neutral",
+                )}
+              >
                 {Intl.NumberFormat("en", {
                   style: "currency",
                   currency: item.account.currencyCode,

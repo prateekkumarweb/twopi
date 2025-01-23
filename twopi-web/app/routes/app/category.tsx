@@ -97,7 +97,7 @@ function RouteComponent() {
       <div className="mt-4 flex flex-col gap-4">
         {data.groups.map((group) => (
           <div
-            className="bg-base-100 flex flex-col gap-4 p-2 shadow-sm"
+            className="bg-base-100 shadow-xs flex flex-col gap-4 p-2"
             key={group.group}
           >
             <h2 className="text-lg">{group.group}</h2>

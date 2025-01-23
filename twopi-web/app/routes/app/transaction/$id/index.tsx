@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
+import LabelAndValue from "~/components/LabelAndValue";
 import { transactionByIdQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/transaction/$id/")({
@@ -49,7 +51,7 @@ function RouteComponent() {
         <h2 className="text-lg font-bold">Transaction items</h2>
         <div className="my-2 flex flex-col gap-2">
           {transaction.transactions.map((transactionItem) => (
-            <div className="bg-base-100 p-2 shadow-sm" key={transactionItem.id}>
+            <div className="bg-base-100 shadow-xs p-2" key={transactionItem.id}>
               <LabelAndValue label="Notes" value={transactionItem.notes} />
               <LabelAndValue
                 label="Account"
@@ -57,10 +59,23 @@ function RouteComponent() {
               />
               <LabelAndValue
                 label="Amount"
-                value={Intl.NumberFormat("en", {
-                  style: "currency",
-                  currency: transactionItem.account.currencyCode,
-                }).format(transactionItem.amount)}
+                value={
+                  <span
+                    className={clsx(
+                      "d-badge d-badge-sm text-nowrap",
+                      transactionItem.amount > 0
+                        ? "d-badge-success"
+                        : transactionItem.amount < 0
+                          ? "d-badge-error"
+                          : "d-badge-neutral",
+                    )}
+                  >
+                    {Intl.NumberFormat("en", {
+                      style: "currency",
+                      currency: transactionItem.account.currencyCode,
+                    }).format(transactionItem.amount)}
+                  </span>
+                }
               />
               {transactionItem.categoryName && (
                 <LabelAndValue
@@ -71,17 +86,6 @@ function RouteComponent() {
             </div>
           ))}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function LabelAndValue({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-nowrap items-center gap-2">
-      <div className="grow font-light">{label}</div>
-      <div className="overflow-hidden text-ellipsis text-nowrap text-sm text-gray-700">
-        {value}
       </div>
     </div>
   );
