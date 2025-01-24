@@ -1,5 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import clsx from "clsx";
 import {
   CartesianGrid,
   Line,
@@ -123,37 +124,91 @@ function RouteComponent() {
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "USD",
           }).format(wealthInUSD)}
         </div>
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "INR",
           }).format(wealthInINR)}
         </div>
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "EUR",
           }).format(wealthInEUR)}
         </div>
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "GBP",
           }).format(wealthInGBP)}
         </div>
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "JPY",
           }).format(wealthInJPY)}
         </div>
-        <div className="bg-base-200 p-4 text-3xl shadow-sm">
+        <div
+          className={clsx(
+            "bg-base-200 p-4 text-3xl shadow-sm",
+            wealth > 0
+              ? "text-success-content bg-success"
+              : wealth < 0
+                ? "text-error-content bg-error"
+                : "text-neutral-content bg-neutral",
+          )}
+        >
           {new Intl.NumberFormat("en", {
             style: "currency",
             currency: "AED",
