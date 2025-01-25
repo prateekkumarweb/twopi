@@ -21,13 +21,13 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
             <div
               tabIndex={0}
               role="button"
-              className="d-btn d-btn-ghost d-btn-circle"
+              className="d-btn d-btn-circle d-btn-ghost"
             >
               <Menu />
             </div>
             <ul
               tabIndex={0}
-              className="d-menu d-menu-sm d-dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              className="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
             >
               <li>
                 <Link to="/app">Home</Link>
@@ -45,13 +45,13 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
                 <Link to="/app/transaction">Transaction</Link>
               </li>
               <li>
-                <Link to="/app/import">Import</Link>
+                <Link to="/app/import-export">Import/Export</Link>
               </li>
             </ul>
           </div>
         </div>
         <div className="d-navbar-center">
-          <Link to="/" className="d-btn d-btn-ghost text-xl">
+          <Link to="/" className="d-btn text-xl d-btn-ghost">
             TwoPi
           </Link>
         </div>
@@ -63,7 +63,7 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
               </div>
               <ul
                 tabIndex={0}
-                className="d-menu d-menu-sm d-dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                className="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
               >
                 <li>
                   <button className="d-btn d-btn-primary" onClick={signOut}>

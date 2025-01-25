@@ -1,21 +1,25 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { accountQueryOptions } from "~/lib/query-options";
+import {
+  accountQueryOptions,
+  transactionQueryOptions,
+} from "~/lib/query-options";
 import { createAccounts } from "~/lib/server-fns/account";
 import { createTransactions } from "~/lib/server-fns/transaction";
 import { isDefined } from "~/lib/utils";
 
-export const Route = createFileRoute("/app/import")({
+export const Route = createFileRoute("/app/import-export")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { isPending, errors, accounts } = useQueries({
-    queries: [accountQueryOptions()],
+  const { isPending, errors, accounts, transactions } = useQueries({
+    queries: [accountQueryOptions(), transactionQueryOptions()],
     combine: (results) => {
       return {
         accounts: results[0].data?.accounts,
+        transactions: results[1].data?.transactions,
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
       };
@@ -135,7 +139,7 @@ function RouteComponent() {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <h1 className="text-xl font-bold">Import</h1>
+      <h1 className="text-xl font-bold">Import/Export</h1>
       {error && <p className="text-red-700">{error}</p>}
       <details>
         <summary>
@@ -162,6 +166,22 @@ function RouteComponent() {
         <button className="d-btn d-btn-primary" onClick={importTransactions}>
           Import
         </button>
+      </details>
+      <details>
+        <summary>
+          <h2 className="inline font-semibold">Export everything</h2>
+        </summary>
+        <textarea
+          className="mt-4 h-64 w-full font-mono"
+          value={JSON.stringify(
+            {
+              accounts,
+              transactions,
+            },
+            null,
+            2,
+          )}
+        ></textarea>
       </details>
     </div>
   );
