@@ -87,7 +87,7 @@ function AccountItem({
   currentBalance: number;
 }) {
   return (
-    <div className="bg-base-100 shadow-xs w-full p-2">
+    <div className="w-full bg-base-100 p-2 shadow-xs">
       <Link
         to="/app/account/$id"
         params={{ id: account.id }}

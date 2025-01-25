@@ -120,7 +120,7 @@ function RouteComponent() {
   });
 
   return (
-    <div className="bg-base-100 flex flex-col gap-4 p-4 shadow-sm">
+    <div className="flex flex-col gap-4 bg-base-100 p-4 shadow-sm">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">
@@ -128,10 +128,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {
@@ -143,10 +143,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {
@@ -158,10 +158,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {
@@ -173,10 +173,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {
@@ -188,10 +188,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {
@@ -203,10 +203,10 @@ function RouteComponent() {
           className={clsx(
             "bg-base-200 p-4 text-3xl shadow-sm",
             wealth > 0
-              ? "text-success-content bg-success"
+              ? "bg-success text-success-content"
               : wealth < 0
-                ? "text-error-content bg-error"
-                : "text-neutral-content bg-neutral",
+                ? "bg-error text-error-content"
+                : "bg-neutral text-neutral-content",
           )}
         >
           {new Intl.NumberFormat("en", {

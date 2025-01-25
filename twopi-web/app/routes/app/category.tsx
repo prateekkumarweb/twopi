@@ -97,7 +97,7 @@ function RouteComponent() {
       <div className="mt-4 flex flex-col gap-4">
         {data.groups.map((group) => (
           <div
-            className="bg-base-100 shadow-xs flex flex-col gap-4 p-2"
+            className="flex flex-col gap-4 bg-base-100 p-2 shadow-xs"
             key={group.group}
           >
             <h2 className="text-lg">{group.group}</h2>
@@ -108,7 +108,7 @@ function RouteComponent() {
                     {category.name}
                   </div>
                   <button
-                    className="d-btn d-btn-error d-btn-outline d-btn-xs"
+                    className="d-btn d-btn-xs d-btn-error d-btn-outline"
                     onClick={() => {
                       deleteMutation.mutate(category.name);
                     }}

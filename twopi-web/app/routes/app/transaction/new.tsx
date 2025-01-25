@@ -224,7 +224,7 @@ function RouteComponent() {
               ))}
               <button
                 type="button"
-                className="d-btn d-btn-secondary mt-2"
+                className="d-btn mt-2 d-btn-secondary"
                 onClick={() =>
                   field.pushValue({
                     notes: "",
