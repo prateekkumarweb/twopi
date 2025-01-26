@@ -1,11 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
 import LabelAndValue from "~/components/LabelAndValue";
 import TransactionRow from "~/components/TransactionRow";
-import { accountByIdQueryOptions } from "~/lib/query-options";
+import {
+  accountByIdQueryOptions,
+  accountQueryOptions,
+} from "~/lib/query-options";
+import { deleteAccount } from "~/lib/server-fns/account";
 
 export const Route = createFileRoute("/app/account/$id/")({
   component: RouteComponent,
@@ -13,7 +17,29 @@ export const Route = createFileRoute("/app/account/$id/")({
 
 function RouteComponent() {
   const params = Route.useParams();
+  const queryClient = useQueryClient();
   const query = useQuery(accountByIdQueryOptions(params.id));
+  const navigate = Route.useNavigate();
+  const mutation = useMutation({
+    mutationFn: async (data: unknown) => {
+      await deleteAccount({ data });
+      navigate({
+        to: "..",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: accountQueryOptions().queryKey,
+      });
+    },
+  });
+
+  function deleteAccountHandler() {
+    if (window.confirm("Are you sure you want to delete this account?")) {
+      mutation.mutate(params.id);
+    }
+  }
+
   if (query.isPending) return "Loading...";
   if (query.error)
     return (
@@ -26,6 +52,9 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col gap-2">
+      {mutation.isError && (
+        <p className="text-error-content">{mutation.error.message}</p>
+      )}
       <div className="mb-2 flex items-center gap-2">
         <Link to="..">
           <ArrowLeft size={16} />
@@ -38,7 +67,11 @@ function RouteComponent() {
         >
           <Edit size={16} />
         </Link>
-        <button className="d-btn d-btn-sm d-btn-error">
+        <button
+          className="d-btn d-btn-sm d-btn-error"
+          onClick={deleteAccountHandler}
+          disabled={mutation.isPending}
+        >
           <Trash size={16} />
         </button>
       </div>

@@ -132,3 +132,17 @@ export const getAccount = createServerFn({ method: "GET" })
       ],
     };
   });
+
+export const deleteAccount = createServerFn({ method: "POST" })
+  .validator((id: unknown) => z.string().parse(id))
+  .handler(async ({ data }) => {
+    const session = await auth.api.getSession({
+      headers: getWebRequest().headers,
+    });
+    if (!session?.user) {
+      throw new Error("Unauthorized");
+    }
+    const db = await getDbClient(session?.user);
+    await db.account.delete({ where: { id: data } });
+    return { success: true };
+  });

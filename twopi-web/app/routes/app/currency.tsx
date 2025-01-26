@@ -58,9 +58,9 @@ function RouteComponent() {
   return (
     <div className="w-full">
       <h1 className="my-4 text-xl font-bold">Currency</h1>
-      {mutation.isPending && <p className="text-info">Creating...</p>}
+      {mutation.isPending && <p className="text-info-content">Creating...</p>}
       {mutation.isError && (
-        <p className="text-error">{mutation.error?.message}</p>
+        <p className="text-error-content">{mutation.error?.message}</p>
       )}
       <form
         onSubmit={(e) => {
