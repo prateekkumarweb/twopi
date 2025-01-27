@@ -27,7 +27,7 @@ export const createCategory = createServerFn({ method: "POST" })
 
 export const deleteCategory = createServerFn({ method: "POST" })
   .validator((name: unknown) => {
-    return z.string().length(3).parse(name);
+    return z.string().parse(name);
   })
   .handler(async ({ data }) => {
     const session = await auth.api.getSession({
