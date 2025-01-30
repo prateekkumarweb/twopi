@@ -6,11 +6,12 @@
     clippy::expect_used
 )]
 
-use async_graphql::{http::GraphiQLSource, Context, EmptySubscription, Object, Schema};
-use async_graphql_axum::GraphQL;
+use async_graphql::{
+    http::GraphiQLSource, Context, EmptySubscription, Object, Schema, SimpleObject,
+};
 use axum::{
-    extract::Query,
-    http::StatusCode,
+    extract::{Query, State},
+    http::{HeaderMap, StatusCode},
     response::{Html, IntoResponse, Response},
     routing::get,
     Json, Router,
@@ -27,13 +28,16 @@ async fn main() -> anyhow::Result<()> {
         .data(Storage::default())
         .finish();
     let app = Router::new()
-        .route("/", get(graphiql).post_service(GraphQL::new(schema)))
-        .route("/currency", get(currency));
+        .route("/graphql", get(graphiql).post(post_graphql))
+        .route("/currency", get(currency))
+        .with_state(schema);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
     axum::serve(listener, app).await?;
     Ok(())
 }
+
+static USER_ID_HEADER_NAME: &str = "x-user-id";
 
 struct AppError(anyhow::Error);
 
@@ -75,17 +79,56 @@ async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
 }
 
 async fn graphiql() -> impl IntoResponse {
-    Html(GraphiQLSource::build().endpoint("/").finish())
+    Html(
+        GraphiQLSource::build()
+            .endpoint("/graphql")
+            .header(USER_ID_HEADER_NAME, "dev")
+            .finish(),
+    )
+}
+
+#[axum::debug_handler]
+async fn post_graphql(
+    State(schema): State<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
+    headers: HeaderMap,
+    mut request: async_graphql_axum::GraphQLRequest,
+) -> async_graphql_axum::GraphQLResponse {
+    let id = headers
+        .get(USER_ID_HEADER_NAME)
+        .and_then(|value| value.to_str().ok())
+        .map(std::string::ToString::to_string);
+    if let Some(id) = id {
+        request.0.data.insert(Id { id });
+    }
+    async_graphql_axum::GraphQLResponse::from(schema.execute(request.0).await)
 }
 
 type Storage = Mutex<()>;
 
 struct QueryRoot;
 
+#[derive(SimpleObject)]
+struct Currency {
+    code: String,
+    name: String,
+    decimal_digits: i32,
+}
+
 #[Object]
 impl QueryRoot {
-    async fn hello(&self, _ctx: &Context<'_>) -> &'static str {
-        "Hello, world!"
+    async fn currency(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Currency>> {
+        let Id { id } = ctx.data::<Id>()?;
+        tracing::info!("Querying currency for {}", id);
+        let db = database(id).await?;
+        let currency = entity::currency::Entity::find().all(&db).await?;
+        Ok(currency
+            .into_iter()
+            .map(|c| Currency {
+                code: c.code.to_string(),
+                name: c.name,
+                decimal_digits: c.decimal_digits,
+            })
+            .collect())
     }
 }
 
