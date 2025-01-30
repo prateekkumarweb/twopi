@@ -6,22 +6,28 @@
     clippy::expect_used
 )]
 
+use async_graphql::{http::GraphiQLSource, Context, EmptySubscription, Object, Schema};
+use async_graphql_axum::GraphQL;
 use axum::{
     extract::Query,
     http::StatusCode,
-    response::{IntoResponse, Response},
+    response::{Html, IntoResponse, Response},
     routing::get,
     Json, Router,
 };
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, EntityTrait};
 use serde::Deserialize;
+use tokio::sync::Mutex;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
+    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
+        .data(Storage::default())
+        .finish();
     let app = Router::new()
-        .route("/", get(root))
+        .route("/", get(graphiql).post_service(GraphQL::new(schema)))
         .route("/currency", get(currency));
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
@@ -68,6 +74,30 @@ async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
     Ok(db)
 }
 
+async fn graphiql() -> impl IntoResponse {
+    Html(GraphiQLSource::build().endpoint("/").finish())
+}
+
+type Storage = Mutex<()>;
+
+struct QueryRoot;
+
+#[Object]
+impl QueryRoot {
+    async fn hello(&self, _ctx: &Context<'_>) -> &'static str {
+        "Hello, world!"
+    }
+}
+
+struct MutationRoot;
+
+#[Object]
+impl MutationRoot {
+    async fn hello_mut(&self, _ctx: &Context<'_>) -> &'static str {
+        "Hello, world!"
+    }
+}
+
 #[derive(Deserialize)]
 struct Id {
     id: String,
@@ -78,8 +108,4 @@ async fn currency(Query(Id { id }): Query<Id>) -> Result<impl IntoResponse, AppE
     let db = database(&id).await?;
     let currency = entity::currency::Entity::find().all(&db).await?;
     Ok(Json(currency))
-}
-
-async fn root() -> &'static str {
-    "Hello, world!"
 }
