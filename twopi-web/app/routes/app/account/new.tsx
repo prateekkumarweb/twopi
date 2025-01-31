@@ -19,7 +19,7 @@ function RouteComponent() {
     combine: (results) => {
       return {
         data: {
-          currencies: results[0].data?.currencies,
+          currencies: results[0].data?.data,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),

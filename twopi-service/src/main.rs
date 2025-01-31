@@ -6,34 +6,34 @@
     clippy::expect_used
 )]
 
-use async_graphql::{
-    http::GraphiQLSource, Context, EmptySubscription, Object, Schema, SimpleObject,
-};
+#[allow(unused_imports)]
+mod entity;
+
 use axum::{
-    extract::{Query, State},
-    http::{HeaderMap, StatusCode},
-    response::{Html, IntoResponse, Response},
-    routing::get,
-    Json, Router,
+    http::{HeaderName, HeaderValue, StatusCode},
+    response::{IntoResponse, Response},
+    Json,
 };
+use axum_extra::{headers::Header, TypedHeader};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, EntityTrait};
-use serde::Deserialize;
-use tokio::sync::Mutex;
+use serde::Serialize;
+use utoipa::ToSchema;
+use utoipa_axum::{router::OpenApiRouter, routes};
+use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
-    let schema = Schema::build(QueryRoot, MutationRoot, EmptySubscription)
-        .data(Storage::default())
-        .finish();
-    let app = Router::new()
-        .route("/graphql", get(graphiql).post(post_graphql))
-        .route("/currency", get(currency))
-        .with_state(schema);
+    let (router, mut api) = OpenApiRouter::new()
+        .routes(routes!(currency))
+        .split_for_parts();
+    api.info = utoipa::openapi::Info::new("TwoPI API", "alpha");
+    let router = router.merge(SwaggerUi::new("/swagger-ui").url("/api.json", api));
+
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
-    axum::serve(listener, app).await?;
+    axum::serve(listener, router).await?;
     Ok(())
 }
 
@@ -78,77 +78,58 @@ async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
     Ok(db)
 }
 
-async fn graphiql() -> impl IntoResponse {
-    Html(
-        GraphiQLSource::build()
-            .endpoint("/graphql")
-            .header(USER_ID_HEADER_NAME, "dev")
-            .finish(),
-    )
-}
-
-#[axum::debug_handler]
-async fn post_graphql(
-    State(schema): State<Schema<QueryRoot, MutationRoot, EmptySubscription>>,
-    headers: HeaderMap,
-    mut request: async_graphql_axum::GraphQLRequest,
-) -> async_graphql_axum::GraphQLResponse {
-    let id = headers
-        .get(USER_ID_HEADER_NAME)
-        .and_then(|value| value.to_str().ok())
-        .map(std::string::ToString::to_string);
-    if let Some(id) = id {
-        request.0.data.insert(Id { id });
-    }
-    async_graphql_axum::GraphQLResponse::from(schema.execute(request.0).await)
-}
-
-type Storage = Mutex<()>;
-
-struct QueryRoot;
-
-#[derive(SimpleObject)]
+#[derive(ToSchema, Serialize)]
 struct Currency {
     code: String,
     name: String,
     decimal_digits: i32,
 }
 
-#[Object]
-impl QueryRoot {
-    async fn currency(&self, ctx: &Context<'_>) -> async_graphql::Result<Vec<Currency>> {
-        let Id { id } = ctx.data::<Id>()?;
-        tracing::info!("Querying currency for {}", id);
-        let db = database(id).await?;
-        let currency = entity::currency::Entity::find().all(&db).await?;
-        Ok(currency
+struct XUserId(String);
+
+static XUSER_ID_HEADER_NAME: HeaderName = HeaderName::from_static(USER_ID_HEADER_NAME);
+
+impl Header for XUserId {
+    fn name() -> &'static HeaderName {
+        &XUSER_ID_HEADER_NAME
+    }
+
+    fn decode<'i, I>(values: &mut I) -> Result<Self, axum_extra::headers::Error>
+    where
+        Self: Sized,
+        I: Iterator<Item = &'i axum::http::HeaderValue>,
+    {
+        values
+            .next()
+            .and_then(|value| value.to_str().map(|v| Self(v.to_string())).ok())
+            .ok_or_else(axum_extra::headers::Error::invalid)
+    }
+
+    fn encode<E: Extend<axum::http::HeaderValue>>(&self, values: &mut E) {
+        #[allow(clippy::expect_used)] // safe because we know the value is valid
+        let mut value = HeaderValue::from_str(&self.0).expect("HeaderValue could not be encoded");
+        value.set_sensitive(true);
+        values.extend(std::iter::once(value));
+    }
+}
+
+#[axum::debug_handler]
+#[utoipa::path(get, path = "/currency", responses(
+    (status = OK, body = Vec<Currency>),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
+async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> Result<impl IntoResponse, AppError> {
+    let db = database(&id.0).await?;
+    tracing::info!("Querying currency for {}", id.0);
+    let currency = entity::currency::Entity::find().all(&db).await?;
+    Ok(Json(
+        currency
             .into_iter()
             .map(|c| Currency {
                 code: c.code.to_string(),
                 name: c.name,
                 decimal_digits: c.decimal_digits,
             })
-            .collect())
-    }
-}
-
-struct MutationRoot;
-
-#[Object]
-impl MutationRoot {
-    async fn hello_mut(&self, _ctx: &Context<'_>) -> &'static str {
-        "Hello, world!"
-    }
-}
-
-#[derive(Deserialize)]
-struct Id {
-    id: String,
-}
-
-#[axum::debug_handler]
-async fn currency(Query(Id { id }): Query<Id>) -> Result<impl IntoResponse, AppError> {
-    let db = database(&id).await?;
-    let currency = entity::currency::Entity::find().all(&db).await?;
-    Ok(Json(currency))
+            .collect::<Vec<_>>(),
+    ))
 }

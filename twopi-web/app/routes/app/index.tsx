@@ -57,20 +57,20 @@ function RouteComponent() {
   data.accounts?.forEach((account) => {
     wealth +=
       account.startingBalance /
-      (data.currencyRates?.[account.currencyCode].value ?? 1);
+      (data.currencyRates?.[account.currencyCode]?.value ?? 1);
   });
   data.transactions?.forEach((transaction) => {
     transaction.transactions.forEach((t) => {
       wealth +=
-        t.amount / (data.currencyRates?.[t.account.currencyCode].value ?? 1);
+        t.amount / (data.currencyRates?.[t.account.currencyCode]?.value ?? 1);
     });
   });
   const wealthInUSD = wealth;
-  const wealthInINR = wealth * (data.currencyRates?.INR.value ?? 1);
-  const wealthInEUR = wealth * (data.currencyRates?.EUR.value ?? 1);
-  const wealthInGBP = wealth * (data.currencyRates?.GBP.value ?? 1);
-  const wealthInJPY = wealth * (data.currencyRates?.JPY.value ?? 1);
-  const wealthInAED = wealth * (data.currencyRates?.AED.value ?? 1);
+  const wealthInINR = wealth * (data.currencyRates?.INR?.value ?? 1);
+  const wealthInEUR = wealth * (data.currencyRates?.EUR?.value ?? 1);
+  const wealthInGBP = wealth * (data.currencyRates?.GBP?.value ?? 1);
+  const wealthInJPY = wealth * (data.currencyRates?.JPY?.value ?? 1);
+  const wealthInAED = wealth * (data.currencyRates?.AED?.value ?? 1);
 
   const today = new Date();
   const month = today.getUTCMonth();
@@ -96,7 +96,7 @@ function RouteComponent() {
       .forEach((account) => {
         wealth +=
           account.startingBalance /
-          (data.currencyRates?.[account.currencyCode].value ?? 1);
+          (data.currencyRates?.[account.currencyCode]?.value ?? 1);
       });
     data.transactions
       ?.filter(
@@ -108,7 +108,7 @@ function RouteComponent() {
         transaction.transactions.forEach((t) => {
           wealth +=
             t.amount /
-            (data.currencyRates?.[t.account.currencyCode].value ?? 1);
+            (data.currencyRates?.[t.account.currencyCode]?.value ?? 1);
         });
       });
     cummulative += wealth;

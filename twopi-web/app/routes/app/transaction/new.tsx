@@ -29,7 +29,7 @@ function RouteComponent() {
       return {
         data: {
           categories: results[0].data?.categories,
-          currencies: results[1].data?.currencies,
+          currencies: results[1].data?.data,
           accounts: results[2].data?.accounts,
         },
         isPending: results.some((result) => result.isPending),

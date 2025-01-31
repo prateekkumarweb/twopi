@@ -14,7 +14,8 @@
     "test:ts": "tsc --noEmit",
     "auth:migrate": "cli migrate --y",
     "db:gen": "prisma generate",
-    "db:migrate": "prisma migrate deploy"
+    "db:migrate": "prisma migrate deploy",
+    "gen:api": "openapi-typescript http://localhost:8000/api.json -o app/lib/openapi.gen.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.3.0",
@@ -29,6 +30,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.474.0",
+    "openapi-fetch": "^0.13.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "recharts": "^2.15.1",
@@ -57,6 +59,7 @@
     "eslint-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
     "eslint-plugin-react-hooks": "^5.1.0",
     "globals": "^15.14.0",
+    "openapi-typescript": "^7.6.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "prisma": "^6.3.0",

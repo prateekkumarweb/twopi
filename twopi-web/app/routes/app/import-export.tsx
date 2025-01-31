@@ -37,6 +37,10 @@ function RouteComponent() {
   async function importAccounts() {
     setError("");
     const [header, ...lines] = accountCsv.split("\n");
+    if (!header) {
+      setError("Invalid format");
+      return;
+    }
     const headerNames = header.split("\t");
     const accountIndex = headerNames.indexOf("Account");
     const accountTypeIndex = headerNames.indexOf("Account Type");
@@ -59,10 +63,12 @@ function RouteComponent() {
       const name = values[accountIndex];
       const accountType = values[accountTypeIndex];
       const startingBalance = Number(
-        values[startingBalanceIndex].replaceAll(",", ""),
+        values[startingBalanceIndex]?.replaceAll(",", ""),
       );
       const currencyCode = values[currencyIndex];
-      const createdAt = new Date(values[createdAtIndex]);
+      const createdAt = values[createdAtIndex]
+        ? new Date(values[createdAtIndex])
+        : new Date();
       data.push({
         name,
         accountType,
@@ -84,6 +90,10 @@ function RouteComponent() {
   async function importTransactions() {
     setError("");
     const [header, ...lines] = transactionCsv.split("\n");
+    if (!header) {
+      setError("Invalid format");
+      return;
+    }
     const headerNames = header.split("\t");
     const dateIndex = headerNames.indexOf("Date");
     const accountIndex = headerNames.indexOf("Account");
@@ -93,9 +103,9 @@ function RouteComponent() {
     const items = [];
     for (const line of lines) {
       const values = line.split("\t");
-      const date = new Date(values[dateIndex]);
+      const date = values[dateIndex] ? new Date(values[dateIndex]) : new Date();
       const account = values[accountIndex];
-      const amount = Number(values[amountIndex].replaceAll(",", ""));
+      const amount = Number(values[amountIndex]?.replaceAll(",", ""));
       const currency = values[currencyIndex];
       const notes = values[notesIndex];
       items.push({ date, account, amount, currency, notes });
@@ -112,7 +122,7 @@ function RouteComponent() {
           accountId: accounts?.find((a) => a.name === item.account)?.id ?? "",
           notes: item.notes,
         })),
-        timestamp: new Date(items[0].date),
+        timestamp: items[0]?.date ? new Date(items[0]?.date) : new Date(),
       });
     }
     try {

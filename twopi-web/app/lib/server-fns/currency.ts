@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
+import { apiClient } from "../openapi";
 import { auth } from "../server/auth";
 import {
   getCurrenciesCache,
@@ -54,8 +55,15 @@ export const getCurrencies = createServerFn({ method: "GET" }).handler(
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    return { currencies: await db.currency.findMany() };
+    const { data, error } = await apiClient.GET("/currency", {
+      headers: {
+        "x-user-id": session.user.id,
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
+    return { data };
   },
 );
 

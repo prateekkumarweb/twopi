@@ -8,6 +8,7 @@
     "skipLibCheck": true,
     "strict": true,
     "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "paths": {
       "~/*": ["./app/*"]
     }

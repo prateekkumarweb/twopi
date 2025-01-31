@@ -5,10 +5,9 @@ edition = "2021"
 publish = false
 
 [workspace]
-members = [".", "entity", "migration"]
+members = [".", "migration"]
 
 [dependencies]
-entity = { path = "entity" }
 migration = { path = "migration" }
 anyhow = "1.0.95"
 axum = { version = "0.8.1", features = ["macros", "http2"] }
@@ -21,5 +20,8 @@ tokio = { version = "1.43.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 serde = { version = "1.0.217", features = ["derive"] }
-async-graphql = "7.0.14"
 async-graphql-axum = "7.0.14"
+utoipa = "5.3.1"
+utoipa-axum = "0.2.0"
+utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
+axum-extra = { version = "0.10.0", features = ["typed-header"] }

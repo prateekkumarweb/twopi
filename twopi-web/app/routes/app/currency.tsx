@@ -133,12 +133,12 @@ function RouteComponent() {
                 </button>
               </td>
             </tr>
-            {data.currencies
-              ? data.currencies.map((currency) => (
+            {data.data
+              ? data.data.map((currency) => (
                   <tr key={currency.code}>
                     <td>{currency.code}</td>
                     <td>{currency.name}</td>
-                    <td>{currency.decimalDigits}</td>
+                    <td>{currency.decimal_digits}</td>
                     <td>
                       <button
                         type="button"
