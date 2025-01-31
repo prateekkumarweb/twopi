@@ -11,18 +11,19 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "lint": "eslint .",
+    "test:ts": "tsc --noEmit",
     "auth:migrate": "cli migrate --y",
     "db:gen": "prisma generate",
     "db:migrate": "prisma migrate deploy"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1",
+    "@prisma/client": "^6.3.0",
     "@tanstack/react-form": "^0.41.3",
-    "@tanstack/react-query": "^5.65.0",
-    "@tanstack/react-router": "^1.97.25",
-    "@tanstack/zod-adapter": "^1.97.25",
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-router": "^1.98.4",
+    "@tanstack/zod-adapter": "^1.98.4",
     "@tanstack/zod-form-adapter": "^0.41.3",
-    "better-auth": "^1.1.14",
+    "better-auth": "^1.1.15",
     "better-sqlite3": "^11.8.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
@@ -35,21 +36,21 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@better-auth/cli": "^1.1.14",
+    "@better-auth/cli": "^1.1.15",
     "@eslint/js": "^9.19.0",
     "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.1",
     "@tailwindcss/typography": "^0.5.16",
-    "@tanstack/eslint-plugin-query": "^5.65.0",
-    "@tanstack/react-query-devtools": "^5.65.0",
-    "@tanstack/router-devtools": "^1.97.25",
-    "@tanstack/start": "^1.97.25",
+    "@tanstack/eslint-plugin-query": "^5.66.0",
+    "@tanstack/react-query-devtools": "^5.66.0",
+    "@tanstack/router-devtools": "^1.98.4",
+    "@tanstack/start": "^1.98.6",
     "@types/better-sqlite3": "^7.6.12",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
     "babel-plugin-react-compiler": "19.0.0-beta-e552027-20250112",
-    "daisyui": "5.0.0-beta.2",
+    "daisyui": "5.0.0-beta.6",
     "eslint": "^9.19.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-react": "^7.37.4",
@@ -58,8 +59,8 @@
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "prisma": "^6.2.1",
-    "tailwindcss": "^4.0.0",
+    "prisma": "^6.3.0",
+    "tailwindcss": "^4.0.1",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0",
     "vinxi": "^0.5.1",
@@ -69,6 +70,9 @@
     "onlyBuiltDependencies": [
       "better-sqlite3",
       "@prisma/client"
-    ]
+    ],
+    "overrides": {
+      "vite": "^6.0.11"
+    }
   }
 }
