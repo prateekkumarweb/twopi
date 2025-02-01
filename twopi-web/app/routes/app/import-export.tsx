@@ -183,7 +183,7 @@ function RouteComponent() {
         </summary>
         <textarea
           className="mt-4 h-64 w-full font-mono"
-          value={JSON.stringify(
+          defaultValue={JSON.stringify(
             {
               accounts,
               transactions,

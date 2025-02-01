@@ -10,21 +10,22 @@
 mod entity;
 
 mod cache;
+mod routes;
 
 use std::{path::PathBuf, sync::Arc};
 
 use anyhow::Context;
 use axum::{
-    extract::{Query, State},
+    extract::State,
     http::{HeaderName, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
     Json,
 };
 use axum_extra::{headers::Header, TypedHeader};
-use cache::{CacheManager, CurrenciesObject, HistoricalObject};
+use cache::CacheManager;
 use migration::{Migrator, MigratorTrait, OnConflict};
 use sea_orm::{ActiveValue, ConnectOptions, Database, DatabaseConnection, EntityTrait};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tokio::sync::Mutex;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -42,13 +43,7 @@ async fn main() -> anyhow::Result<()> {
 
     let (router, mut api) = OpenApiRouter::new()
         .routes(routes![currency, sync_currency])
-        .nest(
-            "/currency-cache",
-            OpenApiRouter::new()
-                .routes(routes![currencies])
-                .routes(routes![latest])
-                .routes(routes![historical]),
-        )
+        .nest("/currency-cache", routes::currency_cache::router())
         .with_state(Arc::new(Mutex::new(cache)))
         .split_for_parts();
     api.info = utoipa::openapi::Info::new("TwoPI API", "alpha");
@@ -90,15 +85,6 @@ async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
     let connect_options =
         ConnectOptions::new(format!("sqlite://../data/database/{id}.db?mode=rwc"));
     let db = Database::connect(connect_options).await?;
-    // let status = Migrator::get_migration_with_status(&db).await?;
-    // tracing::info!(
-    //     "Connected to database {}, migration status: {:?}",
-    //     &id,
-    //     status
-    //         .iter()
-    //         .map(|m| (m.name(), m.status()))
-    //         .collect::<Vec<_>>()
-    // );
     Migrator::up(&db, None).await?;
     Ok(db)
 }
@@ -193,54 +179,4 @@ async fn sync_currency(
             .await?;
     }
     Ok(())
-}
-
-#[axum::debug_handler]
-#[utoipa::path(get, path = "/currencies", responses(
-    (status = OK, body = CurrenciesObject),
-    (status = INTERNAL_SERVER_ERROR, body = String)
-))]
-async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    Ok(cache
-        .lock()
-        .await
-        .currencies()
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
-}
-
-#[axum::debug_handler]
-#[utoipa::path(get, path = "/latest", responses(
-    (status = OK, body = HistoricalObject),
-    (status = INTERNAL_SERVER_ERROR, body = String)
-))]
-async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    Ok(cache
-        .lock()
-        .await
-        .latest()
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
-}
-
-#[derive(Debug, Deserialize)]
-struct HistoricalQuery {
-    date: String,
-}
-
-#[axum::debug_handler]
-#[utoipa::path(get, path = "/historical", responses(
-    (status = OK, body = HistoricalObject),
-    (status = INTERNAL_SERVER_ERROR, body = String)
-))]
-async fn historical(
-    State(cache): State<Arc<Mutex<CacheManager>>>,
-    Query(query): Query<HistoricalQuery>,
-) -> AppResult<impl IntoResponse> {
-    Ok(cache
-        .lock()
-        .await
-        .historical(&query.date)
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
 }
