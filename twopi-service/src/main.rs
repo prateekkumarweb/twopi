@@ -16,19 +16,16 @@ use std::{path::PathBuf, sync::Arc};
 
 use anyhow::Context;
 use axum::{
-    extract::State,
     http::{HeaderName, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    Json,
 };
-use axum_extra::{headers::Header, TypedHeader};
+use axum_extra::headers::Header;
 use cache::CacheManager;
-use migration::{Migrator, MigratorTrait, OnConflict};
-use sea_orm::{ActiveValue, ConnectOptions, Database, DatabaseConnection, EntityTrait};
-use serde::Serialize;
+use migration::{Migrator, MigratorTrait};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tokio::sync::Mutex;
-use utoipa::{IntoParams, ToSchema};
-use utoipa_axum::{router::OpenApiRouter, routes};
+use utoipa::IntoParams;
+use utoipa_axum::router::OpenApiRouter;
 use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
@@ -39,12 +36,20 @@ async fn main() -> anyhow::Result<()> {
     let data_dir = PathBuf::from(data_dir).join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 
-    let cache = CacheManager::new(data_dir.clone(), api_key);
+    let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
 
     let (router, mut api) = OpenApiRouter::new()
-        .routes(routes![currency, sync_currency])
-        .nest("/currency-cache", routes::currency_cache::router())
-        .with_state(Arc::new(Mutex::new(cache)))
+        .nest(
+            "/currency",
+            routes::currency::router().with_state(cache.clone()),
+        )
+        .nest(
+            "/currency-cache",
+            routes::currency_cache::router().with_state(cache),
+        )
+        .nest("/account", routes::account::router())
+        .nest("/category", routes::category::router())
+        .nest("/transaction", routes::transaction::router())
         .split_for_parts();
     api.info = utoipa::openapi::Info::new("TwoPI API", "alpha");
     let router = router.merge(SwaggerUi::new("/swagger-ui").url("/api.json", api));
@@ -89,13 +94,6 @@ async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
     Ok(db)
 }
 
-#[derive(ToSchema, Serialize)]
-struct Currency {
-    code: String,
-    name: String,
-    decimal_digits: i32,
-}
-
 #[derive(IntoParams)]
 #[into_params(names("x-user-id"), parameter_in = Header)]
 struct XUserId(String);
@@ -124,61 +122,4 @@ impl Header for XUserId {
         value.set_sensitive(true);
         values.extend(std::iter::once(value));
     }
-}
-
-#[axum::debug_handler]
-#[utoipa::path(get, path = "/currency", params(XUserId), responses(
-    (status = OK, body = Vec<Currency>),
-    (status = INTERNAL_SERVER_ERROR, body = String)
-))]
-async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoResponse> {
-    let db = database(&id.0).await?;
-    tracing::info!("Querying currency for {}", id.0);
-    let currency = entity::currency::Entity::find().all(&db).await?;
-    Ok(Json(
-        currency
-            .into_iter()
-            .map(|c| Currency {
-                code: c.code.to_string(),
-                name: c.name,
-                decimal_digits: c.decimal_digits,
-            })
-            .collect::<Vec<_>>(),
-    ))
-}
-
-#[axum::debug_handler]
-#[utoipa::path(post, path = "/sync-currency", params(XUserId), responses(
-    (status = OK, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
-))]
-async fn sync_currency(
-    TypedHeader(id): TypedHeader<XUserId>,
-    State(cache): State<Arc<Mutex<CacheManager>>>,
-) -> AppResult<()> {
-    let db = database(&id.0).await?;
-    tracing::info!("Syncing currency for {}", id.0);
-    let currencies = cache.lock().await.currencies().await?;
-    for currency in currencies.data.values() {
-        if currency.type_ != "fiat" {
-            continue;
-        }
-        let currency_obj = entity::currency::ActiveModel {
-            code: ActiveValue::Set(currency.code.clone()),
-            name: ActiveValue::Set(currency.name.clone()),
-            decimal_digits: ActiveValue::Set(currency.decimal_digits),
-        };
-        entity::currency::Entity::insert(currency_obj)
-            .on_conflict(
-                OnConflict::column(entity::currency::Column::Code)
-                    .update_columns([
-                        entity::currency::Column::Name,
-                        entity::currency::Column::DecimalDigits,
-                    ])
-                    .to_owned(),
-            )
-            .exec(&db)
-            .await?;
-    }
-    Ok(())
 }

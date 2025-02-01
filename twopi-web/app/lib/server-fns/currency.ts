@@ -4,7 +4,6 @@ import { z } from "zod";
 import { apiClient } from "../openapi";
 import { auth } from "../server/auth";
 import { getCurrenciesLatestCache } from "../server/currency-cache";
-import { getDbClient } from "../server/db";
 
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
@@ -23,8 +22,21 @@ export const createCurrency = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const value = await db.currency.create({ data });
+    const { data: value, error } = await apiClient.PUT("/currency", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+      body: {
+        code: data.code,
+        name: data.name,
+        decimal_digits: data.decimalDigits,
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return { success: true, value };
   });
 
@@ -39,9 +51,20 @@ export const deleteCurrency = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const value = await db.currency.delete({ where: { code: data } });
-    return { success: true, value };
+    const { error } = await apiClient.DELETE("/currency", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+        query: {
+          code: data,
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
+    return { success: true };
   });
 
 export const getCurrencies = createServerFn({ method: "GET" }).handler(
@@ -53,8 +76,10 @@ export const getCurrencies = createServerFn({ method: "GET" }).handler(
       throw new Error("Unauthorized");
     }
     const { data, error } = await apiClient.GET("/currency", {
-      headers: {
-        "x-user-id": session.user.id,
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
       },
     });
     if (error) {
@@ -72,9 +97,11 @@ export const syncCurrencies = createServerFn({ method: "POST" }).handler(
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const { error } = await apiClient.POST("/sync-currency", {
-      headers: {
-        "x-user-id": session.user.id,
+    const { error } = await apiClient.POST("/currency/sync", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
       },
     });
     if (error) {
