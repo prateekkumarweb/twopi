@@ -27,7 +27,7 @@ use migration::{Migrator, MigratorTrait, OnConflict};
 use sea_orm::{ActiveValue, ConnectOptions, Database, DatabaseConnection, EntityTrait};
 use serde::Serialize;
 use tokio::sync::Mutex;
-use utoipa::ToSchema;
+use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -96,6 +96,8 @@ struct Currency {
     decimal_digits: i32,
 }
 
+#[derive(IntoParams)]
+#[into_params(names("x-user-id"), parameter_in = Header)]
 struct XUserId(String);
 
 static XUSER_ID_HEADER_NAME: HeaderName = HeaderName::from_static(USER_ID_HEADER_NAME);
@@ -125,7 +127,7 @@ impl Header for XUserId {
 }
 
 #[axum::debug_handler]
-#[utoipa::path(get, path = "/currency", responses(
+#[utoipa::path(get, path = "/currency", params(XUserId), responses(
     (status = OK, body = Vec<Currency>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
@@ -146,7 +148,7 @@ async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoR
 }
 
 #[axum::debug_handler]
-#[utoipa::path(post, path = "/sync-currency", responses(
+#[utoipa::path(post, path = "/sync-currency", params(XUserId), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]

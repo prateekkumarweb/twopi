@@ -8,6 +8,7 @@ use axum::{
 use reqwest::StatusCode;
 use serde::Deserialize;
 use tokio::sync::Mutex;
+use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
@@ -50,13 +51,13 @@ async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl
         .map(|e| (StatusCode::OK, Json(e)))?)
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, IntoParams)]
 struct HistoricalQuery {
     date: String,
 }
 
 #[axum::debug_handler]
-#[utoipa::path(get, path = "/historical", responses(
+#[utoipa::path(get, path = "/historical", params(HistoricalQuery), responses(
     (status = OK, body = HistoricalObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
