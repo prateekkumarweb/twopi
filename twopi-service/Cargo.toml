@@ -25,3 +25,6 @@ utoipa = "5.3.1"
 utoipa-axum = "0.2.0"
 utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
+reqwest = { version = "0.12.12", features = ["json"] }
+jiff = "0.1.28"
+serde_json = "1.0.138"

@@ -9,15 +9,24 @@
 #[allow(unused_imports)]
 mod entity;
 
+mod cache;
+
+use std::{path::PathBuf, sync::Arc};
+
+use anyhow::Context;
 use axum::{
+    extract::{Query, State},
     http::{HeaderName, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
+    routing::get,
     Json,
 };
 use axum_extra::{headers::Header, TypedHeader};
-use migration::{Migrator, MigratorTrait};
-use sea_orm::{ConnectOptions, Database, DatabaseConnection, EntityTrait};
-use serde::Serialize;
+use cache::CacheManager;
+use migration::{Migrator, MigratorTrait, OnConflict};
+use sea_orm::{ActiveValue, ConnectOptions, Database, DatabaseConnection, EntityTrait};
+use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_swagger_ui::SwaggerUi;
@@ -25,8 +34,24 @@ use utoipa_swagger_ui::SwaggerUi;
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
+
+    let data_dir = std::env::var("TWOPI_DATA_DIR").context("TWOPI_DATA_DIR env var not set")?;
+    let data_dir = PathBuf::from(data_dir).join("currency");
+    let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
+
+    let cache = CacheManager::new(data_dir.clone(), api_key);
+
     let (router, mut api) = OpenApiRouter::new()
         .routes(routes!(currency))
+        .routes(routes!(sync_currency))
+        .nest(
+            "/currency-cache",
+            OpenApiRouter::new()
+                .route("/currencies", get(currencies))
+                .route("/latest", get(latest))
+                .route("/historical", get(historical)),
+        )
+        .with_state(Arc::new(Mutex::new(cache)))
         .split_for_parts();
     api.info = utoipa::openapi::Info::new("TwoPI API", "alpha");
     let router = router.merge(SwaggerUi::new("/swagger-ui").url("/api.json", api));
@@ -40,6 +65,8 @@ async fn main() -> anyhow::Result<()> {
 static USER_ID_HEADER_NAME: &str = "x-user-id";
 
 struct AppError(anyhow::Error);
+
+type AppResult<T> = Result<T, AppError>;
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
@@ -118,7 +145,7 @@ impl Header for XUserId {
     (status = OK, body = Vec<Currency>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> Result<impl IntoResponse, AppError> {
+async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying currency for {}", id.0);
     let currency = entity::currency::Entity::find().all(&db).await?;
@@ -132,4 +159,78 @@ async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> Result<impl IntoResp
             })
             .collect::<Vec<_>>(),
     ))
+}
+
+#[axum::debug_handler]
+#[utoipa::path(post, path = "/sync-currency", responses(
+    (status = OK, body = ()),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
+async fn sync_currency(
+    TypedHeader(id): TypedHeader<XUserId>,
+    State(cache): State<Arc<Mutex<CacheManager>>>,
+) -> AppResult<()> {
+    let db = database(&id.0).await?;
+    tracing::info!("Syncing currency for {}", id.0);
+    let currencies = cache.lock().await.currencies().await?;
+    for currency in currencies.data.values() {
+        if currency.type_ != "fiat" {
+            continue;
+        }
+        let currency_obj = entity::currency::ActiveModel {
+            code: ActiveValue::Set(currency.code.clone()),
+            name: ActiveValue::Set(currency.name.clone()),
+            decimal_digits: ActiveValue::Set(currency.decimal_digits),
+        };
+        entity::currency::Entity::insert(currency_obj)
+            .on_conflict(
+                OnConflict::column(entity::currency::Column::Code)
+                    .update_columns([
+                        entity::currency::Column::Name,
+                        entity::currency::Column::DecimalDigits,
+                    ])
+                    .to_owned(),
+            )
+            .exec(&db)
+            .await?;
+    }
+    Ok(())
+}
+
+#[axum::debug_handler]
+async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
+    Ok(cache
+        .lock()
+        .await
+        .currencies()
+        .await
+        .map(|e| (StatusCode::OK, Json(e)))?)
+}
+
+#[axum::debug_handler]
+async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
+    Ok(cache
+        .lock()
+        .await
+        .latest()
+        .await
+        .map(|e| (StatusCode::OK, Json(e)))?)
+}
+
+#[derive(Debug, Deserialize)]
+struct HistoricalQuery {
+    date: String,
+}
+
+#[axum::debug_handler]
+async fn historical(
+    State(cache): State<Arc<Mutex<CacheManager>>>,
+    Query(query): Query<HistoricalQuery>,
+) -> AppResult<impl IntoResponse> {
+    Ok(cache
+        .lock()
+        .await
+        .historical(&query.date)
+        .await
+        .map(|e| (StatusCode::OK, Json(e)))?)
 }

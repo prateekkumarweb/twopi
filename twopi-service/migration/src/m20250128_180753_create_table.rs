@@ -12,7 +12,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Currency::Table)
                     .if_not_exists()
-                    .col(uuid(Currency::Code).primary_key())
+                    .col(string(Currency::Code).primary_key())
                     .col(string(Currency::Name))
                     .col(integer(Currency::DecimalDigits))
                     .to_owned(),
