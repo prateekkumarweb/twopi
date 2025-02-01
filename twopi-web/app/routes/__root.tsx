@@ -1,9 +1,5 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import {
-  createRootRoute,
-  Outlet,
-  ScrollRestoration,
-} from "@tanstack/react-router";
+import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import { lazy, Suspense, type ReactNode } from "react";
 import { getWebRequest } from "vinxi/http";
@@ -80,7 +76,6 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       </head>
       <body>
         {children}
-        <ScrollRestoration />
         <Suspense>
           <TanStackRouterDevtools />
         </Suspense>
