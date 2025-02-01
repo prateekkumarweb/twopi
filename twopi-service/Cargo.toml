@@ -8,23 +8,24 @@ publish = false
 members = [".", "migration"]
 
 [dependencies]
-migration = { path = "migration" }
 anyhow = "1.0.95"
 axum = { version = "0.8.1", features = ["macros", "http2"] }
+axum-extra = { version = "0.10.0", features = ["typed-header"] }
+jiff = "0.1.28"
+migration = { path = "migration" }
+reqwest = { version = "0.12.12", features = ["json"] }
 sea-orm = { version = "1.1.4", features = [
     "sqlx-sqlite",
     "runtime-tokio-rustls",
     "macros",
 ] }
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.138"
 tokio = { version = "1.43.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
-serde = { version = "1.0.217", features = ["derive"] }
-async-graphql-axum = "7.0.14"
 utoipa = { version = "5.3.1", features = ["axum_extras"] }
 utoipa-axum = "0.2.0"
+utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
+utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
-axum-extra = { version = "0.10.0", features = ["typed-header"] }
-reqwest = { version = "0.12.12", features = ["json"] }
-jiff = "0.1.28"
-serde_json = "1.0.138"

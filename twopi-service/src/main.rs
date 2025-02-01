@@ -24,8 +24,10 @@ use cache::CacheManager;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tokio::sync::Mutex;
-use utoipa::IntoParams;
+use utoipa::{IntoParams, OpenApi};
 use utoipa_axum::router::OpenApiRouter;
+use utoipa_rapidoc::RapiDoc;
+use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
@@ -38,7 +40,14 @@ async fn main() -> anyhow::Result<()> {
 
     let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
 
-    let (router, mut api) = OpenApiRouter::new()
+    #[derive(OpenApi)]
+    #[openapi(info(
+        title = "TwoPi API",
+        license(name = "MIT", url = "https://opensource.org/licenses/MIT")
+    ))]
+    struct ApiDoc;
+
+    let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
             "/currency",
             routes::currency::router().with_state(cache.clone()),
@@ -51,8 +60,10 @@ async fn main() -> anyhow::Result<()> {
         .nest("/category", routes::category::router())
         .nest("/transaction", routes::transaction::router())
         .split_for_parts();
-    api.info = utoipa::openapi::Info::new("TwoPI API", "alpha");
-    let router = router.merge(SwaggerUi::new("/swagger-ui").url("/api.json", api));
+    let router = router
+        .merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", api.clone()))
+        .merge(RapiDoc::new("/openapi.json").path("/rapidoc"))
+        .merge(Scalar::with_url("/scalar", api));
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
