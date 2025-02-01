@@ -1,3 +1,5 @@
+import { apiClient } from "../openapi";
+
 interface CurrenciesResponse {
   [key: string]: {
     symbol: string;
@@ -12,22 +14,18 @@ interface CurrenciesResponse {
   };
 }
 
-const currencyCacheUrl =
-  process.env.CURRENCY_CACHE_URL ?? "http://localhost:4670";
-
 export async function getCurrenciesCache() {
-  const response = await fetch(`${currencyCacheUrl}/currencies`);
-  const data = (await response.json()).data as CurrenciesResponse;
+  const { data, error } = await apiClient.GET("/currency-cache/currencies");
+  if (error) {
+    throw new Error(error);
+  }
   return data;
 }
 
 export async function getCurrenciesLatestCache() {
-  const response = await fetch(`${currencyCacheUrl}/latest`);
-  const data = (await response.json()).data as {
-    [key: string]: {
-      code: string;
-      value: number;
-    };
-  };
+  const { data, error } = await apiClient.GET("/currency-cache/latest");
+  if (error) {
+    throw new Error(error);
+  }
   return data;
 }

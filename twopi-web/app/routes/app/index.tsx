@@ -33,7 +33,7 @@ function RouteComponent() {
         data: {
           accounts: results[0].data?.accounts,
           transactions: results[1].data?.transactions,
-          currencyRates: results[2].data,
+          currencyRates: results[2].data?.data,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),

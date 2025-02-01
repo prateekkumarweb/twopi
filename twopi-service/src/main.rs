@@ -18,11 +18,10 @@ use axum::{
     extract::{Query, State},
     http::{HeaderName, HeaderValue, StatusCode},
     response::{IntoResponse, Response},
-    routing::get,
     Json,
 };
 use axum_extra::{headers::Header, TypedHeader};
-use cache::CacheManager;
+use cache::{CacheManager, CurrenciesObject, HistoricalObject};
 use migration::{Migrator, MigratorTrait, OnConflict};
 use sea_orm::{ActiveValue, ConnectOptions, Database, DatabaseConnection, EntityTrait};
 use serde::{Deserialize, Serialize};
@@ -42,14 +41,13 @@ async fn main() -> anyhow::Result<()> {
     let cache = CacheManager::new(data_dir.clone(), api_key);
 
     let (router, mut api) = OpenApiRouter::new()
-        .routes(routes!(currency))
-        .routes(routes!(sync_currency))
+        .routes(routes![currency, sync_currency])
         .nest(
             "/currency-cache",
             OpenApiRouter::new()
-                .route("/currencies", get(currencies))
-                .route("/latest", get(latest))
-                .route("/historical", get(historical)),
+                .routes(routes![currencies])
+                .routes(routes![latest])
+                .routes(routes![historical]),
         )
         .with_state(Arc::new(Mutex::new(cache)))
         .split_for_parts();
@@ -198,6 +196,10 @@ async fn sync_currency(
 }
 
 #[axum::debug_handler]
+#[utoipa::path(get, path = "/currencies", responses(
+    (status = OK, body = CurrenciesObject),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
 async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
     Ok(cache
         .lock()
@@ -208,6 +210,10 @@ async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<
 }
 
 #[axum::debug_handler]
+#[utoipa::path(get, path = "/latest", responses(
+    (status = OK, body = HistoricalObject),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
 async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
     Ok(cache
         .lock()
@@ -223,6 +229,10 @@ struct HistoricalQuery {
 }
 
 #[axum::debug_handler]
+#[utoipa::path(get, path = "/historical", responses(
+    (status = OK, body = HistoricalObject),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
 async fn historical(
     State(cache): State<Arc<Mutex<CacheManager>>>,
     Query(query): Query<HistoricalQuery>,

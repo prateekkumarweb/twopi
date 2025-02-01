@@ -2,7 +2,7 @@
 
 ./migratedb.sh
 
-../currency-cache &
+../twopi-service &
 
 node ./.output/server/index.mjs &
 

@@ -4,21 +4,22 @@ use jiff::{tz::TimeZone, Timestamp, ToSpan, ZonedRound};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use utoipa::ToSchema;
 
 pub struct CacheManager {
     data_dir: PathBuf,
     currencies: Option<CurrenciesObject>,
-    historical: HashMap<String, Value>,
+    historical: HashMap<String, HistoricalObject>,
     client: Client,
     api_key: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct CurrenciesObject {
     pub data: HashMap<String, CurrencyObject>,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct CurrencyObject {
     pub symbol: String,
     pub name: String,
@@ -32,6 +33,17 @@ pub struct CurrencyObject {
     pub countries: Vec<String>,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct HistoricalObject {
+    pub data: HashMap<String, CurrencyExObject>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
+pub struct CurrencyExObject {
+    pub code: String,
+    pub value: f64,
+}
+
 impl CacheManager {
     pub fn new(data_dir: PathBuf, api_key: String) -> Self {
         Self {
@@ -43,34 +55,36 @@ impl CacheManager {
         }
     }
 
-    pub async fn latest(&mut self) -> anyhow::Result<Value> {
+    pub async fn latest(&mut self) -> anyhow::Result<HistoricalObject> {
         let timestamp = Self::get_nearest_date(&Timestamp::now().to_string())?;
         let date = &timestamp.to_string()[..10];
         self.historical(date).await
     }
 
-    pub async fn historical(&mut self, date: &str) -> anyhow::Result<Value> {
-        let json = self.historical.get(date);
-        if let Some(json) = json {
-            return Ok(json.clone());
+    pub async fn historical(&mut self, date: &str) -> anyhow::Result<HistoricalObject> {
+        let value = self.historical.get(date);
+        if let Some(value) = value {
+            return Ok(value.clone());
         }
         let path = self.data_dir.join(format!("historical_{date}.json"));
         if path.exists() {
             let json = Self::fetch_from_dir(&path).await?;
-            self.historical.insert(date.to_string(), json.clone());
-            return Ok(json);
+            let value = serde_json::from_value::<HistoricalObject>(json)?;
+            self.historical.insert(date.to_string(), value.clone());
+            return Ok(value);
         }
         let url = "https://api.currencyapi.com/v3/historical";
         let url = reqwest::Url::parse_with_params(url, &[("date", date)])?;
         let json = self.reqwest_download(url).await?;
         tokio::fs::write(&path, serde_json::to_string(&json)?).await?;
-        self.historical.insert(date.to_string(), json.clone());
-        Ok(json)
+        let value = serde_json::from_value::<HistoricalObject>(json)?;
+        self.historical.insert(date.to_string(), value.clone());
+        Ok(value)
     }
 
     pub async fn currencies(&mut self) -> anyhow::Result<CurrenciesObject> {
-        if let Some(obj) = &self.currencies {
-            return Ok(obj.clone());
+        if let Some(value) = &self.currencies {
+            return Ok(value.clone());
         }
         let path = self.data_dir.join("currencies.json");
         if path.exists() {

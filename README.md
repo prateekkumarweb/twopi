@@ -8,7 +8,7 @@
 BASE_URL=http://localhost:3000
 BETTER_AUTH_SECRET=<auth_secret>
 TWOPI_DATA_DIR=../data
-CURRENCY_CACHE_URL=http://localhost:4670
+TWOPI_API_URL=http://localhost:8000
 CURRENCY_API_KEY=<currency_api_key>
 ```
 
@@ -22,10 +22,10 @@ $ pnpm run build
 $ pnpm run start
 ```
 
-Running `currency-cache`:
+Running `twopi-service`:
 
 ```sh
-$ cd currency-cache
+$ cd twopi-service
 $ source .env
 $ RUST_LOG=debug cargo run --release
 ```

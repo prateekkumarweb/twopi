@@ -6,6 +6,5 @@
 **/auth.db
 **/*.db
 **/*.db-journal
-currency-cache/data
 **/target
 /data
