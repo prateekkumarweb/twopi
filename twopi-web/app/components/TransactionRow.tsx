@@ -19,7 +19,7 @@ export default function TransactionRow({
       >
         <div className="flex gap-2">
           <h2 className="grow overflow-hidden text-nowrap text-ellipsis">
-            {transaction.name}
+            {transaction.title}
           </h2>
           <div className="flex gap-2">
             <div className="d-badge d-badge-ghost d-badge-sm text-nowrap">

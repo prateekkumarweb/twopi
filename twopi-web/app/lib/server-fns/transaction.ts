@@ -2,6 +2,7 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
+import { apiClient } from "../openapi";
 import { auth } from "../server/auth";
 import { getDbClient } from "../server/db";
 
@@ -144,32 +145,32 @@ export const getTransaction = createServerFn({ method: "GET" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const transaction = await db.transaction.findUnique({
-      where: { id: data },
-      include: {
-        transactions: {
-          include: {
-            account: {
-              include: {
-                currency: true,
-              },
-            },
-            category: true,
+    const { data: transaction, error } = await apiClient.GET(
+      "/transaction/{transaction_id}",
+      {
+        params: {
+          header: {
+            "x-user-id": session.user.id,
+          },
+          path: {
+            transaction_id: data,
           },
         },
       },
-    });
+    );
+    if (error) {
+      throw new Error(error);
+    }
     if (!transaction) {
       throw notFound({ data: "Account not found" });
     }
     return {
       ...transaction,
-      transactions: transaction?.transactions.map((transactionItem) => ({
+      transactions: transaction?.transaction_items?.map((transactionItem) => ({
         ...transactionItem,
         amount:
           transactionItem.amount /
-          Math.pow(10, transactionItem.account.currency.decimalDigits),
+          Math.pow(10, transactionItem.account.currency.decimalDigits ?? 0),
       })),
     };
   });

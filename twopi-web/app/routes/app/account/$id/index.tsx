@@ -4,6 +4,7 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
 import LabelAndValue from "~/components/LabelAndValue";
+import TransactionRow from "~/components/TransactionRow";
 import {
   accountByIdQueryOptions,
   accountQueryOptions,
@@ -105,11 +106,9 @@ function RouteComponent() {
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
         <div className="my-2 flex flex-col gap-2">
-          {/*
-          // TODO
-          {account.TransactionItem.map(({ transaction }) => (
+          {account.transactions?.map((transaction) => (
             <TransactionRow key={transaction.id} transaction={transaction} />
-          ))} */}
+          ))}
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::{
     extract::{Path, Query},
     response::IntoResponse,
@@ -6,14 +8,20 @@ use axum::{
 use axum_extra::TypedHeader;
 use migration::{AccountType, OnConflict};
 use reqwest::StatusCode;
-use sea_orm::{prelude::Uuid, ActiveValue, EntityTrait, QueryOrder, TransactionTrait};
+use sea_orm::{
+    prelude::Uuid, ActiveValue, ColumnTrait, EntityTrait, Linked, QueryFilter, QueryOrder,
+    RelationTrait, TransactionTrait,
+};
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{database, entity, AppError, AppResult, XUserId};
 
-use super::currency::Currency;
+use super::{
+    currency::Currency,
+    transaction::{Transaction, TransactionItem},
+};
 
 pub fn router() -> OpenApiRouter<()> {
     OpenApiRouter::new()
@@ -23,15 +31,16 @@ pub fn router() -> OpenApiRouter<()> {
 }
 
 #[derive(ToSchema, Serialize, Deserialize)]
-struct Account {
-    id: Uuid,
-    name: String,
-    account_type: AccountType,
-    currency_code: String,
-    starting_balance: i64,
-    created_at: chrono::DateTime<chrono::Utc>,
-    account_extra: Option<serde_json::Value>,
-    currency: Option<Currency>,
+pub struct Account {
+    pub id: Uuid,
+    pub name: String,
+    pub account_type: AccountType,
+    pub currency_code: String,
+    pub starting_balance: i64,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub account_extra: Option<serde_json::Value>,
+    pub currency: Option<Currency>,
+    pub transactions: Option<Vec<Transaction>>,
 }
 
 #[axum::debug_handler]
@@ -66,10 +75,25 @@ async fn account(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoRe
                         name: c.name,
                         decimal_digits: c.decimal_digits,
                     }),
+                    transactions: None,
                 })
             })
             .collect::<AppResult<Vec<_>>>()?,
     ))
+}
+
+struct AccountToTransaction;
+
+impl Linked for AccountToTransaction {
+    type FromEntity = entity::account::Entity;
+    type ToEntity = entity::transaction::Entity;
+
+    fn link(&self) -> Vec<sea_orm::LinkDef> {
+        vec![
+            entity::transaction_item::Relation::Account.def().rev(),
+            entity::transaction_item::Relation::Transaction.def(),
+        ]
+    }
 }
 
 #[axum::debug_handler]
@@ -84,30 +108,68 @@ async fn account_by_id(
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying currency for {}", id.0);
-    let Some((account, currency)) = entity::account::Entity::find_by_id(account_id)
-        .find_also_related(entity::currency::Entity)
+    let Some((account, transactions)) = entity::account::Entity::find_by_id(account_id)
+        .find_also_linked(AccountToTransaction)
         .one(&db)
         .await
         .map_err(|err| AppError::DbErr(err))?
     else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    Ok(Json(Account {
+    let currencies = entity::currency::Entity::find()
+        .all(&db)
+        .await
+        .map_err(|err| AppError::DbErr(err))?
+        .into_iter()
+        .map(|c| (c.code.clone(), c))
+        .collect::<HashMap<_, _>>();
+    let mut transactions = transactions
+        .into_iter()
+        .map(|t| Transaction {
+            id: t.id,
+            title: t.title,
+            timestamp: t.timestamp,
+            transaction_items: None,
+        })
+        .collect::<Vec<_>>();
+    for transaction in transactions.iter_mut() {
+        transaction.transaction_items = Some(
+            entity::transaction_item::Entity::find()
+                .filter(entity::transaction_item::Column::TransactionId.eq(transaction.id))
+                .all(&db)
+                .await
+                .map_err(|err| AppError::DbErr(err))?
+                .into_iter()
+                .map(|ti| TransactionItem {
+                    id: ti.id,
+                    notes: ti.notes,
+                    account_id: ti.account_id,
+                    amount: ti.amount,
+                    transaction_id: ti.transaction_id,
+                    category_id: ti.category_id,
+                    account: None,
+                })
+                .collect::<Vec<_>>(),
+        )
+    }
+    let account = Account {
         id: account.id,
         name: account.name,
         account_type: serde_json::from_str::<AccountType>(&account.account_type)
             .map_err(|err| AppError::Other(err.into()))?,
-        currency_code: account.currency_code,
         starting_balance: account.starting_balance,
         created_at: account.created_at,
         account_extra: account.account_extra,
-        currency: currency.map(|c| Currency {
-            code: c.code,
-            name: c.name,
+        currency: currencies.get(&account.currency_code).map(|c| Currency {
+            code: c.code.clone(),
+            name: c.name.clone(),
             decimal_digits: c.decimal_digits,
         }),
-    })
-    .into_response())
+        currency_code: account.currency_code,
+        transactions: Some(transactions),
+    };
+
+    Ok(Json(account).into_response())
 }
 
 #[derive(Deserialize, IntoParams)]

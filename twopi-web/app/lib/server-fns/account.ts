@@ -171,15 +171,7 @@ export const getAccount = createServerFn({ method: "GET" })
         account.starting_balance /
         Math.pow(10, account.currency?.decimal_digits ?? 0),
       account_extra: undefined,
-      // TODO
-      TransactionItem: [],
-      // transactions: [
-      //   ...new Map(
-      //     account.TransactionItem.map(
-      //       (transaction) => transaction.transaction,
-      //     ).map((transaction) => [transaction.id, transaction]),
-      //   ).values(),
-      // ],
+      transactions: account.transactions,
     };
   });
 
