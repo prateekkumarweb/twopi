@@ -169,7 +169,7 @@ function RouteComponent() {
                           </option>
                           {data.accounts?.map((account) => (
                             <option key={account.id} value={account.id}>
-                              {account.name} - {account.currency_code}
+                              {account.name} - {account.currency.code}
                             </option>
                           ))}
                         </select>

@@ -22,7 +22,7 @@ export const createCurrency = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const { data: value, error } = await apiClient.PUT("/currency", {
+    const { error } = await apiClient.POST("/currency", {
       params: {
         header: {
           "x-user-id": session.user.id,
@@ -37,7 +37,7 @@ export const createCurrency = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(error);
     }
-    return { success: true, value };
+    return { success: true };
   });
 
 export const deleteCurrency = createServerFn({ method: "POST" })
@@ -97,7 +97,7 @@ export const syncCurrencies = createServerFn({ method: "POST" }).handler(
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const { error } = await apiClient.POST("/currency/sync", {
+    const { error } = await apiClient.PUT("/currency/sync", {
       params: {
         header: {
           "x-user-id": session.user.id,

@@ -34,8 +34,8 @@ function RouteComponent() {
       (data.transactions
         ?.map((transaction) => {
           let amount = 0;
-          for (const item of transaction.transactions) {
-            if (item.accountId === account.id) {
+          for (const item of transaction.transaction_items) {
+            if (item.account.id === account.id) {
               amount += item.amount;
             }
           }
@@ -99,7 +99,7 @@ function AccountItem({
             <div className="d-badge d-badge-ghost">
               {Intl.NumberFormat("en", {
                 style: "currency",
-                currency: account.currency_code,
+                currency: account.currency.code,
               }).format(currentBalance)}
             </div>
           </div>
@@ -110,7 +110,7 @@ function AccountItem({
           </div>
           <div>
             <div className="d-badge d-badge-neutral">
-              {account.currency_code}
+              {account.currency.code}
             </div>
           </div>
         </div>

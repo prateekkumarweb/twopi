@@ -139,7 +139,7 @@ enum Currency {
     DecimalDigits,
 }
 
-#[derive(Iden, EnumIter, DeriveActiveEnum, Serialize, Deserialize, ToSchema)]
+#[derive(Clone, Iden, EnumIter, DeriveActiveEnum, Serialize, Deserialize, ToSchema)]
 #[sea_orm(
     rs_type = "String",
     db_type = "String(StringLen::None)",

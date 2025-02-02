@@ -37,7 +37,7 @@ export const createAccount = createServerFn({ method: "POST" })
     if (currency.error) {
       throw new Error(currency.error);
     }
-    const { data: value, error } = await apiClient.PUT("/account", {
+    const { error } = await apiClient.PUT("/account", {
       params: {
         header: {
           "x-user-id": session.user.id,
@@ -57,7 +57,7 @@ export const createAccount = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(error);
     }
-    return { success: true, value };
+    return { success: true };
   });
 
 export const createAccounts = createServerFn({ method: "POST" })
@@ -85,7 +85,7 @@ export const createAccounts = createServerFn({ method: "POST" })
       item.startingBalance =
         item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0);
     }
-    const { data: value, error } = await apiClient.PUT("/account/import", {
+    const { error } = await apiClient.PUT("/account/import", {
       params: {
         header: {
           "x-user-id": session.user.id,
@@ -103,7 +103,7 @@ export const createAccounts = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(error);
     }
-    return { success: true, value };
+    return { success: true };
   });
 
 export const getAccounts = createServerFn({ method: "GET" }).handler(
@@ -131,7 +131,6 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(
           starting_balance:
             account.starting_balance /
             Math.pow(10, account.currency?.decimal_digits ?? 0),
-          account_extra: undefined,
         })) ?? [],
     };
   },
@@ -170,8 +169,19 @@ export const getAccount = createServerFn({ method: "GET" })
       starting_balance:
         account.starting_balance /
         Math.pow(10, account.currency?.decimal_digits ?? 0),
-      account_extra: undefined,
-      transactions: account.transactions,
+      transactions: account.transactions?.map((transaction) => ({
+        ...transaction,
+        transaction_items: transaction.transaction_items?.map((item) => ({
+          ...item,
+          amount: item.amount / Math.pow(10, account.currency.decimal_digits),
+          account: {
+            ...item.account,
+            starting_balance:
+              item.account.starting_balance /
+              Math.pow(10, item.account.currency.decimal_digits),
+          },
+        })),
+      })),
     };
   });
 

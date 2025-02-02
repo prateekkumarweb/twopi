@@ -75,7 +75,7 @@ static USER_ID_HEADER_NAME: &str = "x-user-id";
 #[derive(Debug, thiserror::Error)]
 enum AppError {
     #[error("Database error: {0}")]
-    DbErr(DbErr),
+    DbErr(#[from] DbErr),
     #[error("App error: {0}")]
     Other(anyhow::Error),
 }
@@ -87,7 +87,7 @@ impl IntoResponse for AppError {
         tracing::error!("{:?}", self);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self),
+            format!("Something went wrong: {self}"),
         )
             .into_response()
     }
@@ -98,10 +98,8 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
         ConnectOptions::new(format!("sqlite://../data/database/{id}.db?mode=rwc"));
     let db = Database::connect(connect_options)
         .await
-        .map_err(|err| AppError::DbErr(err))?;
-    Migrator::up(&db, None)
-        .await
-        .map_err(|err| AppError::DbErr(err))?;
+        .map_err(AppError::DbErr)?;
+    Migrator::up(&db, None).await.map_err(AppError::DbErr)?;
     Ok(db)
 }
 

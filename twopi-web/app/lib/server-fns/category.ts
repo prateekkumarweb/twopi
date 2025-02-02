@@ -21,7 +21,7 @@ export const createCategory = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const { data: value, error } = await apiClient.PUT("/category", {
+    const { error } = await apiClient.POST("/category", {
       params: {
         header: {
           "x-user-id": session.user.id,
@@ -37,7 +37,7 @@ export const createCategory = createServerFn({ method: "POST" })
     if (error) {
       throw new Error(error);
     }
-    return { success: true, value };
+    return { success: true };
   });
 
 export const deleteCategory = createServerFn({ method: "POST" })

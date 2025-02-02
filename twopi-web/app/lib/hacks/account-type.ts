@@ -1,4 +1,4 @@
-import type { AccountType as AccountTypeOrigin } from "@prisma/client";
+import type { components } from "../openapi.gen";
 
 // HACK: Since enums are not supported in vite, this is needed
 export const AccountType: { [k in AccountTypeOrigin]: k } = {
@@ -10,4 +10,4 @@ export const AccountType: { [k in AccountTypeOrigin]: k } = {
   Person: "Person",
 } as const;
 
-export type AccountType = AccountTypeOrigin;
+export type AccountTypeOrigin = components["schemas"]["AccountType"];

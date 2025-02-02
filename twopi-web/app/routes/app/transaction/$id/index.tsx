@@ -76,7 +76,7 @@ function RouteComponent() {
         </button>
       </div>
       <LabelAndValue label="Id" value={transaction.id} />
-      <LabelAndValue label="Name" value={transaction.name} />
+      <LabelAndValue label="Title" value={transaction.title} />
       <LabelAndValue
         label="Timestamp"
         value={dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
@@ -84,7 +84,7 @@ function RouteComponent() {
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transaction items</h2>
         <div className="my-2 flex flex-col gap-2">
-          {transaction.transactions.map((transactionItem) => (
+          {transaction.transaction_items.map((transactionItem) => (
             <div className="bg-base-100 p-2 shadow-xs" key={transactionItem.id}>
               <LabelAndValue label="Notes" value={transactionItem.notes} />
               <LabelAndValue
@@ -106,15 +106,15 @@ function RouteComponent() {
                   >
                     {Intl.NumberFormat("en", {
                       style: "currency",
-                      currency: transactionItem.account.currencyCode,
+                      currency: transactionItem.account.currency.code,
                     }).format(transactionItem.amount)}
                   </span>
                 }
               />
-              {transactionItem.categoryName && (
+              {transactionItem.category && (
                 <LabelAndValue
                   label="Category"
-                  value={transactionItem.categoryName}
+                  value={transactionItem.category.name}
                 />
               )}
             </div>

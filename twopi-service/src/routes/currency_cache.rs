@@ -2,10 +2,8 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Query, State},
-    response::IntoResponse,
     Json,
 };
-use reqwest::StatusCode;
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use utoipa::IntoParams;
@@ -28,14 +26,17 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
     (status = OK, body = CurrenciesObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    cache
-        .lock()
-        .await
-        .currencies()
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))
-        .map_err(|err| AppError::Other(err))
+async fn currencies(
+    State(cache): State<Arc<Mutex<CacheManager>>>,
+) -> AppResult<Json<CurrenciesObject>> {
+    Ok(Json(
+        cache
+            .lock()
+            .await
+            .currencies()
+            .await
+            .map_err(AppError::Other)?,
+    ))
 }
 
 #[axum::debug_handler]
@@ -43,14 +44,12 @@ async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<
     (status = OK, body = HistoricalObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    cache
-        .lock()
-        .await
-        .latest()
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))
-        .map_err(|err| AppError::Other(err))
+async fn latest(
+    State(cache): State<Arc<Mutex<CacheManager>>>,
+) -> AppResult<Json<HistoricalObject>> {
+    Ok(Json(
+        cache.lock().await.latest().await.map_err(AppError::Other)?,
+    ))
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
@@ -66,12 +65,13 @@ struct HistoricalQuery {
 async fn historical(
     State(cache): State<Arc<Mutex<CacheManager>>>,
     Query(query): Query<HistoricalQuery>,
-) -> AppResult<impl IntoResponse> {
-    cache
-        .lock()
-        .await
-        .historical(&query.date)
-        .await
-        .map(|e| (StatusCode::OK, Json(e)))
-        .map_err(|err| AppError::Other(err))
+) -> AppResult<Json<HistoricalObject>> {
+    Ok(Json(
+        cache
+            .lock()
+            .await
+            .historical(&query.date)
+            .await
+            .map_err(AppError::Other)?,
+    ))
 }

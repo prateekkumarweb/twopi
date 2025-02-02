@@ -82,7 +82,7 @@ function RouteComponent() {
         label="Created at"
         value={dayjs(account.created_at).format("MMM D, YYYY h:mm A")}
       />
-      <LabelAndValue label="Currency" value={account.currency_code} />
+      <LabelAndValue label="Currency" value={account.currency.code} />
       <LabelAndValue
         label="Starting balance"
         value={
@@ -98,7 +98,7 @@ function RouteComponent() {
           >
             {Intl.NumberFormat("en", {
               style: "currency",
-              currency: account.currency_code,
+              currency: account.currency.code,
             }).format(account.starting_balance)}
           </span>
         }

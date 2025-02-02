@@ -28,7 +28,7 @@ export default function TransactionRow({
           </div>
         </div>
         <div className="flex flex-col gap-2">
-          {transaction.transactions?.map((item) => (
+          {transaction.transaction_items?.map((item) => (
             <div key={item.id} className="flex w-full items-center gap-2">
               <div className="grow overflow-hidden text-sm text-nowrap text-ellipsis text-gray-500">
                 {item.notes}
@@ -48,12 +48,12 @@ export default function TransactionRow({
               >
                 {Intl.NumberFormat("en", {
                   style: "currency",
-                  currency: item.account.currencyCode,
+                  currency: item.account.currency.code,
                 }).format(item.amount)}
               </div>
-              {item.categoryName && (
+              {item.category && (
                 <div className="d-badge d-badge-sm text-nowrap d-badge-info">
-                  {item.categoryName}
+                  {item.category.name}
                 </div>
               )}
             </div>

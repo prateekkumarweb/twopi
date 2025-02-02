@@ -2,28 +2,23 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Path, Query, State},
-    response::IntoResponse,
     Json,
 };
 use axum_extra::TypedHeader;
-use migration::OnConflict;
-use reqwest::StatusCode;
-use sea_orm::{ActiveValue, EntityTrait, QueryOrder};
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    cache::CacheManager, database, entity, model::currency::CurrencyModel, AppError, AppResult,
-    XUserId,
+    cache::CacheManager, database, model::currency::CurrencyModel, AppError, AppResult, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
     OpenApiRouter::new()
         .routes(routes![
             currency,
-            put_currency,
+            post_currency,
             delete_currency,
             sync_currency
         ])
@@ -35,51 +30,22 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
     (status = OK, body = Vec<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoResponse> {
+async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<Json<Vec<CurrencyModel>>> {
     let db = database(&id.0).await?;
-    tracing::info!("Querying currency for {}", id.0);
-    let currency = entity::prelude::Currency::find()
-        .order_by_asc(entity::currency::Column::Code)
-        .all(&db)
-        .await
-        .map_err(|err| AppError::DbErr(err))?;
-    Ok(Json(
-        currency
-            .into_iter()
-            .map(|c| CurrencyModel {
-                code: c.code.to_string(),
-                name: c.name,
-                decimal_digits: c.decimal_digits,
-            })
-            .collect::<Vec<_>>(),
-    ))
+    Ok(Json(CurrencyModel::find_all(&db).await?))
 }
 
 #[axum::debug_handler]
 #[utoipa::path(get, path = "/{code}", params(XUserId, ("code" = String, Path)), responses(
-    (status = OK, body = CurrencyModel),
-    (status = NOT_FOUND),
+    (status = OK, body = Option<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn currency_by_id(
     TypedHeader(id): TypedHeader<XUserId>,
     Path(code): Path<String>,
-) -> AppResult<impl IntoResponse> {
+) -> AppResult<Json<Option<CurrencyModel>>> {
     let db = database(&id.0).await?;
-    tracing::info!("Querying currency for {}", id.0);
-    let Some(currency) = entity::prelude::Currency::find_by_id(code)
-        .one(&db)
-        .await
-        .map_err(|err| AppError::DbErr(err))?
-    else {
-        return Ok(StatusCode::NOT_FOUND.into_response());
-    };
-    Ok(Json(CurrencyModel {
-        code: currency.code,
-        name: currency.name,
-        decimal_digits: currency.decimal_digits,
-    })
-    .into_response())
+    Ok(Json(CurrencyModel::find_by_code(&db, &code).await?))
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -96,52 +62,29 @@ struct DeleteCurrencyParams {
 async fn delete_currency(
     TypedHeader(id): TypedHeader<XUserId>,
     Query(DeleteCurrencyParams { code }): Query<DeleteCurrencyParams>,
-) -> AppResult<impl IntoResponse> {
+) -> AppResult<()> {
     let db = database(&id.0).await?;
-    tracing::info!("Querying currency for {}", id.0);
-    entity::prelude::Currency::delete(entity::currency::ActiveModel {
-        code: ActiveValue::Set(code),
-        ..Default::default()
-    })
-    .exec(&db)
-    .await
-    .map_err(|err| AppError::DbErr(err))?;
+    CurrencyModel::delete(&db, code).await?;
     Ok(())
 }
 
 #[axum::debug_handler]
-#[utoipa::path(put, path = "/", params(XUserId),
+#[utoipa::path(post, path = "/", params(XUserId),
     request_body = CurrencyModel, responses(
-    (status = OK, body = CurrencyModel),
+    (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn put_currency(
+async fn post_currency(
     TypedHeader(id): TypedHeader<XUserId>,
     Json(currency): Json<CurrencyModel>,
-) -> AppResult<impl IntoResponse> {
+) -> AppResult<()> {
     let db = database(&id.0).await?;
-    tracing::info!("Querying currency for {}", id.0);
-    entity::prelude::Currency::insert(entity::currency::ActiveModel {
-        code: ActiveValue::Set(currency.code.clone()),
-        name: ActiveValue::Set(currency.name.clone()),
-        decimal_digits: ActiveValue::Set(currency.decimal_digits),
-    })
-    .on_conflict(
-        OnConflict::column(entity::currency::Column::Code)
-            .update_columns([
-                entity::currency::Column::Name,
-                entity::currency::Column::DecimalDigits,
-            ])
-            .to_owned(),
-    )
-    .exec(&db)
-    .await
-    .map_err(|err| AppError::DbErr(err))?;
-    Ok(Json(currency))
+    currency.insert(&db).await?;
+    Ok(())
 }
 
 #[axum::debug_handler]
-#[utoipa::path(post, path = "/sync", params(XUserId), responses(
+#[utoipa::path(put, path = "/sync", params(XUserId), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
@@ -156,28 +99,14 @@ async fn sync_currency(
         .await
         .currencies()
         .await
-        .map_err(|err| AppError::Other(err))?;
-    for currency in currencies.data.values() {
-        if currency.type_ != "fiat" {
-            continue;
-        }
-        let currency_obj = entity::currency::ActiveModel {
-            code: ActiveValue::Set(currency.code.clone()),
-            name: ActiveValue::Set(currency.name.clone()),
-            decimal_digits: ActiveValue::Set(currency.decimal_digits),
-        };
-        entity::prelude::Currency::insert(currency_obj)
-            .on_conflict(
-                OnConflict::column(entity::currency::Column::Code)
-                    .update_columns([
-                        entity::currency::Column::Name,
-                        entity::currency::Column::DecimalDigits,
-                    ])
-                    .to_owned(),
-            )
-            .exec(&db)
-            .await
-            .map_err(|err| AppError::DbErr(err))?;
-    }
+        .map_err(AppError::Other)?;
+    let currencies = currencies
+        .data
+        .values()
+        .filter(|c| c.type_ == "fiat")
+        .cloned()
+        .map(|currency| CurrencyModel::new(currency.code, currency.name, currency.decimal_digits))
+        .collect();
+    CurrencyModel::upsert_many(currencies, &db).await?;
     Ok(())
 }
