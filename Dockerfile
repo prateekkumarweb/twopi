@@ -4,7 +4,6 @@ WORKDIR /app
 COPY twopi-web twopi-web
 WORKDIR /app/twopi-web
 RUN pnpm install
-RUN pnpm run db:gen
 RUN pnpm run build
 
 FROM rust AS rust_builder
