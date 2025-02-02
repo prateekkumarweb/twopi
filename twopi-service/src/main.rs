@@ -32,6 +32,13 @@ use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    #[derive(OpenApi)]
+    #[openapi(info(
+        title = "TwoPi API",
+        license(name = "MIT", url = "https://opensource.org/licenses/MIT")
+    ))]
+    struct ApiDoc;
+
     tracing_subscriber::fmt::init();
 
     let data_dir = std::env::var("TWOPI_DATA_DIR").context("TWOPI_DATA_DIR env var not set")?;
@@ -39,13 +46,6 @@ async fn main() -> anyhow::Result<()> {
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 
     let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
-
-    #[derive(OpenApi)]
-    #[openapi(info(
-        title = "TwoPi API",
-        license(name = "MIT", url = "https://opensource.org/licenses/MIT")
-    ))]
-    struct ApiDoc;
 
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(

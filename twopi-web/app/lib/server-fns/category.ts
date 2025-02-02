@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/start";
+import { v7 as uuidv7 } from "uuid";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
+import { apiClient } from "../openapi";
 import { auth } from "../server/auth";
-import { getDbClient } from "../server/db";
 
 const createCategoryValidator = z.object({
   name: z.string().min(1).max(100),
@@ -20,14 +21,28 @@ export const createCategory = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const value = await db.category.create({ data });
+    const { data: value, error } = await apiClient.PUT("/category", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+      body: {
+        name: data.name,
+        group: data.group ?? "",
+        icon: "",
+        id: uuidv7(),
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return { success: true, value };
   });
 
 export const deleteCategory = createServerFn({ method: "POST" })
-  .validator((name: unknown) => {
-    return z.string().parse(name);
+  .validator((id: unknown) => {
+    return z.string().parse(id);
   })
   .handler(async ({ data }) => {
     const session = await auth.api.getSession({
@@ -36,9 +51,18 @@ export const deleteCategory = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const value = await db.category.delete({ where: { name: data } });
-    return { success: true, value };
+    const { error } = await apiClient.DELETE("/category", {
+      params: {
+        header: { "x-user-id": session.user.id },
+        query: {
+          id: data,
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
+    return { success: true };
   });
 
 export const getCategories = createServerFn({ method: "GET" }).handler(
@@ -49,7 +73,16 @@ export const getCategories = createServerFn({ method: "GET" }).handler(
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    return { categories: await db.category.findMany() };
+    const { data, error } = await apiClient.GET("/category", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
+    return { categories: data };
   },
 );

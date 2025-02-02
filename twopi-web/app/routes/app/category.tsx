@@ -36,7 +36,7 @@ function RouteComponent() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (name: unknown) => deleteCategory({ data: name }),
+    mutationFn: (id: unknown) => deleteCategory({ data: id }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: categoryQueryOptions().queryKey,
@@ -110,7 +110,7 @@ function RouteComponent() {
                   <button
                     className="d-btn d-btn-xs d-btn-error d-btn-outline"
                     onClick={() => {
-                      deleteMutation.mutate(category.name);
+                      deleteMutation.mutate(category.id);
                     }}
                   >
                     <Trash size={16} />

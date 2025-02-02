@@ -26,7 +26,7 @@ export function categoryQueryOptions() {
   return queryOptions({
     queryKey: ["category"],
     queryFn: async () => {
-      const categories = (await getCategories()).categories;
+      const categories = (await getCategories()).categories ?? [];
       const groups = Array.from(
         new Set(categories.map((category) => category.group)),
       ).map((group) => ({
