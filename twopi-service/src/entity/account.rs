@@ -12,10 +12,10 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "custom(\"enum_text\")")]
     pub account_type: String,
-    pub currency_code: Uuid,
+    pub currency_code: String,
     pub starting_balance: i64,
-    pub created_at: DateTime,
-    pub account_extra: Json,
+    pub created_at: DateTimeUtc,
+    pub account_extra: Option<Json>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

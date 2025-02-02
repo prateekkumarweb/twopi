@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{database, entity, AppResult, XUserId};
+use crate::{database, entity, AppError, AppResult, XUserId};
 
 pub fn router() -> OpenApiRouter<()> {
     OpenApiRouter::new().routes(routes![category, put_category, delete_category])
@@ -31,7 +31,8 @@ async fn category(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoR
     let category = entity::category::Entity::find()
         .order_by_asc(entity::category::Column::Name)
         .all(&db)
-        .await?;
+        .await
+        .map_err(|err| AppError::DbErr(err))?;
     Ok(Json(
         category
             .into_iter()
@@ -67,7 +68,8 @@ async fn delete_category(
         ..Default::default()
     })
     .exec(&db)
-    .await?;
+    .await
+    .map_err(|err| AppError::DbErr(err))?;
     Ok(())
 }
 
@@ -99,6 +101,7 @@ async fn put_category(
             .to_owned(),
     )
     .exec(&db)
-    .await?;
+    .await
+    .map_err(|err| AppError::DbErr(err))?;
     Ok(Json(category.last_insert_id))
 }

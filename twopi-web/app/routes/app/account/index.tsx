@@ -30,7 +30,7 @@ function RouteComponent() {
 
   function calculateBalance(account: Account) {
     return (
-      account.startingBalance +
+      account.starting_balance +
       (data.transactions
         ?.map((transaction) => {
           let amount = 0;
@@ -99,18 +99,18 @@ function AccountItem({
             <div className="d-badge d-badge-ghost">
               {Intl.NumberFormat("en", {
                 style: "currency",
-                currency: account.currencyCode,
+                currency: account.currency_code,
               }).format(currentBalance)}
             </div>
           </div>
         </div>
         <div className="flex gap-2">
           <div className="grow">
-            <div className="d-badge d-badge-info">{account.accountType}</div>
+            <div className="d-badge d-badge-info">{account.account_type}</div>
           </div>
           <div>
             <div className="d-badge d-badge-neutral">
-              {account.currencyCode}
+              {account.currency_code}
             </div>
           </div>
         </div>

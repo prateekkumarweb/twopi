@@ -1,34 +1,37 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     Json,
 };
 use axum_extra::TypedHeader;
 use migration::OnConflict;
+use reqwest::StatusCode;
 use sea_orm::{ActiveValue, EntityTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{cache::CacheManager, database, entity, AppResult, XUserId};
+use crate::{cache::CacheManager, database, entity, AppError, AppResult, XUserId};
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
-    OpenApiRouter::new().routes(routes![
-        currency,
-        put_currency,
-        delete_currency,
-        sync_currency
-    ])
+    OpenApiRouter::new()
+        .routes(routes![
+            currency,
+            put_currency,
+            delete_currency,
+            sync_currency
+        ])
+        .routes(routes![currency_by_id])
 }
 
 #[derive(ToSchema, Serialize, Deserialize)]
-struct Currency {
-    code: String,
-    name: String,
-    decimal_digits: i32,
+pub struct Currency {
+    pub code: String,
+    pub name: String,
+    pub decimal_digits: i32,
 }
 
 #[axum::debug_handler]
@@ -42,7 +45,8 @@ async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoR
     let currency = entity::currency::Entity::find()
         .order_by_asc(entity::currency::Column::Code)
         .all(&db)
-        .await?;
+        .await
+        .map_err(|err| AppError::DbErr(err))?;
     Ok(Json(
         currency
             .into_iter()
@@ -53,6 +57,33 @@ async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoR
             })
             .collect::<Vec<_>>(),
     ))
+}
+
+#[axum::debug_handler]
+#[utoipa::path(get, path = "/{code}", params(XUserId, ("code" = String, Path)), responses(
+    (status = OK, body = Currency),
+    (status = NOT_FOUND),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
+async fn currency_by_id(
+    TypedHeader(id): TypedHeader<XUserId>,
+    Path(code): Path<String>,
+) -> AppResult<impl IntoResponse> {
+    let db = database(&id.0).await?;
+    tracing::info!("Querying currency for {}", id.0);
+    let Some(currency) = entity::currency::Entity::find_by_id(code)
+        .one(&db)
+        .await
+        .map_err(|err| AppError::DbErr(err))?
+    else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    Ok(Json(Currency {
+        code: currency.code,
+        name: currency.name,
+        decimal_digits: currency.decimal_digits,
+    })
+    .into_response())
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -77,7 +108,8 @@ async fn delete_currency(
         ..Default::default()
     })
     .exec(&db)
-    .await?;
+    .await
+    .map_err(|err| AppError::DbErr(err))?;
     Ok(())
 }
 
@@ -107,7 +139,8 @@ async fn put_currency(
             .to_owned(),
     )
     .exec(&db)
-    .await?;
+    .await
+    .map_err(|err| AppError::DbErr(err))?;
     Ok(Json(currency))
 }
 
@@ -122,7 +155,12 @@ async fn sync_currency(
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
     tracing::info!("Syncing currency for {}", id.0);
-    let currencies = cache.lock().await.currencies().await?;
+    let currencies = cache
+        .lock()
+        .await
+        .currencies()
+        .await
+        .map_err(|err| AppError::Other(err))?;
     for currency in currencies.data.values() {
         if currency.type_ != "fiat" {
             continue;
@@ -142,7 +180,8 @@ async fn sync_currency(
                     .to_owned(),
             )
             .exec(&db)
-            .await?;
+            .await
+            .map_err(|err| AppError::DbErr(err))?;
     }
     Ok(())
 }

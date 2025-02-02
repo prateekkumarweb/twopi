@@ -1,5 +1,7 @@
-use sea_orm::{EnumIter, Iterable};
+use sea_orm::{DeriveActiveEnum, EnumIter, Iterable};
 use sea_orm_migration::{prelude::*, schema::*};
+use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
 #[derive(DeriveMigrationName)]
 pub struct Migration;
@@ -30,10 +32,10 @@ impl MigrationTrait for Migration {
                         Alias::new("account_type"),
                         AccountType::iter(),
                     ))
-                    .col(uuid(Account::CurrencyCode))
+                    .col(string(Account::CurrencyCode))
                     .col(big_integer(Account::StartingBalance).default("0"))
-                    .col(date_time(Account::CreatedAt).default("CURRENT_TIMESTAMP"))
-                    .col(json(Account::AccountExtra))
+                    .col(timestamp(Account::CreatedAt).default("CURRENT_TIMESTAMP"))
+                    .col(json_null(Account::AccountExtra))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_account_currency_code")
@@ -64,7 +66,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(uuid(Transaction::Id).primary_key())
                     .col(string(Transaction::Title))
-                    .col(date_time(Transaction::Timestamp).default("CURRENT_TIMESTAMP"))
+                    .col(timestamp(Transaction::Timestamp).default("CURRENT_TIMESTAMP"))
                     .to_owned(),
             )
             .await?;
@@ -137,8 +139,13 @@ enum Currency {
     DecimalDigits,
 }
 
-#[derive(Iden, EnumIter)]
-enum AccountType {
+#[derive(Iden, EnumIter, DeriveActiveEnum, Serialize, Deserialize, ToSchema)]
+#[sea_orm(
+    rs_type = "String",
+    db_type = "String(StringLen::None)",
+    rename_all = "PascalCase"
+)]
+pub enum AccountType {
     Cash,
     Wallet,
     Bank,

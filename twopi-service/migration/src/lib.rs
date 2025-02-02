@@ -4,6 +4,8 @@ pub use sea_orm_migration::prelude::*;
 
 pub struct Migrator;
 
+pub use m20250101_000000_create_table::AccountType;
+
 #[async_trait::async_trait]
 impl MigratorTrait for Migrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {

@@ -13,7 +13,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     cache::{CacheManager, CurrenciesObject, HistoricalObject},
-    AppResult,
+    AppError, AppResult,
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
@@ -29,12 +29,13 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    Ok(cache
+    cache
         .lock()
         .await
         .currencies()
         .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
+        .map(|e| (StatusCode::OK, Json(e)))
+        .map_err(|err| AppError::Other(err))
 }
 
 #[axum::debug_handler]
@@ -43,12 +44,13 @@ async fn currencies(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn latest(State(cache): State<Arc<Mutex<CacheManager>>>) -> AppResult<impl IntoResponse> {
-    Ok(cache
+    cache
         .lock()
         .await
         .latest()
         .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
+        .map(|e| (StatusCode::OK, Json(e)))
+        .map_err(|err| AppError::Other(err))
 }
 
 #[derive(Debug, Deserialize, IntoParams)]
@@ -65,10 +67,11 @@ async fn historical(
     State(cache): State<Arc<Mutex<CacheManager>>>,
     Query(query): Query<HistoricalQuery>,
 ) -> AppResult<impl IntoResponse> {
-    Ok(cache
+    cache
         .lock()
         .await
         .historical(&query.date)
         .await
-        .map(|e| (StatusCode::OK, Json(e)))?)
+        .map(|e| (StatusCode::OK, Json(e)))
+        .map_err(|err| AppError::Other(err))
 }

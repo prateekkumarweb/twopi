@@ -4,7 +4,6 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
 import LabelAndValue from "~/components/LabelAndValue";
-import TransactionRow from "~/components/TransactionRow";
 import {
   accountByIdQueryOptions,
   accountQueryOptions,
@@ -77,38 +76,40 @@ function RouteComponent() {
       </div>
       <LabelAndValue label="Id" value={account.id} />
       <LabelAndValue label="Name" value={account.name} />
-      <LabelAndValue label="Account type" value={account.accountType} />
+      <LabelAndValue label="Account type" value={account.account_type} />
       <LabelAndValue
         label="Created at"
-        value={dayjs(account.createdAt).format("MMM D, YYYY h:mm A")}
+        value={dayjs(account.created_at).format("MMM D, YYYY h:mm A")}
       />
-      <LabelAndValue label="Currency" value={account.currencyCode} />
+      <LabelAndValue label="Currency" value={account.currency_code} />
       <LabelAndValue
         label="Starting balance"
         value={
           <span
             className={clsx(
               "d-badge d-badge-sm text-nowrap",
-              account.startingBalance > 0
+              account.starting_balance > 0
                 ? "d-badge-success"
-                : account.startingBalance < 0
+                : account.starting_balance < 0
                   ? "d-badge-error"
                   : "d-badge-neutral",
             )}
           >
             {Intl.NumberFormat("en", {
               style: "currency",
-              currency: account.currencyCode,
-            }).format(account.startingBalance)}
+              currency: account.currency_code,
+            }).format(account.starting_balance)}
           </span>
         }
       />
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
         <div className="my-2 flex flex-col gap-2">
+          {/*
+          // TODO
           {account.TransactionItem.map(({ transaction }) => (
             <TransactionRow key={transaction.id} transaction={transaction} />
-          ))}
+          ))} */}
         </div>
       </div>
     </div>

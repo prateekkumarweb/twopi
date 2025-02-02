@@ -1,10 +1,11 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
+import { v7 as uuidv7 } from "uuid";
 import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { AccountType } from "~/lib/hacks/account-type";
+import { apiClient } from "../openapi";
 import { auth } from "../server/auth";
-import { getDbClient } from "../server/db";
 
 const createAccountValidator = z.object({
   name: z.string(),
@@ -23,13 +24,39 @@ export const createAccount = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const currency = await db.currency.findUnique({
-      where: { code: data.currencyCode },
+    const currency = await apiClient.GET("/currency/{code}", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+        path: {
+          code: data.currencyCode,
+        },
+      },
     });
-    data.startingBalance =
-      data.startingBalance * Math.pow(10, currency?.decimalDigits ?? 0);
-    const value = await db.account.create({ data });
+    if (currency.error) {
+      throw new Error(currency.error);
+    }
+    const { data: value, error } = await apiClient.PUT("/account", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+      body: {
+        id: uuidv7(),
+        name: data.name,
+        account_type: data.accountType,
+        currency_code: data.currencyCode,
+        starting_balance:
+          data.startingBalance *
+          Math.pow(10, currency.data?.decimal_digits ?? 0),
+        created_at: (data.createdAt ?? new Date())?.toISOString(),
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return { success: true, value };
   });
 
@@ -44,15 +71,38 @@ export const createAccounts = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
     for (const item of data) {
-      const currency = await db.currency.findUnique({
-        where: { code: item.currencyCode },
+      const currency = await apiClient.GET("/currency/{code}", {
+        params: {
+          header: {
+            "x-user-id": session.user.id,
+          },
+          path: {
+            code: item.currencyCode,
+          },
+        },
       });
       item.startingBalance =
-        item.startingBalance * Math.pow(10, currency?.decimalDigits ?? 0);
+        item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0);
     }
-    const value = await db.account.createMany({ data });
+    const { data: value, error } = await apiClient.PUT("/account/import", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+      body: data.map((item) => ({
+        id: uuidv7(),
+        name: item.name,
+        account_type: item.accountType,
+        currency_code: item.currencyCode,
+        starting_balance: item.startingBalance,
+        created_at: (item.createdAt ?? new Date())?.toISOString(),
+      })),
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return { success: true, value };
   });
 
@@ -64,20 +114,25 @@ export const getAccounts = createServerFn({ method: "GET" }).handler(
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
+    const { data: value, error } = await apiClient.GET("/account", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return {
-      accounts: (
-        await db.account.findMany({
-          include: {
-            currency: true,
-          },
-        })
-      ).map((account) => ({
-        ...account,
-        startingBalance:
-          account.startingBalance /
-          Math.pow(10, account.currency.decimalDigits),
-      })),
+      accounts:
+        value?.map((account) => ({
+          ...account,
+          starting_balance:
+            account.starting_balance /
+            Math.pow(10, account.currency?.decimal_digits ?? 0),
+          account_extra: undefined,
+        })) ?? [],
     };
   },
 );
@@ -91,45 +146,40 @@ export const getAccount = createServerFn({ method: "GET" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    const account = await db.account.findUnique({
-      where: { id: data },
-      include: {
-        currency: true,
-        TransactionItem: {
-          include: {
-            transaction: {
-              include: {
-                transactions: {
-                  include: {
-                    account: {
-                      include: {
-                        currency: true,
-                      },
-                    },
-                    category: true,
-                  },
-                },
-              },
-            },
+    const { data: account, error } = await apiClient.GET(
+      "/account/{account_id}",
+      {
+        params: {
+          header: {
+            "x-user-id": session.user.id,
+          },
+          path: {
+            account_id: data,
           },
         },
       },
-    });
+    );
+    if (error) {
+      throw new Error(error);
+    }
     if (!account) {
       throw notFound({ data: "Account not found" });
     }
     return {
       ...account,
-      startingBalance:
-        account.startingBalance / Math.pow(10, account.currency.decimalDigits),
-      transactions: [
-        ...new Map(
-          account.TransactionItem.map(
-            (transaction) => transaction.transaction,
-          ).map((transaction) => [transaction.id, transaction]),
-        ).values(),
-      ],
+      starting_balance:
+        account.starting_balance /
+        Math.pow(10, account.currency?.decimal_digits ?? 0),
+      account_extra: undefined,
+      // TODO
+      TransactionItem: [],
+      // transactions: [
+      //   ...new Map(
+      //     account.TransactionItem.map(
+      //       (transaction) => transaction.transaction,
+      //     ).map((transaction) => [transaction.id, transaction]),
+      //   ).values(),
+      // ],
     };
   });
 
@@ -142,7 +192,18 @@ export const deleteAccount = createServerFn({ method: "POST" })
     if (!session?.user) {
       throw new Error("Unauthorized");
     }
-    const db = await getDbClient(session?.user);
-    await db.account.delete({ where: { id: data } });
+    const { error } = await apiClient.DELETE("/account", {
+      params: {
+        header: {
+          "x-user-id": session.user.id,
+        },
+        query: {
+          id: data,
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error);
+    }
     return { success: true };
   });

@@ -22,7 +22,7 @@ use axum::{
 use axum_extra::headers::Header;
 use cache::CacheManager;
 use migration::{Migrator, MigratorTrait};
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use tokio::sync::Mutex;
 use utoipa::{IntoParams, OpenApi};
 use utoipa_axum::router::OpenApiRouter;
@@ -73,41 +73,42 @@ async fn main() -> anyhow::Result<()> {
 
 static USER_ID_HEADER_NAME: &str = "x-user-id";
 
-struct AppError(anyhow::Error);
+#[derive(Debug, thiserror::Error)]
+enum AppError {
+    #[error("Database error: {0}")]
+    DbErr(DbErr),
+    #[error("App error: {0}")]
+    Other(anyhow::Error),
+}
 
 type AppResult<T> = Result<T, AppError>;
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        tracing::error!("{:?}", self.0);
+        tracing::error!("{:?}", self);
         (
             StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
+            format!("Something went wrong: {}", self),
         )
             .into_response()
     }
 }
 
-impl<E> From<E> for AppError
-where
-    E: Into<anyhow::Error>,
-{
-    fn from(err: E) -> Self {
-        Self(err.into())
-    }
-}
-
-async fn database(id: &str) -> anyhow::Result<DatabaseConnection> {
+async fn database(id: &str) -> AppResult<DatabaseConnection> {
     let connect_options =
         ConnectOptions::new(format!("sqlite://../data/database/{id}.db?mode=rwc"));
-    let db = Database::connect(connect_options).await?;
-    Migrator::up(&db, None).await?;
+    let db = Database::connect(connect_options)
+        .await
+        .map_err(|err| AppError::DbErr(err))?;
+    Migrator::up(&db, None)
+        .await
+        .map_err(|err| AppError::DbErr(err))?;
     Ok(db)
 }
 
 #[derive(IntoParams)]
 #[into_params(names("x-user-id"), parameter_in = Header)]
-struct XUserId(String);
+struct XUserId(#[param(default = "dev")] String);
 
 static XUSER_ID_HEADER_NAME: HeaderName = HeaderName::from_static(USER_ID_HEADER_NAME);
 

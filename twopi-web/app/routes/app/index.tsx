@@ -56,8 +56,8 @@ function RouteComponent() {
   let wealth = 0;
   data.accounts?.forEach((account) => {
     wealth +=
-      account.startingBalance /
-      (data.currencyRates?.[account.currencyCode]?.value ?? 1);
+      account.starting_balance /
+      (data.currencyRates?.[account.currency_code]?.value ?? 1);
   });
   data.transactions?.forEach((transaction) => {
     transaction.transactions.forEach((t) => {
@@ -90,13 +90,13 @@ function RouteComponent() {
     data.accounts
       ?.filter(
         (account) =>
-          dateStart <= account.createdAt.getTime() &&
-          account.createdAt.getTime() < dateEnd,
+          dateStart <= new Date(account.created_at).getTime() &&
+          new Date(account.created_at).getTime() < dateEnd,
       )
       .forEach((account) => {
         wealth +=
-          account.startingBalance /
-          (data.currencyRates?.[account.currencyCode]?.value ?? 1);
+          account.starting_balance /
+          (data.currencyRates?.[account.currency_code]?.value ?? 1);
       });
     data.transactions
       ?.filter(
