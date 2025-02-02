@@ -6,10 +6,9 @@
     clippy::expect_used
 )]
 
-#[allow(unused_imports)]
-mod entity;
-
 mod cache;
+mod entity;
+mod model;
 mod routes;
 
 use std::{path::PathBuf, sync::Arc};

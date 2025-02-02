@@ -2,33 +2,25 @@ use axum::{extract::Query, response::IntoResponse, Json};
 use axum_extra::TypedHeader;
 use migration::OnConflict;
 use sea_orm::{prelude::Uuid, ActiveValue, EntityTrait, QueryOrder};
-use serde::{Deserialize, Serialize};
-use utoipa::{IntoParams, ToSchema};
+use serde::Deserialize;
+use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{database, entity, AppError, AppResult, XUserId};
+use crate::{database, entity, model::category::CategoryModel, AppError, AppResult, XUserId};
 
 pub fn router() -> OpenApiRouter<()> {
     OpenApiRouter::new().routes(routes![category, put_category, delete_category])
 }
 
-#[derive(ToSchema, Serialize, Deserialize)]
-struct Category {
-    id: Uuid,
-    name: String,
-    group: String,
-    icon: String,
-}
-
 #[axum::debug_handler]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
-    (status = OK, body = Vec<Category>),
+    (status = OK, body = Vec<CategoryModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn category(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Category for {}", id.0);
-    let category = entity::category::Entity::find()
+    let category = entity::prelude::Category::find()
         .order_by_asc(entity::category::Column::Name)
         .all(&db)
         .await
@@ -36,7 +28,7 @@ async fn category(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoR
     Ok(Json(
         category
             .into_iter()
-            .map(|c| Category {
+            .map(|c| CategoryModel {
                 id: c.id,
                 name: c.name,
                 group: c.group,
@@ -63,7 +55,7 @@ async fn delete_category(
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Category for {}", id.0);
-    entity::category::Entity::delete(entity::category::ActiveModel {
+    entity::prelude::Category::delete(entity::category::ActiveModel {
         id: ActiveValue::Set(category_id),
         ..Default::default()
     })
@@ -75,17 +67,17 @@ async fn delete_category(
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/", params(XUserId),
-    request_body = Category, responses(
-    (status = OK, body = Category),
+    request_body = CategoryModel, responses(
+    (status = OK, body = CategoryModel),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_category(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(category): Json<Category>,
+    Json(category): Json<CategoryModel>,
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Category for {}", id.0);
-    let category = entity::category::Entity::insert(entity::category::ActiveModel {
+    let category = entity::prelude::Category::insert(entity::category::ActiveModel {
         id: ActiveValue::Set(category.id),
         name: ActiveValue::Set(category.name.trim().to_owned()),
         group: ActiveValue::Set(category.group.trim().to_owned()),

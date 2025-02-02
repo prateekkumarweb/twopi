@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use anyhow::Context;
 use axum::{
     extract::{Path, Query},
     response::IntoResponse,
@@ -12,15 +13,18 @@ use sea_orm::{
     prelude::Uuid, ActiveValue, ColumnTrait, EntityTrait, Linked, QueryFilter, QueryOrder,
     RelationTrait, TransactionTrait,
 };
-use serde::{Deserialize, Serialize};
-use utoipa::{IntoParams, ToSchema};
+use serde::Deserialize;
+use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use crate::{database, entity, AppError, AppResult, XUserId};
-
-use super::{
-    currency::Currency,
-    transaction::{Transaction, TransactionItem},
+use crate::{
+    database, entity,
+    model::{
+        account::{AccountModel, AccountWithCurrency},
+        currency::CurrencyModel,
+        transaction::{TransactionItemModel, TransactionModel},
+    },
+    AppError, AppResult, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -30,52 +34,40 @@ pub fn router() -> OpenApiRouter<()> {
         .routes(routes![account_by_id])
 }
 
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct Account {
-    pub id: Uuid,
-    pub name: String,
-    pub account_type: AccountType,
-    pub currency_code: String,
-    pub starting_balance: i64,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub account_extra: Option<serde_json::Value>,
-    pub currency: Option<Currency>,
-    pub transactions: Option<Vec<Transaction>>,
-}
-
 #[axum::debug_handler]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
-    (status = OK, body = Vec<Account>),
+    (status = OK, body = Vec<AccountWithCurrency>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn account(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Account for {}", id.0);
-    let accounts = entity::account::Entity::find()
+    let accounts = entity::prelude::Account::find()
         .order_by_asc(entity::account::Column::Name)
-        .find_also_related(entity::currency::Entity)
+        .find_also_related(entity::prelude::Currency)
         .all(&db)
         .await
         .map_err(|err| AppError::DbErr(err))?;
     Ok(Json(
         accounts
             .into_iter()
-            .map(|(a, c)| -> AppResult<Account> {
-                Ok(Account {
+            .map(|(a, c)| -> AppResult<AccountWithCurrency> {
+                Ok(AccountWithCurrency {
                     id: a.id,
                     name: a.name,
                     account_type: serde_json::from_str::<AccountType>(&a.account_type)
                         .map_err(|err| AppError::Other(err.into()))?,
-                    currency_code: a.currency_code,
                     starting_balance: a.starting_balance,
                     created_at: a.created_at,
                     account_extra: a.account_extra,
-                    currency: c.map(|c| Currency {
-                        code: c.code,
-                        name: c.name,
-                        decimal_digits: c.decimal_digits,
-                    }),
-                    transactions: None,
+                    currency: c
+                        .map(|c| CurrencyModel {
+                            code: c.code,
+                            name: c.name,
+                            decimal_digits: c.decimal_digits,
+                        })
+                        .with_context(|| "Could not find currenct")
+                        .map_err(|err| AppError::Other(err))?,
                 })
             })
             .collect::<AppResult<Vec<_>>>()?,
@@ -85,8 +77,8 @@ async fn account(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<impl IntoRe
 struct AccountToTransaction;
 
 impl Linked for AccountToTransaction {
-    type FromEntity = entity::account::Entity;
-    type ToEntity = entity::transaction::Entity;
+    type FromEntity = entity::prelude::Account;
+    type ToEntity = entity::prelude::Transaction;
 
     fn link(&self) -> Vec<sea_orm::LinkDef> {
         vec![
@@ -98,7 +90,7 @@ impl Linked for AccountToTransaction {
 
 #[axum::debug_handler]
 #[utoipa::path(get, path = "/{account_id}", params(XUserId, ("account_id" = Uuid, Path)), responses(
-    (status = OK, body = Account),
+    (status = OK, body = AccountWithCurrency),
     (status = NOT_FOUND),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
@@ -108,7 +100,7 @@ async fn account_by_id(
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying currency for {}", id.0);
-    let Some((account, transactions)) = entity::account::Entity::find_by_id(account_id)
+    let Some((account, transactions)) = entity::prelude::Account::find_by_id(account_id)
         .find_also_linked(AccountToTransaction)
         .one(&db)
         .await
@@ -116,7 +108,7 @@ async fn account_by_id(
     else {
         return Ok(StatusCode::NOT_FOUND.into_response());
     };
-    let currencies = entity::currency::Entity::find()
+    let currencies = entity::prelude::Currency::find()
         .all(&db)
         .await
         .map_err(|err| AppError::DbErr(err))?
@@ -125,7 +117,7 @@ async fn account_by_id(
         .collect::<HashMap<_, _>>();
     let mut transactions = transactions
         .into_iter()
-        .map(|t| Transaction {
+        .map(|t| TransactionModel {
             id: t.id,
             title: t.title,
             timestamp: t.timestamp,
@@ -134,25 +126,24 @@ async fn account_by_id(
         .collect::<Vec<_>>();
     for transaction in transactions.iter_mut() {
         transaction.transaction_items = Some(
-            entity::transaction_item::Entity::find()
+            entity::prelude::TransactionItem::find()
                 .filter(entity::transaction_item::Column::TransactionId.eq(transaction.id))
                 .all(&db)
                 .await
                 .map_err(|err| AppError::DbErr(err))?
                 .into_iter()
-                .map(|ti| TransactionItem {
+                .map(|ti| TransactionItemModel {
                     id: ti.id,
                     notes: ti.notes,
                     account_id: ti.account_id,
                     amount: ti.amount,
                     transaction_id: ti.transaction_id,
                     category_id: ti.category_id,
-                    account: None,
                 })
                 .collect::<Vec<_>>(),
         )
     }
-    let account = Account {
+    let account = AccountWithCurrency {
         id: account.id,
         name: account.name,
         account_type: serde_json::from_str::<AccountType>(&account.account_type)
@@ -160,13 +151,15 @@ async fn account_by_id(
         starting_balance: account.starting_balance,
         created_at: account.created_at,
         account_extra: account.account_extra,
-        currency: currencies.get(&account.currency_code).map(|c| Currency {
-            code: c.code.clone(),
-            name: c.name.clone(),
-            decimal_digits: c.decimal_digits,
-        }),
-        currency_code: account.currency_code,
-        transactions: Some(transactions),
+        currency: currencies
+            .get(&account.currency_code)
+            .map(|c| CurrencyModel {
+                code: c.code.clone(),
+                name: c.name.clone(),
+                decimal_digits: c.decimal_digits,
+            })
+            .with_context(|| "could not find currency")
+            .map_err(|err| AppError::Other(err))?,
     };
 
     Ok(Json(account).into_response())
@@ -189,7 +182,7 @@ async fn delete_account(
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Account for {}", id.0);
-    entity::account::Entity::delete(entity::account::ActiveModel {
+    entity::prelude::Account::delete(entity::account::ActiveModel {
         id: ActiveValue::Set(account_id),
         ..Default::default()
     })
@@ -201,17 +194,17 @@ async fn delete_account(
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/", params(XUserId),
-    request_body = Account, responses(
+    request_body = AccountModel, responses(
     (status = OK, body = String),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_account(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(account): Json<Account>,
+    Json(account): Json<AccountModel>,
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Account for {}", id.0);
-    let account = entity::account::Entity::insert(entity::account::ActiveModel {
+    let account = entity::prelude::Account::insert(entity::account::ActiveModel {
         id: ActiveValue::Set(account.id),
         name: ActiveValue::Set(account.name.trim().to_owned()),
         account_type: ActiveValue::Set(
@@ -243,13 +236,13 @@ async fn put_account(
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/import", params(XUserId),
-    request_body = Vec<Account>, responses(
+    request_body = Vec<AccountModel>, responses(
     (status = OK, body = Vec<String>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_accounts(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(accounts): Json<Vec<Account>>,
+    Json(accounts): Json<Vec<AccountModel>>,
 ) -> AppResult<impl IntoResponse> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Account for {}", id.0);
@@ -258,7 +251,7 @@ async fn put_accounts(
             Box::pin(async move {
                 let mut ids = Vec::new();
                 for account in accounts.iter() {
-                    let account = entity::account::Entity::insert(entity::account::ActiveModel {
+                    let account = entity::prelude::Account::insert(entity::account::ActiveModel {
                         id: ActiveValue::Set(account.id),
                         name: ActiveValue::Set(account.name.trim().to_owned()),
                         account_type: ActiveValue::Set(
