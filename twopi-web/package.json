@@ -13,12 +13,9 @@
     "lint": "eslint .",
     "test:ts": "tsc --noEmit",
     "auth:migrate": "cli migrate --y",
-    "db:gen": "prisma generate",
-    "db:migrate": "prisma migrate deploy",
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o app/lib/openapi.gen.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.3.0",
     "@tanstack/react-form": "^0.41.3",
     "@tanstack/react-query": "^5.66.0",
     "@tanstack/react-router": "^1.99.0",
@@ -62,7 +59,6 @@
     "openapi-typescript": "^7.6.1",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "prisma": "^6.3.0",
     "tailwindcss": "^4.0.3",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.22.0",
@@ -71,8 +67,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "@prisma/client"
+      "better-sqlite3"
     ],
     "overrides": {
       "vite": "^6.0.11"
