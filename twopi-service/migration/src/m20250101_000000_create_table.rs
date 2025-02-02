@@ -31,7 +31,7 @@ impl MigrationTrait for Migration {
                         AccountType::iter(),
                     ))
                     .col(uuid(Account::CurrencyCode))
-                    .col(integer(Account::StartingBalance).default("0"))
+                    .col(big_integer(Account::StartingBalance).default("0"))
                     .col(date_time(Account::CreatedAt).default("CURRENT_TIMESTAMP"))
                     .col(json(Account::AccountExtra))
                     .foreign_key(
@@ -78,7 +78,7 @@ impl MigrationTrait for Migration {
                     .col(uuid(TransactionItem::TransactionId))
                     .col(uuid(TransactionItem::AccountId))
                     .col(uuid_null(TransactionItem::CategoryId))
-                    .col(integer(TransactionItem::Amount))
+                    .col(big_integer(TransactionItem::Amount))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_transaction_item_transaction_id")
