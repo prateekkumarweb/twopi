@@ -10,7 +10,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     database,
-    model::account::{AccountModel, AccountWithCurrency, AccountWithTransactions},
+    model::account::{AccountModel, AccountWithCurrency, AccountWithTransactions, NewAccountModel},
     AppResult, XUserId,
 };
 
@@ -70,28 +70,28 @@ async fn delete_account(
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/", params(XUserId),
-    request_body = AccountModel, responses(
-    (status = OK, body = ()),
+    request_body = NewAccountModel, responses(
+    (status = OK, body = Uuid),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_account(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(account): Json<AccountModel>,
-) -> AppResult<()> {
+    Json(account): Json<NewAccountModel>,
+) -> AppResult<Json<Uuid>> {
     let db = database(&id.0).await?;
-    account.insert(&db).await?;
-    Ok(())
+    let id = AccountModel::upsert(account, &db).await?;
+    Ok(Json(id))
 }
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/import", params(XUserId),
-    request_body = Vec<AccountModel>, responses(
+    request_body = Vec<NewAccountModel>, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_accounts(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(accounts): Json<Vec<AccountModel>>,
+    Json(accounts): Json<Vec<NewAccountModel>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
     AccountModel::upsert_many(accounts, &db).await?;

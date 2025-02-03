@@ -223,7 +223,12 @@ impl TransactionModel {
                             .filter(account::Column::Name.eq(item.account_name.to_string()))
                             .one(txn)
                             .await?
-                            .ok_or_else(|| DbErr::RecordNotFound("account_name".to_owned()))?;
+                            .ok_or_else(|| {
+                                DbErr::RecordNotFound(format!(
+                                    "account_name: {}",
+                                    item.account_name
+                                ))
+                            })?;
                         let cat_id = if let Some(cat) = &item.category_name {
                             let found = Category::find()
                                 .filter(category::Column::Name.eq(item.category_name.clone()))

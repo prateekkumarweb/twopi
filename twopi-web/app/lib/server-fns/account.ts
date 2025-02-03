@@ -1,12 +1,12 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import { AccountType } from "~/lib/hacks/account-type";
 import { apiClient } from "../openapi";
 import { authMiddleware } from "../server/utils";
 
 const createAccountValidator = z.object({
+  id: z.string().optional(),
   name: z.string(),
   accountType: z.nativeEnum(AccountType),
   currencyCode: z.string(),
@@ -38,7 +38,7 @@ export const createAccount = createServerFn({ method: "POST" })
         },
       },
       body: {
-        id: uuidv7(),
+        id: data.id,
         name: data.name,
         account_type: data.accountType,
         currency_code: data.currencyCode,
@@ -83,7 +83,6 @@ export const createAccounts = createServerFn({ method: "POST" })
         },
       },
       body: data.map((item) => ({
-        id: uuidv7(),
         name: item.name,
         account_type: item.accountType,
         currency_code: item.currencyCode,

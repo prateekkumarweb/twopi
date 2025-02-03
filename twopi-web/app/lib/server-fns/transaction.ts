@@ -1,14 +1,15 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
-import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import { apiClient } from "../openapi";
 import { authMiddleware } from "../server/utils";
 
 const createTransactionValidtor = z.object({
-  name: z.string(),
+  id: z.string().optional(),
+  title: z.string(),
   transactions: z.array(
     z.object({
+      id: z.string().optional(),
       notes: z.string(),
       accountName: z.string(),
       amount: z.number(),
@@ -44,7 +45,7 @@ export const createTransaction = createServerFn({ method: "POST" })
     if (categories.error) {
       throw new Error(categories.error);
     }
-    const txId = uuidv7();
+
     const { error } = await apiClient.PUT("/transaction", {
       params: {
         header: {
@@ -52,10 +53,10 @@ export const createTransaction = createServerFn({ method: "POST" })
         },
       },
       body: {
-        id: txId,
-        title: data.name,
+        id: data.id,
+        title: data.title,
         transaction_items: data.transactions.map((transaction) => ({
-          id: uuidv7(),
+          id: transaction.id,
           notes: transaction.notes,
           account_name: transaction.accountName,
           amount: Math.round(
@@ -111,9 +112,11 @@ export const createTransactions = createServerFn({ method: "POST" })
       },
       body: data.map((transaction) => {
         return {
-          title: transaction.name,
+          id: transaction.id,
+          title: transaction.title,
           transaction_items: transaction.transactions.map(
             (transactionItem) => ({
+              id: transactionItem.id,
               notes: transactionItem.notes,
               account_name: transactionItem.accountName,
               amount: Math.round(

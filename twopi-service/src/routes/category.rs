@@ -5,7 +5,11 @@ use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use uuid::Uuid;
 
-use crate::{database, model::category::CategoryModel, AppResult, XUserId};
+use crate::{
+    database,
+    model::category::{CategoryModel, NewCategoryModel},
+    AppResult, XUserId,
+};
 
 pub fn router() -> OpenApiRouter<()> {
     OpenApiRouter::new().routes(routes![category, post_category, delete_category])
@@ -43,15 +47,15 @@ async fn delete_category(
 
 #[axum::debug_handler]
 #[utoipa::path(post, path = "/", params(XUserId),
-    request_body = CategoryModel, responses(
+    request_body = NewCategoryModel, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn post_category(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(category): Json<CategoryModel>,
+    Json(category): Json<NewCategoryModel>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    category.insert(&db).await?;
+    CategoryModel::upsert(category, &db).await?;
     Ok(())
 }

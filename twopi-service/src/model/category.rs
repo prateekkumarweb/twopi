@@ -1,13 +1,25 @@
+use migration::OnConflict;
 use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::entity::{category::ActiveModel, prelude::*};
+use crate::entity::{
+    category::{self, ActiveModel},
+    prelude::*,
+};
 
 #[derive(Clone, ToSchema, Serialize, Deserialize)]
 pub struct CategoryModel {
     id: Uuid,
+    name: String,
+    group: String,
+    icon: String,
+}
+
+#[derive(Clone, ToSchema, Serialize, Deserialize)]
+pub struct NewCategoryModel {
+    id: Option<Uuid>,
     name: String,
     group: String,
     icon: String,
@@ -41,13 +53,22 @@ impl CategoryModel {
         })
     }
 
-    pub async fn insert(self, db: &DbConn) -> Result<Uuid, DbErr> {
+    pub async fn upsert(cat: NewCategoryModel, db: &DbConn) -> Result<Uuid, DbErr> {
         Category::insert(ActiveModel {
-            id: ActiveValue::Set(self.id),
-            name: ActiveValue::Set(self.name),
-            group: ActiveValue::Set(self.group),
-            icon: ActiveValue::Set(self.icon),
+            id: ActiveValue::Set(cat.id.unwrap_or_else(Uuid::now_v7)),
+            name: ActiveValue::Set(cat.name),
+            group: ActiveValue::Set(cat.group),
+            icon: ActiveValue::Set(cat.icon),
         })
+        .on_conflict(
+            OnConflict::column(category::Column::Id)
+                .update_columns([
+                    category::Column::Name,
+                    category::Column::Group,
+                    category::Column::Icon,
+                ])
+                .to_owned(),
+        )
         .exec(db)
         .await
         .map(|c| c.last_insert_id)

@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/start";
-import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import { apiClient } from "../openapi";
 import { authMiddleware } from "../server/utils";
@@ -25,7 +24,6 @@ export const createCategory = createServerFn({ method: "POST" })
         name: data.name,
         group: data.group ?? "",
         icon: "",
-        id: uuidv7(),
       },
     });
     if (error) {
