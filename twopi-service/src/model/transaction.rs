@@ -189,7 +189,13 @@ impl TransactionModel {
         let transaction = db
             .transaction::<_, _, DbErr>(|txn| {
                 Box::pin(async move {
-                    let tx_id = transaction.id.unwrap_or_else(Uuid::now_v7);
+                    let tx_id = transaction.id.unwrap_or_else(|| {
+                        Uuid::new_v7(uuid::Timestamp::from_unix(
+                            uuid::timestamp::context::NoContext,
+                            transaction.timestamp.timestamp() as u64,
+                            0,
+                        ))
+                    });
                     let transaction_model = Transaction::insert(ActiveModel {
                         id: ActiveValue::Set(tx_id),
                         title: ActiveValue::Set(transaction.title.trim().to_owned()),
@@ -228,7 +234,13 @@ impl TransactionModel {
                             } else {
                                 Some(
                                     Category::insert(category::ActiveModel {
-                                        id: ActiveValue::Set(Uuid::now_v7()),
+                                        id: ActiveValue::Set(Uuid::new_v7(
+                                            uuid::Timestamp::from_unix(
+                                                uuid::timestamp::context::NoContext,
+                                                transaction.timestamp.timestamp() as u64,
+                                                0,
+                                            ),
+                                        )),
                                         name: ActiveValue::Set(cat.clone()),
                                         group: ActiveValue::Set(String::new()),
                                         icon: ActiveValue::Set(String::new()),
@@ -248,7 +260,13 @@ impl TransactionModel {
                         };
 
                         TransactionItem::insert(transaction_item::ActiveModel {
-                            id: ActiveValue::Set(item.id.unwrap_or_else(Uuid::now_v7)),
+                            id: ActiveValue::Set(item.id.unwrap_or_else(|| {
+                                Uuid::new_v7(uuid::Timestamp::from_unix(
+                                    uuid::timestamp::context::NoContext,
+                                    transaction.timestamp.timestamp() as u64,
+                                    0,
+                                ))
+                            })),
                             notes: ActiveValue::Set(item.notes.trim().to_owned()),
                             transaction_id: ActiveValue::Set(tx_id),
                             account_id: ActiveValue::Set(account.id),
@@ -289,7 +307,13 @@ impl TransactionModel {
         db.transaction::<_, _, DbErr>(|txn| {
             Box::pin(async move {
                 for tx in transactions {
-                    let tx_id = tx.id.unwrap_or_else(Uuid::now_v7);
+                    let tx_id = tx.id.unwrap_or_else(|| {
+                        Uuid::new_v7(uuid::Timestamp::from_unix(
+                            uuid::timestamp::context::NoContext,
+                            tx.timestamp.timestamp() as u64,
+                            0,
+                        ))
+                    });
                     Transaction::insert(ActiveModel {
                         id: ActiveValue::Set(tx_id),
                         title: ActiveValue::Set(tx.title.trim().to_owned()),
@@ -333,7 +357,13 @@ impl TransactionModel {
                             } else {
                                 Some(
                                     Category::insert(category::ActiveModel {
-                                        id: ActiveValue::Set(Uuid::now_v7()),
+                                        id: ActiveValue::Set(Uuid::new_v7(
+                                            uuid::Timestamp::from_unix(
+                                                uuid::timestamp::context::NoContext,
+                                                tx.timestamp.timestamp() as u64,
+                                                0,
+                                            ),
+                                        )),
                                         name: ActiveValue::Set(cat.clone()),
                                         group: ActiveValue::Set(String::new()),
                                         icon: ActiveValue::Set(String::new()),
@@ -353,7 +383,13 @@ impl TransactionModel {
                         };
 
                         TransactionItem::insert(transaction_item::ActiveModel {
-                            id: ActiveValue::Set(item.id.unwrap_or_else(Uuid::now_v7)),
+                            id: ActiveValue::Set(item.id.unwrap_or_else(|| {
+                                Uuid::new_v7(uuid::Timestamp::from_unix(
+                                    uuid::timestamp::context::NoContext,
+                                    tx.timestamp.timestamp() as u64,
+                                    0,
+                                ))
+                            })),
                             notes: ActiveValue::Set(item.notes.trim().to_owned()),
                             transaction_id: ActiveValue::Set(tx_id),
                             account_id: ActiveValue::Set(account.id),

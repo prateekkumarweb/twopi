@@ -167,7 +167,17 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
     if (error) {
       throw new Error(error);
     }
-    return { transactions: data };
+    return {
+      transactions: data?.map((tx) => ({
+        ...tx,
+        transaction_items: tx?.transaction_items?.map((transactionItem) => ({
+          ...transactionItem,
+          amount:
+            transactionItem.amount /
+            Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
+        })),
+      })),
+    };
   },
 );
 
