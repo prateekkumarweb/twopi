@@ -11,7 +11,7 @@ const createTransactionValidtor = z.object({
   transactions: z.array(
     z.object({
       notes: z.string(),
-      accountId: z.string(),
+      accountName: z.string(),
       amount: z.number(),
       categoryName: z.string().optional(),
     }),
@@ -63,18 +63,16 @@ export const createTransaction = createServerFn({ method: "POST" })
         transaction_items: data.transactions.map((transaction) => ({
           id: uuidv7(),
           notes: transaction.notes,
-          account_id: transaction.accountId,
-          transaction_id: txId,
-          amount:
+          account_name: transaction.accountName,
+          amount: Math.round(
             transaction.amount *
-            Math.pow(
-              10,
-              accounts?.data?.find((a) => a.id === transaction.accountId)
-                ?.currency.decimal_digits ?? 0,
-            ),
-          category_id: categories?.data?.find(
-            (c) => c.name === transaction.categoryName,
-          )?.id,
+              Math.pow(
+                10,
+                accounts?.data?.find((a) => a.name === transaction.accountName)
+                  ?.currency.decimal_digits ?? 0,
+              ),
+          ),
+          category_name: transaction.categoryName,
         })),
         timestamp: (data.timestamp ?? new Date()).toISOString(),
       },
@@ -123,27 +121,22 @@ export const createTransactions = createServerFn({ method: "POST" })
         },
       },
       body: data.map((transaction) => {
-        const txId = uuidv7();
         return {
-          id: txId,
           title: transaction.name,
           transaction_items: transaction.transactions.map(
             (transactionItem) => ({
-              id: uuidv7(),
               notes: transactionItem.notes,
-              account_id: transactionItem.accountId,
-              transaction_id: txId,
-              amount:
+              account_name: transactionItem.accountName,
+              amount: Math.round(
                 transactionItem.amount *
-                Math.pow(
-                  10,
-                  accounts?.data?.find(
-                    (a) => a.id === transactionItem.accountId,
-                  )?.currency.decimal_digits ?? 0,
-                ),
-              category_id: categories?.data?.find(
-                (c) => c.name === transactionItem.categoryName,
-              )?.id,
+                  Math.pow(
+                    10,
+                    accounts?.data?.find(
+                      (a) => a.name === transactionItem.accountName,
+                    )?.currency.decimal_digits ?? 0,
+                  ),
+              ),
+              category_name: transactionItem.categoryName,
             }),
           ),
           timestamp: (transaction.timestamp ?? new Date()).toISOString(),

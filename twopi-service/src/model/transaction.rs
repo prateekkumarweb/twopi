@@ -14,6 +14,7 @@ use super::{
     currency::CurrencyModel,
 };
 use crate::entity::{
+    account, category,
     prelude::*,
     transaction::{ActiveModel, Column},
     transaction_item,
@@ -35,6 +36,23 @@ pub struct TransactionItemModel {
     pub account_id: Uuid,
     pub category_id: Option<Uuid>,
     pub amount: i64,
+}
+
+#[derive(ToSchema, Serialize, Deserialize)]
+pub struct NewTransactionModel {
+    id: Option<Uuid>,
+    title: String,
+    timestamp: chrono::DateTime<chrono::Utc>,
+    transaction_items: Vec<NewTransactionItemModel>,
+}
+
+#[derive(ToSchema, Serialize, Deserialize)]
+pub struct NewTransactionItemModel {
+    id: Option<Uuid>,
+    notes: String,
+    account_name: String,
+    category_name: Option<String>,
+    amount: i64,
 }
 
 impl TransactionModel {
@@ -167,14 +185,15 @@ impl TransactionModel {
         }))
     }
 
-    pub async fn upsert(self, db: &DbConn) -> Result<Uuid, DbErr> {
+    pub async fn upsert(transaction: NewTransactionModel, db: &DbConn) -> Result<Uuid, DbErr> {
         let transaction = db
             .transaction::<_, _, DbErr>(|txn| {
                 Box::pin(async move {
+                    let tx_id = transaction.id.unwrap_or_else(Uuid::now_v7);
                     let transaction_model = Transaction::insert(ActiveModel {
-                        id: ActiveValue::Set(self.id),
-                        title: ActiveValue::Set(self.title.trim().to_owned()),
-                        timestamp: ActiveValue::Set(self.timestamp),
+                        id: ActiveValue::Set(tx_id),
+                        title: ActiveValue::Set(transaction.title.trim().to_owned()),
+                        timestamp: ActiveValue::Set(transaction.timestamp),
                     })
                     .on_conflict(
                         OnConflict::column(Column::Id)
@@ -184,21 +203,56 @@ impl TransactionModel {
                     .exec(txn)
                     .await?;
 
-                    TransactionItem::delete(transaction_item::ActiveModel::default())
-                        .filter(
-                            transaction_item::Column::TransactionId
-                                .eq(transaction_model.last_insert_id),
-                        )
-                        .exec(txn)
+                    let old_items = TransactionItem::find()
+                        .filter(transaction_item::Column::TransactionId.eq(tx_id))
+                        .all(txn)
                         .await?;
 
-                    for item in &self.transaction_items {
+                    for item in old_items {
+                        TransactionItem::delete_by_id(item.id).exec(txn).await?;
+                    }
+
+                    for item in &transaction.transaction_items {
+                        let account = Account::find()
+                            .filter(account::Column::Name.eq(item.account_name.to_string()))
+                            .one(txn)
+                            .await?
+                            .ok_or_else(|| DbErr::RecordNotFound("account_name".to_owned()))?;
+                        let cat_id = if let Some(cat) = &item.category_name {
+                            let found = Category::find()
+                                .filter(category::Column::Name.eq(item.category_name.clone()))
+                                .one(txn)
+                                .await?;
+                            if let Some(found) = found {
+                                Some(found.id)
+                            } else {
+                                Some(
+                                    Category::insert(category::ActiveModel {
+                                        id: ActiveValue::Set(Uuid::now_v7()),
+                                        name: ActiveValue::Set(cat.clone()),
+                                        group: ActiveValue::Set(String::new()),
+                                        icon: ActiveValue::Set(String::new()),
+                                    })
+                                    .on_conflict(
+                                        OnConflict::column(category::Column::Name)
+                                            .do_nothing()
+                                            .to_owned(),
+                                    )
+                                    .exec(txn)
+                                    .await?
+                                    .last_insert_id,
+                                )
+                            }
+                        } else {
+                            None
+                        };
+
                         TransactionItem::insert(transaction_item::ActiveModel {
-                            id: ActiveValue::Set(item.id),
+                            id: ActiveValue::Set(item.id.unwrap_or_else(Uuid::now_v7)),
                             notes: ActiveValue::Set(item.notes.trim().to_owned()),
-                            transaction_id: ActiveValue::Set(item.transaction_id),
-                            account_id: ActiveValue::Set(item.account_id),
-                            category_id: ActiveValue::Set(item.category_id),
+                            transaction_id: ActiveValue::Set(tx_id),
+                            account_id: ActiveValue::Set(account.id),
+                            category_id: ActiveValue::Set(cat_id),
                             amount: ActiveValue::Set(item.amount),
                         })
                         .on_conflict(
@@ -228,12 +282,16 @@ impl TransactionModel {
         Ok(transaction)
     }
 
-    pub async fn upsert_many(transactions: Vec<Self>, db: &DbConn) -> Result<(), DbErr> {
+    pub async fn upsert_many(
+        transactions: Vec<NewTransactionModel>,
+        db: &DbConn,
+    ) -> Result<(), DbErr> {
         db.transaction::<_, _, DbErr>(|txn| {
             Box::pin(async move {
                 for tx in transactions {
-                    let transaction_model = Transaction::insert(ActiveModel {
-                        id: ActiveValue::Set(tx.id),
+                    let tx_id = tx.id.unwrap_or_else(Uuid::now_v7);
+                    Transaction::insert(ActiveModel {
+                        id: ActiveValue::Set(tx_id),
                         title: ActiveValue::Set(tx.title.trim().to_owned()),
                         timestamp: ActiveValue::Set(tx.timestamp),
                     })
@@ -245,21 +303,61 @@ impl TransactionModel {
                     .exec(txn)
                     .await?;
 
-                    TransactionItem::delete(transaction_item::ActiveModel::default())
-                        .filter(
-                            transaction_item::Column::TransactionId
-                                .eq(transaction_model.last_insert_id),
-                        )
-                        .exec(txn)
+                    let old_items = TransactionItem::find()
+                        .filter(transaction_item::Column::TransactionId.eq(tx_id))
+                        .all(txn)
                         .await?;
 
+                    for item in old_items {
+                        TransactionItem::delete_by_id(item.id).exec(txn).await?;
+                    }
+
                     for item in &tx.transaction_items {
+                        let account = Account::find()
+                            .filter(account::Column::Name.eq(item.account_name.to_string()))
+                            .one(txn)
+                            .await?
+                            .ok_or_else(|| {
+                                DbErr::RecordNotFound(format!(
+                                    "account_name: {:?}",
+                                    item.account_name
+                                ))
+                            })?;
+                        let cat_id = if let Some(cat) = &item.category_name {
+                            let found = Category::find()
+                                .filter(category::Column::Name.eq(item.category_name.clone()))
+                                .one(txn)
+                                .await?;
+                            if let Some(found) = found {
+                                Some(found.id)
+                            } else {
+                                Some(
+                                    Category::insert(category::ActiveModel {
+                                        id: ActiveValue::Set(Uuid::now_v7()),
+                                        name: ActiveValue::Set(cat.clone()),
+                                        group: ActiveValue::Set(String::new()),
+                                        icon: ActiveValue::Set(String::new()),
+                                    })
+                                    .on_conflict(
+                                        OnConflict::column(category::Column::Name)
+                                            .do_nothing()
+                                            .to_owned(),
+                                    )
+                                    .exec(txn)
+                                    .await?
+                                    .last_insert_id,
+                                )
+                            }
+                        } else {
+                            None
+                        };
+
                         TransactionItem::insert(transaction_item::ActiveModel {
-                            id: ActiveValue::Set(item.id),
+                            id: ActiveValue::Set(item.id.unwrap_or_else(Uuid::now_v7)),
                             notes: ActiveValue::Set(item.notes.trim().to_owned()),
-                            transaction_id: ActiveValue::Set(item.transaction_id),
-                            account_id: ActiveValue::Set(item.account_id),
-                            category_id: ActiveValue::Set(item.category_id),
+                            transaction_id: ActiveValue::Set(tx_id),
+                            account_id: ActiveValue::Set(account.id),
+                            category_id: ActiveValue::Set(cat_id),
                             amount: ActiveValue::Set(item.amount),
                         })
                         .on_conflict(
@@ -315,7 +413,7 @@ impl TransactionItemModel {
         }
     }
 
-    pub fn with_account(
+    pub fn with_category_and_account(
         self,
         category: Option<CategoryModel>,
         account: AccountWithCurrency,

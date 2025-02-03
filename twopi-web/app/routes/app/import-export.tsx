@@ -29,14 +29,14 @@ function RouteComponent() {
     "Account	Account Type	Starting Balance	Currency	Created At",
   );
   const [transactionCsv, setTransactionCsv] = useState(
-    "Date	Account	Amount	Currency	Notes",
+    "Date	Account	Amount	Currency	Notes	Category",
   );
   const [error, setError] = useState("");
   const router = useRouter();
 
   async function importAccounts() {
     setError("");
-    const [header, ...lines] = accountCsv.split("\n");
+    const [header, ...lines] = accountCsv.trim().split("\n");
     if (!header) {
       setError("Invalid format");
       return;
@@ -59,6 +59,7 @@ function RouteComponent() {
     }
     const data = [];
     for (const line of lines) {
+      if (line.trim() === "") continue;
       const values = line.split("\t");
       const name = values[accountIndex];
       const accountType = values[accountTypeIndex];
@@ -89,7 +90,7 @@ function RouteComponent() {
 
   async function importTransactions() {
     setError("");
-    const [header, ...lines] = transactionCsv.split("\n");
+    const [header, ...lines] = transactionCsv.trim().split("\n");
     if (!header) {
       setError("Invalid format");
       return;
@@ -100,15 +101,18 @@ function RouteComponent() {
     const amountIndex = headerNames.indexOf("Amount");
     const currencyIndex = headerNames.indexOf("Currency");
     const notesIndex = headerNames.indexOf("Notes");
+    const categoryIndex = headerNames.indexOf("Category");
     const items = [];
     for (const line of lines) {
+      if (line.trim() === "") continue;
       const values = line.split("\t");
       const date = values[dateIndex] ? new Date(values[dateIndex]) : new Date();
       const account = values[accountIndex];
       const amount = Number(values[amountIndex]?.replaceAll(",", ""));
       const currency = values[currencyIndex];
       const notes = values[notesIndex];
-      items.push({ date, account, amount, currency, notes });
+      const category = values[categoryIndex];
+      items.push({ date, account, amount, currency, notes, category });
     }
     const itemsByDate = Object.groupBy(items, (d) => d.date.valueOf());
     const data = [];
@@ -119,8 +123,9 @@ function RouteComponent() {
         name: items.find((item) => item.notes)?.notes ?? "",
         transactions: items.map((item) => ({
           amount: item.amount,
-          accountId: accounts?.find((a) => a.name === item.account)?.id ?? "",
+          accountName: item.account?.trim(),
           notes: item.notes,
+          categoryName: item.category,
         })),
         timestamp: items[0]?.date ? new Date(items[0]?.date) : new Date(),
       });

@@ -10,7 +10,9 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     database,
-    model::transaction::{TransactionItemModel, TransactionModel, TransactionWithAccount},
+    model::transaction::{
+        NewTransactionModel, TransactionItemModel, TransactionModel, TransactionWithAccount,
+    },
     AppResult, XUserId,
 };
 
@@ -86,28 +88,28 @@ async fn delete_transaction_item(
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/", params(XUserId),
-    request_body = TransactionModel, responses(
+    request_body = NewTransactionModel, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transaction(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(transaction): Json<TransactionModel>,
+    Json(transaction): Json<NewTransactionModel>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    transaction.upsert(&db).await?;
+    TransactionModel::upsert(transaction, &db).await?;
     Ok(())
 }
 
 #[axum::debug_handler]
 #[utoipa::path(put, path = "/import", params(XUserId),
-    request_body = Vec<TransactionModel>, responses(
+    request_body = Vec<NewTransactionModel>, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transactions(
     TypedHeader(id): TypedHeader<XUserId>,
-    Json(transactions): Json<Vec<TransactionModel>>,
+    Json(transactions): Json<Vec<NewTransactionModel>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
     TransactionModel::upsert_many(transactions, &db).await?;

@@ -110,7 +110,7 @@ function RouteComponent() {
                   <button
                     className="d-btn d-btn-xs d-btn-error d-btn-outline"
                     onClick={() => {
-                      deleteMutation.mutate(category.id);
+                      deleteMutation.mutate(category.name);
                     }}
                   >
                     <Trash size={16} />

@@ -11,7 +11,10 @@ mod entity;
 mod model;
 mod routes;
 
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::PathBuf,
+    sync::{Arc, LazyLock},
+};
 
 use anyhow::Context;
 use axum::{
@@ -29,6 +32,14 @@ use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
 
+static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
+    #[allow(clippy::unwrap_used)]
+    let dir = std::env::var("TWOPI_DATA_DIR")
+        .context("TWOPI_DATA_DIR env var not set")
+        .unwrap();
+    PathBuf::from(dir)
+});
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     #[derive(OpenApi)]
@@ -40,8 +51,7 @@ async fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::fmt::init();
 
-    let data_dir = std::env::var("TWOPI_DATA_DIR").context("TWOPI_DATA_DIR env var not set")?;
-    let data_dir = PathBuf::from(data_dir).join("currency");
+    let data_dir = DATA_DIR.join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 
     let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
@@ -94,8 +104,12 @@ impl IntoResponse for AppError {
 }
 
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
-    let connect_options =
-        ConnectOptions::new(format!("sqlite://../data/database/{id}.db?mode=rwc"));
+    let db_dir = DATA_DIR.join("database");
+    std::fs::create_dir_all(&db_dir)
+        .context("Could not create database directory")
+        .map_err(AppError::Other)?;
+    let db_dir = db_dir.to_string_lossy();
+    let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}/{id}.db?mode=rwc"));
     let db = Database::connect(connect_options)
         .await
         .map_err(AppError::DbErr)?;

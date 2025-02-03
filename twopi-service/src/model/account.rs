@@ -219,9 +219,9 @@ impl AccountWithTransactions {
                         i.category_id,
                         i.amount,
                     )
-                    .with_account(
+                    .with_category_and_account(
                         i.category_id
-                            .and_then(|cid| categories.iter().find(|c| c.id() == cid).cloned()),
+                            .and_then(|cid| categories.iter().find(|&c| c.id() == cid).cloned()),
                         account.clone(),
                     )
                 })

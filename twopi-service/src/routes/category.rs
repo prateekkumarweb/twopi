@@ -1,9 +1,9 @@
 use axum::{extract::Query, Json};
 use axum_extra::TypedHeader;
-use sea_orm::prelude::Uuid;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
+use uuid::Uuid;
 
 use crate::{database, model::category::CategoryModel, AppResult, XUserId};
 

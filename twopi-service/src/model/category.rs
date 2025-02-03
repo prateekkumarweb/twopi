@@ -1,6 +1,7 @@
-use sea_orm::{prelude::Uuid, ActiveValue, DbConn, DbErr, EntityTrait};
+use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use crate::entity::{category::ActiveModel, prelude::*};
 

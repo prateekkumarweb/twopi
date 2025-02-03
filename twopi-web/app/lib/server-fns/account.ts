@@ -48,9 +48,10 @@ export const createAccount = createServerFn({ method: "POST" })
         name: data.name,
         account_type: data.accountType,
         currency_code: data.currencyCode,
-        starting_balance:
+        starting_balance: Math.round(
           data.startingBalance *
-          Math.pow(10, currency.data?.decimal_digits ?? 0),
+            Math.pow(10, currency.data?.decimal_digits ?? 0),
+        ),
         created_at: (data.createdAt ?? new Date())?.toISOString(),
       },
     });
@@ -82,8 +83,9 @@ export const createAccounts = createServerFn({ method: "POST" })
           },
         },
       });
-      item.startingBalance =
-        item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0);
+      item.startingBalance = Math.round(
+        item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0),
+      );
     }
     const { error } = await apiClient.PUT("/account/import", {
       params: {
