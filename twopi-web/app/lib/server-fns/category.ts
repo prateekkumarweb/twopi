@@ -1,9 +1,8 @@
 import { createServerFn } from "@tanstack/start";
 import { v7 as uuidv7 } from "uuid";
-import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { apiClient } from "../openapi";
-import { auth } from "../server/auth";
+import { authMiddleware } from "../server/utils";
 
 const createCategoryValidator = z.object({
   name: z.string().min(1).max(100),
@@ -11,20 +10,15 @@ const createCategoryValidator = z.object({
 });
 
 export const createCategory = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((category: unknown) => {
     return createCategoryValidator.parse(category);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.POST("/category", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
       body: {
@@ -41,19 +35,16 @@ export const createCategory = createServerFn({ method: "POST" })
   });
 
 export const deleteCategory = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((id: unknown) => {
     return z.string().parse(id);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE("/category", {
       params: {
-        header: { "x-user-id": session.user.id },
+        header: {
+          "x-user-id": context.userId,
+        },
         query: {
           id: data,
         },
@@ -65,18 +56,13 @@ export const deleteCategory = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const getCategories = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+export const getCategories = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/category", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -84,5 +70,4 @@ export const getCategories = createServerFn({ method: "GET" }).handler(
       throw new Error(error);
     }
     return { categories: data };
-  },
-);
+  });

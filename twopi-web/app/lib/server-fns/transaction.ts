@@ -1,10 +1,9 @@
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/start";
 import { v7 as uuidv7 } from "uuid";
-import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { apiClient } from "../openapi";
-import { auth } from "../server/auth";
+import { authMiddleware } from "../server/utils";
 
 const createTransactionValidtor = z.object({
   name: z.string(),
@@ -20,20 +19,15 @@ const createTransactionValidtor = z.object({
 });
 
 export const createTransaction = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((transaction: unknown) => {
     return createTransactionValidtor.parse(transaction);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const accounts = await apiClient.GET("/account", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -43,7 +37,7 @@ export const createTransaction = createServerFn({ method: "POST" })
     const categories = await apiClient.GET("/category", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -54,7 +48,7 @@ export const createTransaction = createServerFn({ method: "POST" })
     const { error } = await apiClient.PUT("/transaction", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
       body: {
@@ -84,20 +78,15 @@ export const createTransaction = createServerFn({ method: "POST" })
   });
 
 export const createTransactions = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((transactions: unknown) =>
     z.array(createTransactionValidtor).parse(transactions),
   )
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const accounts = await apiClient.GET("/account", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -107,7 +96,7 @@ export const createTransactions = createServerFn({ method: "POST" })
     const categories = await apiClient.GET("/category", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -117,7 +106,7 @@ export const createTransactions = createServerFn({ method: "POST" })
     const { error } = await apiClient.PUT("/transaction/import", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
       body: data.map((transaction) => {
@@ -149,18 +138,13 @@ export const createTransactions = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const getTransactions = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+export const getTransactions = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/transaction", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -178,24 +162,18 @@ export const getTransactions = createServerFn({ method: "GET" }).handler(
         })),
       })),
     };
-  },
-);
+  });
 
 export const getTransaction = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
   .validator((id: unknown) => z.string().parse(id))
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { data: transaction, error } = await apiClient.GET(
       "/transaction/{transaction_id}",
       {
         params: {
           header: {
-            "x-user-id": session.user.id,
+            "x-user-id": context.userId,
           },
           path: {
             transaction_id: data,
@@ -228,20 +206,15 @@ export const getTransaction = createServerFn({ method: "GET" })
 export const deleteTransactionItem = createServerFn({
   method: "POST",
 })
+  .middleware([authMiddleware])
   .validator((id: unknown) => {
     return z.string().parse(id);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE(`/transaction/item`, {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
         query: {
           id: data,
@@ -257,20 +230,15 @@ export const deleteTransactionItem = createServerFn({
 export const deleteTransaction = createServerFn({
   method: "POST",
 })
+  .middleware([authMiddleware])
   .validator((id: unknown) => {
     return z.string().parse(id);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE(`/transaction`, {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
         query: {
           id: data,

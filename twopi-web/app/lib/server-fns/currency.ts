@@ -1,9 +1,8 @@
 import { createServerFn } from "@tanstack/start";
-import { getWebRequest } from "vinxi/http";
 import { z } from "zod";
 import { apiClient } from "../openapi";
-import { auth } from "../server/auth";
 import { getCurrenciesLatestCache } from "../server/currency-cache";
+import { authMiddleware } from "../server/utils";
 
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
@@ -12,20 +11,15 @@ const createCurrencyValidator = z.object({
 });
 
 export const createCurrency = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((currency: unknown) => {
     return createCurrencyValidator.parse(currency);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.POST("/currency", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
       body: {
@@ -41,20 +35,15 @@ export const createCurrency = createServerFn({ method: "POST" })
   });
 
 export const deleteCurrency = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .validator((code: unknown) => {
     return z.string().length(3).parse(code);
   })
-  .handler(async ({ data }) => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+  .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE("/currency", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
         query: {
           code: data,
@@ -67,18 +56,13 @@ export const deleteCurrency = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const getCurrencies = createServerFn({ method: "GET" }).handler(
-  async () => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+export const getCurrencies = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/currency", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -86,21 +70,15 @@ export const getCurrencies = createServerFn({ method: "GET" }).handler(
       throw new Error(error);
     }
     return { data };
-  },
-);
+  });
 
-export const syncCurrencies = createServerFn({ method: "POST" }).handler(
-  async () => {
-    const session = await auth.api.getSession({
-      headers: getWebRequest().headers,
-    });
-    if (!session?.user) {
-      throw new Error("Unauthorized");
-    }
+export const syncCurrencies = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
     const { error } = await apiClient.PUT("/currency/sync", {
       params: {
         header: {
-          "x-user-id": session.user.id,
+          "x-user-id": context.userId,
         },
       },
     });
@@ -108,17 +86,12 @@ export const syncCurrencies = createServerFn({ method: "POST" }).handler(
       throw new Error(error);
     }
     return {};
-  },
-);
+  });
 
 export const getCurrencyExchangeRates = createServerFn({
   method: "GET",
-}).handler(async () => {
-  const session = await auth.api.getSession({
-    headers: getWebRequest().headers,
+})
+  .middleware([authMiddleware])
+  .handler(async () => {
+    return await getCurrenciesLatestCache();
   });
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-  return await getCurrenciesLatestCache();
-});
