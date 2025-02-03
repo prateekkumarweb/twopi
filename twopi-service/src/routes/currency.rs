@@ -25,7 +25,7 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
         .routes(routes![currency_by_id])
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
     (status = OK, body = Vec<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -35,7 +35,7 @@ async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<Json<Vec<C
     Ok(Json(CurrencyModel::find_all(&db).await?))
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/{code}", params(XUserId, ("code" = String, Path)), responses(
     (status = OK, body = Option<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -54,7 +54,7 @@ struct DeleteCurrencyParams {
     code: String,
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(XUserId, DeleteCurrencyParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -68,7 +68,7 @@ async fn delete_currency(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(currency))]
 #[utoipa::path(post, path = "/", params(XUserId),
     request_body = CurrencyModel, responses(
     (status = OK, body = ()),
@@ -83,7 +83,7 @@ async fn post_currency(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(cache))]
 #[utoipa::path(put, path = "/sync", params(XUserId), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)

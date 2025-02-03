@@ -21,7 +21,7 @@ pub fn router() -> OpenApiRouter<()> {
         .routes(routes![account_by_id])
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
     (status = OK, body = Vec<AccountWithCurrency>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -33,7 +33,7 @@ async fn account(
     Ok(Json(AccountWithCurrency::find_all(&db).await?))
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/{account_id}", params(XUserId, ("account_id" = Uuid, Path)), responses(
     (status = OK, body = Option<AccountWithTransactions>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -54,7 +54,7 @@ struct DeleteAccountParams {
     id: Uuid,
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(XUserId, DeleteAccountParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -68,7 +68,7 @@ async fn delete_account(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(account))]
 #[utoipa::path(put, path = "/", params(XUserId),
     request_body = NewAccountModel, responses(
     (status = OK, body = Uuid),
@@ -83,7 +83,7 @@ async fn put_account(
     Ok(Json(id))
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(accounts))]
 #[utoipa::path(put, path = "/import", params(XUserId),
     request_body = Vec<NewAccountModel>, responses(
     (status = OK, body = ()),

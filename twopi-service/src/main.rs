@@ -42,6 +42,7 @@ static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
 });
 
 #[tokio::main]
+#[tracing::instrument]
 async fn main() -> anyhow::Result<()> {
     #[derive(OpenApi)]
     #[openapi(info(
@@ -104,6 +105,7 @@ impl IntoResponse for AppError {
     }
 }
 
+#[tracing::instrument]
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
     let db_dir = DATA_DIR.join("database");
     std::fs::create_dir_all(&db_dir)
@@ -118,7 +120,7 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
     Ok(db)
 }
 
-#[derive(IntoParams)]
+#[derive(Debug, IntoParams)]
 #[into_params(names("x-user-id"), parameter_in = Header)]
 struct XUserId(#[param(default = "dev")] String);
 

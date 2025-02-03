@@ -15,7 +15,7 @@ pub fn router() -> OpenApiRouter<()> {
     OpenApiRouter::new().routes(routes![category, post_category, delete_category])
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
     (status = OK, body = Vec<CategoryModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -31,7 +31,7 @@ struct DeleteCategoryParams {
     id: Uuid,
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(XUserId, DeleteCategoryParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -45,7 +45,7 @@ async fn delete_category(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(category))]
 #[utoipa::path(post, path = "/", params(XUserId),
     request_body = NewCategoryModel, responses(
     (status = OK, body = ()),

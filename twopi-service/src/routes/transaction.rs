@@ -24,7 +24,7 @@ pub fn router() -> OpenApiRouter<()> {
         .routes(routes![delete_transaction_item])
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/", params(XUserId), responses(
     (status = OK, body = Vec<TransactionWithAccount>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -37,7 +37,7 @@ async fn transaction(
     Ok(Json(TransactionModel::find_all(&db).await?))
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(get, path = "/{transaction_id}", params(XUserId, ("transaction_id" = Uuid, Path)), responses(
     (status = OK, body = Option<TransactionWithAccount>),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -58,7 +58,7 @@ struct DeleteTransactionParams {
     id: Uuid,
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(XUserId, DeleteTransactionParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -72,7 +72,7 @@ async fn delete_transaction(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument]
 #[utoipa::path(delete, path = "/item", params(XUserId, DeleteTransactionParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -86,7 +86,7 @@ async fn delete_transaction_item(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(transaction))]
 #[utoipa::path(put, path = "/", params(XUserId),
     request_body = NewTransactionModel, responses(
     (status = OK, body = ()),
@@ -101,7 +101,7 @@ async fn put_transaction(
     Ok(())
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(transactions))]
 #[utoipa::path(put, path = "/import", params(XUserId),
     request_body = Vec<NewTransactionModel>, responses(
     (status = OK, body = ()),

@@ -21,7 +21,7 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
         .routes(routes![historical])
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(cache))]
 #[utoipa::path(get, path = "/currencies", responses(
     (status = OK, body = CurrenciesObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -39,7 +39,7 @@ async fn currencies(
     ))
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(cache))]
 #[utoipa::path(get, path = "/latest", responses(
     (status = OK, body = HistoricalObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
@@ -57,7 +57,7 @@ struct HistoricalQuery {
     date: String,
 }
 
-#[axum::debug_handler]
+#[tracing::instrument(skip(cache))]
 #[utoipa::path(get, path = "/historical", params(HistoricalQuery), responses(
     (status = OK, body = HistoricalObject),
     (status = INTERNAL_SERVER_ERROR, body = String)
