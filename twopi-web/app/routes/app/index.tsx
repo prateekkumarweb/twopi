@@ -1,6 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
+import { useMemo, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -40,18 +41,11 @@ function RouteComponent() {
       };
     },
   });
-
-  if (isPending) return "Loading...";
-
-  if (errors.length)
-    return (
-      <div>
-        Error occurred:
-        {errors.map((error, i) => (
-          <div key={i}>{error.message}</div>
-        ))}
-      </div>
-    );
+  const today = new Date();
+  const [monthAndYear, setMonthAndYear] = useState({
+    month: today.getUTCMonth(),
+    year: today.getUTCFullYear(),
+  });
 
   let wealth = 0;
   data.accounts?.forEach((account) => {
@@ -72,52 +66,65 @@ function RouteComponent() {
   const wealthInJPY = wealth * (data.currencyRates?.JPY?.value ?? 1);
   const wealthInAED = wealth * (data.currencyRates?.AED?.value ?? 1);
 
-  const today = new Date();
-  const month = today.getUTCMonth();
-  const year = today.getUTCFullYear();
-  const daysInMonth = [];
-  daysInMonth.push();
-  const date = new Date(Date.UTC(year, month, 1));
-  while (date.getUTCMonth() === month) {
-    daysInMonth.push(new Date(date));
-    date.setDate(date.getUTCDate() + 1);
-  }
-  let cummulative = 0;
-  const chartData = daysInMonth.map((d) => {
-    const dateStart = d.getTime();
-    const dateEnd = dateStart + 24 * 60 * 60 * 1000;
-    let wealth = 0;
-    data.accounts
-      ?.filter(
-        (account) =>
-          dateStart <= new Date(account.created_at).getTime() &&
-          new Date(account.created_at).getTime() < dateEnd,
-      )
-      .forEach((account) => {
-        wealth +=
-          account.starting_balance /
-          (data.currencyRates?.[account.currency.code]?.value ?? 1);
-      });
-    data.transactions
-      ?.filter(
-        (transaction) =>
-          dateStart <= new Date(transaction.timestamp).getTime() &&
-          new Date(transaction.timestamp).getTime() < dateEnd,
-      )
-      .forEach((transaction) => {
-        transaction.transaction_items.forEach((t) => {
+  const chartData = useMemo(() => {
+    const daysInMonth = [];
+    daysInMonth.push();
+    const date = new Date(Date.UTC(monthAndYear.year, monthAndYear.month, 1));
+    while (date.getUTCMonth() === monthAndYear.month) {
+      daysInMonth.push(new Date(date));
+      date.setDate(date.getUTCDate() + 1);
+    }
+
+    let cummulative = 0;
+
+    return daysInMonth.map((d) => {
+      const dateStart = d.getTime();
+      const dateEnd = dateStart + 24 * 60 * 60 * 1000;
+      let wealth = 0;
+      data.accounts
+        ?.filter(
+          (account) =>
+            dateStart <= new Date(account.created_at).getTime() &&
+            new Date(account.created_at).getTime() < dateEnd,
+        )
+        .forEach((account) => {
           wealth +=
-            t.amount /
-            (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+            account.starting_balance /
+            (data.currencyRates?.[account.currency.code]?.value ?? 1);
         });
-      });
-    cummulative += wealth;
-    return {
-      date: `${d.getUTCDate()}`,
-      todaysWealth: wealth,
-      wealth: cummulative,
-    };
-  });
+      data.transactions
+        ?.filter(
+          (transaction) =>
+            dateStart <= new Date(transaction.timestamp).getTime() &&
+            new Date(transaction.timestamp).getTime() < dateEnd,
+        )
+        .forEach((transaction) => {
+          transaction.transaction_items.forEach((t) => {
+            wealth +=
+              t.amount /
+              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+          });
+        });
+      cummulative += wealth;
+      return {
+        date: `${d.getUTCDate()}`,
+        todaysWealth: wealth,
+        wealth: cummulative,
+      };
+    });
+  }, [monthAndYear, data]);
+
+  if (isPending) return "Loading...";
+
+  if (errors.length)
+    return (
+      <div>
+        Error occurred:
+        {errors.map((error, i) => (
+          <div key={i}>{error.message}</div>
+        ))}
+      </div>
+    );
 
   return (
     <div className="flex flex-col gap-4 bg-base-100 p-4 shadow-sm">
@@ -223,6 +230,40 @@ function RouteComponent() {
             year: "numeric",
           }).format(today)}
         </h2>
+        <div className="flex gap-4">
+          <select
+            value={monthAndYear.month}
+            onChange={(e) =>
+              setMonthAndYear({
+                ...monthAndYear,
+                month: Number(e.target.value),
+              })
+            }
+          >
+            <option value="0">Jan</option>
+            <option value="1">Feb</option>
+            <option value="2">Mar</option>
+            <option value="3">Apr</option>
+            <option value="4">May</option>
+            <option value="5">Jun</option>
+            <option value="6">Jul</option>
+            <option value="7">Aug</option>
+            <option value="8">Sep</option>
+            <option value="9">Oct</option>
+            <option value="10">Nov</option>
+            <option value="11">Dec</option>
+          </select>
+          <input
+            type="number"
+            value={monthAndYear.year}
+            onChange={(e) =>
+              setMonthAndYear({
+                ...monthAndYear,
+                year: Number(e.target.value),
+              })
+            }
+          />
+        </div>
         <ResponsiveContainer width="100%" height={250}>
           <LineChart data={chartData}>
             <Line type="monotone" dataKey="wealth" stroke="#8884d8" />
@@ -233,7 +274,13 @@ function RouteComponent() {
                   day: "2-digit",
                   month: "short",
                   year: "numeric",
-                }).format(new Date(year, month, Number(value)));
+                }).format(
+                  new Date(
+                    monthAndYear.year,
+                    monthAndYear.month,
+                    Number(value),
+                  ),
+                );
               }}
               formatter={(value) => {
                 return [
