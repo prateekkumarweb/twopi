@@ -46,6 +46,7 @@ function RouteComponent() {
     month: today.getUTCMonth(),
     year: today.getUTCFullYear(),
   });
+  const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
 
   let wealth = 0;
   data.accounts?.forEach((account) => {
@@ -59,12 +60,12 @@ function RouteComponent() {
         t.amount / (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
     });
   });
-  const wealthInUSD = wealth;
-  const wealthInINR = wealth * (data.currencyRates?.INR?.value ?? 1);
-  const wealthInEUR = wealth * (data.currencyRates?.EUR?.value ?? 1);
-  const wealthInGBP = wealth * (data.currencyRates?.GBP?.value ?? 1);
-  const wealthInJPY = wealth * (data.currencyRates?.JPY?.value ?? 1);
-  const wealthInAED = wealth * (data.currencyRates?.AED?.value ?? 1);
+  const wealthInDifferentCurrencies = currenciesToShow.map((currency) => {
+    return {
+      currency,
+      value: wealth * (data.currencyRates?.[currency]?.value ?? 1),
+    };
+  });
 
   const chartData = useMemo(() => {
     const daysInMonth = [];
@@ -131,96 +132,24 @@ function RouteComponent() {
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "USD",
-          }).format(wealthInUSD)}
-        </div>
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "INR",
-          }).format(wealthInINR)}
-        </div>
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "EUR",
-          }).format(wealthInEUR)}
-        </div>
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "GBP",
-          }).format(wealthInGBP)}
-        </div>
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "JPY",
-          }).format(wealthInJPY)}
-        </div>
-        <div
-          className={clsx(
-            "bg-base-200 p-4 text-3xl shadow-sm",
-            wealth > 0
-              ? "bg-success text-success-content"
-              : wealth < 0
-                ? "bg-error text-error-content"
-                : "bg-neutral text-neutral-content",
-          )}
-        >
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: "AED",
-          }).format(wealthInAED)}
-        </div>
+        {wealthInDifferentCurrencies.map((wealth) => (
+          <div
+            key={wealth.currency}
+            className={clsx(
+              "bg-base-200 p-2 text-2xl shadow-sm",
+              wealth.value > 0
+                ? "bg-success text-success-content"
+                : wealth.value < 0
+                  ? "bg-error text-error-content"
+                  : "bg-neutral text-neutral-content",
+            )}
+          >
+            {new Intl.NumberFormat("en", {
+              style: "currency",
+              currency: wealth.currency,
+            }).format(wealth.value)}
+          </div>
+        ))}
       </div>
       <div className="m-4 flex flex-col items-center gap-4">
         <h2 className="text-center text-lg font-bold">
@@ -228,7 +157,7 @@ function RouteComponent() {
           {Intl.DateTimeFormat("en", {
             month: "long",
             year: "numeric",
-          }).format(today)}
+          }).format(new Date(monthAndYear.year, monthAndYear.month))}
         </h2>
         <div className="flex gap-4">
           <select
