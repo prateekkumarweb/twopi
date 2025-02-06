@@ -3,9 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useMemo, useState } from "react";
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
   Line,
   LineChart,
+  Rectangle,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -46,6 +49,7 @@ function RouteComponent() {
     month: today.getUTCMonth(),
     year: today.getUTCFullYear(),
   });
+  const [currentCurrency, setCurrency] = useState("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
 
   let wealth = 0;
@@ -77,8 +81,9 @@ function RouteComponent() {
     }
 
     let cummulative = 0;
+    const categories: { [key: string]: number } = {};
 
-    return daysInMonth.map((d) => {
+    const wealthData = daysInMonth.map((d) => {
       const dateStart = d.getTime();
       const dateEnd = dateStart + 24 * 60 * 60 * 1000;
       let wealth = 0;
@@ -106,13 +111,38 @@ function RouteComponent() {
               (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
           });
         });
+
+      data.transactions
+        ?.filter(
+          (transaction) =>
+            dateStart <= new Date(transaction.timestamp).getTime() &&
+            new Date(transaction.timestamp).getTime() < dateEnd,
+        )
+        .forEach((transaction) => {
+          transaction.transaction_items.forEach((t) => {
+            if (t.category) {
+              categories[t.category.name] =
+                (categories[t.category.name] ?? 0) +
+                t.amount /
+                  (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+            }
+          });
+        });
       cummulative += wealth;
       return {
         date: `${d.getUTCDate()}`,
-        todaysWealth: wealth,
         wealth: cummulative,
       };
     });
+
+    return {
+      wealthData,
+      categories: Object.entries(categories).sort((a, b) => {
+        if (a[0] < b[0]) return -1;
+        if (a[0] > b[0]) return 1;
+        return 0;
+      }),
+    };
   }, [monthAndYear, data]);
 
   if (isPending) return "Loading...";
@@ -153,13 +183,23 @@ function RouteComponent() {
       </div>
       <div className="m-4 flex flex-col items-center gap-4">
         <h2 className="text-center text-lg font-bold">
-          Wealth chart (USD) for{" "}
+          Wealth chart ({currentCurrency}) for{" "}
           {Intl.DateTimeFormat("en", {
             month: "long",
             year: "numeric",
           }).format(new Date(monthAndYear.year, monthAndYear.month))}
         </h2>
         <div className="flex gap-4">
+          <select
+            value={currentCurrency}
+            onChange={(e) => setCurrency(e.target.value)}
+          >
+            {currenciesToShow.map((currency) => (
+              <option key={currency} value={currency}>
+                {currency}
+              </option>
+            ))}
+          </select>
           <select
             value={monthAndYear.month}
             onChange={(e) =>
@@ -169,18 +209,13 @@ function RouteComponent() {
               })
             }
           >
-            <option value="0">Jan</option>
-            <option value="1">Feb</option>
-            <option value="2">Mar</option>
-            <option value="3">Apr</option>
-            <option value="4">May</option>
-            <option value="5">Jun</option>
-            <option value="6">Jul</option>
-            <option value="7">Aug</option>
-            <option value="8">Sep</option>
-            <option value="9">Oct</option>
-            <option value="10">Nov</option>
-            <option value="11">Dec</option>
+            {Array.from({ length: 12 }, (_, i) => i).map((i) => (
+              <option key={i} value={i}>
+                {Intl.DateTimeFormat("en", { month: "short" }).format(
+                  new Date(0, i),
+                )}
+              </option>
+            ))}
           </select>
           <input
             type="number"
@@ -194,7 +229,13 @@ function RouteComponent() {
           />
         </div>
         <ResponsiveContainer width="100%" height={250}>
-          <LineChart data={chartData}>
+          <LineChart
+            data={chartData.wealthData.map(({ date, wealth }) => ({
+              date,
+              wealth:
+                wealth * (data.currencyRates?.[currentCurrency]?.value ?? 1),
+            }))}
+          >
             <Line type="monotone" dataKey="wealth" stroke="#8884d8" />
             <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
             <Tooltip
@@ -214,7 +255,7 @@ function RouteComponent() {
               formatter={(value) => {
                 return [
                   Intl.NumberFormat("en", {
-                    currency: "USD",
+                    currency: currentCurrency,
                     style: "currency",
                   }).format(Number(value)),
                 ];
@@ -223,6 +264,42 @@ function RouteComponent() {
             <XAxis dataKey="date" />
             <YAxis />
           </LineChart>
+        </ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={500}>
+          <BarChart
+            width={400}
+            height={400}
+            data={chartData.categories.map(([name, value]) => ({
+              name,
+              value:
+                value * (data.currencyRates?.[currentCurrency]?.value ?? 1),
+            }))}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="name"
+              interval="preserveStartEnd"
+              angle={270}
+              textAnchor="end"
+              height={150}
+            />
+            <YAxis />
+            <Tooltip
+              formatter={(value) => {
+                return [
+                  Intl.NumberFormat("en", {
+                    currency: currentCurrency,
+                    style: "currency",
+                  }).format(Number(value)),
+                ];
+              }}
+            />
+            <Bar
+              dataKey="value"
+              fill="#8884d8"
+              activeBar={<Rectangle fill="pink" stroke="blue" />}
+            />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
