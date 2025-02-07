@@ -3,6 +3,7 @@ import { type User } from "better-auth";
 import { Menu } from "lucide-react";
 import { type ReactNode } from "react";
 import { authClient } from "~/lib/auth-client";
+import { Button } from "./ui/button";
 
 export default function Layout(props: { user?: User; children: ReactNode }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
             </div>
             <ul
               tabIndex={0}
-              className="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
+              className="d-dropdown-content d-menu z-1 d-menu-sm rounded-box bg-base-100 mt-3 w-52 p-2 shadow"
             >
               <li>
                 <Link to="/app">Home</Link>
@@ -51,7 +52,7 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
           </div>
         </div>
         <div className="d-navbar-center">
-          <Link to="/" className="d-btn text-xl d-btn-ghost">
+          <Link to="/" className="d-btn d-btn-ghost text-xl">
             TwoPi
           </Link>
         </div>
@@ -63,21 +64,21 @@ export default function Layout(props: { user?: User; children: ReactNode }) {
               </div>
               <ul
                 tabIndex={0}
-                className="d-dropdown-content d-menu z-1 mt-3 w-52 d-menu-sm rounded-box bg-base-100 p-2 shadow"
+                className="d-dropdown-content d-menu z-1 d-menu-sm rounded-box bg-base-100 mt-3 w-52 p-2 shadow"
               >
                 <li>
-                  <button className="d-btn d-btn-primary" onClick={signOut}>
+                  <Button onClick={signOut} variant="default">
                     Sign out
-                  </button>
+                  </Button>
                 </li>
               </ul>
             </div>
           </div>
         ) : (
           <div className="d-navbar-end flex gap-4">
-            <Link to="/signin" className="d-btn d-btn-primary">
-              Sign in / Sign up
-            </Link>
+            <Button asChild variant="default">
+              <Link to="/signin">Sign in / Sign up</Link>
+            </Button>
           </div>
         )}
       </div>

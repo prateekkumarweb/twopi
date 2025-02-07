@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useState } from "react";
 import { z } from "zod";
+import { Button } from "~/components/ui/button";
 import { authClient } from "~/lib/auth-client";
 
 const signinSearchParamsSchema = z.object({
@@ -107,9 +108,9 @@ function RouteComponent() {
             )}
           </signInForm.Field>
           <div className="text-red-600">{signInError}</div>
-          <button type="submit" className="d-btn d-btn-primary">
+          <Button type="submit" variant="default">
             Sign in
-          </button>
+          </Button>
         </form>
       </div>
       <div className="flex grow flex-col gap-4">
@@ -159,9 +160,9 @@ function RouteComponent() {
             )}
           </signUpForm.Field>
           <div className="text-red-600">{signUpError}</div>
-          <button type="submit" className="d-btn d-btn-primary">
+          <Button type="submit" variant="default">
             Sign up
-          </button>
+          </Button>
         </form>
       </div>
     </div>

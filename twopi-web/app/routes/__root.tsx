@@ -5,7 +5,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { getWebRequest } from "vinxi/http";
 import Layout from "~/components/Layout";
 import { auth } from "~/lib/server/auth";
-import css from "../app.css?url";
+import css from "~/styles/app.css?url";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
