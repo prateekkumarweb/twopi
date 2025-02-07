@@ -85,7 +85,7 @@ function RouteComponent() {
         <h2 className="text-lg font-bold">Transaction items</h2>
         <div className="my-2 flex flex-col gap-2">
           {transaction.transaction_items.map((transactionItem) => (
-            <div className="bg-base-100 p-2 shadow-xs" key={transactionItem.id}>
+            <div className="bg-base-100 shadow-xs p-2" key={transactionItem.id}>
               <LabelAndValue label="Notes" value={transactionItem.notes} />
               <LabelAndValue
                 label="Account"

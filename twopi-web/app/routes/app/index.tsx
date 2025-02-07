@@ -158,7 +158,7 @@ function RouteComponent() {
     );
 
   return (
-    <div className="flex flex-col gap-4 bg-base-100 p-4 shadow-sm">
+    <div className="bg-base-100 flex flex-col gap-4 p-4 shadow-sm">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">

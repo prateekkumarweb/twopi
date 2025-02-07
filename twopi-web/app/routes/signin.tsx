@@ -4,6 +4,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { useState } from "react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { authClient } from "~/lib/auth-client";
 
 const signinSearchParamsSchema = z.object({
@@ -85,25 +86,27 @@ function RouteComponent() {
         >
           <signInForm.Field name="email">
             {(field) => (
-              <input
+              <Input
                 type="email"
                 placeholder="Email"
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                autoComplete="email"
               />
             )}
           </signInForm.Field>
           <signInForm.Field name="password">
             {(field) => (
-              <input
+              <Input
                 type="password"
                 placeholder="Password"
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                autoComplete="current-password"
               />
             )}
           </signInForm.Field>
@@ -125,7 +128,7 @@ function RouteComponent() {
         >
           <signUpForm.Field name="name">
             {(field) => (
-              <input
+              <Input
                 type="text"
                 placeholder="Name"
                 name={field.name}
@@ -137,25 +140,27 @@ function RouteComponent() {
           </signUpForm.Field>
           <signUpForm.Field name="email">
             {(field) => (
-              <input
+              <Input
                 type="email"
                 placeholder="Email"
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                autoComplete="email"
               />
             )}
           </signUpForm.Field>
           <signUpForm.Field name="password">
             {(field) => (
-              <input
+              <Input
                 type="password"
                 placeholder="Password"
                 name={field.name}
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
+                autoComplete="new-password"
               />
             )}
           </signUpForm.Field>

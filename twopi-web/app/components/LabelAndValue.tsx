@@ -8,7 +8,7 @@ export default function LabelAndValue({
   return (
     <div className="flex flex-nowrap items-center gap-2">
       <div className="grow font-light">{label}</div>
-      <div className="overflow-hidden text-sm text-nowrap text-ellipsis text-gray-700">
+      <div className="overflow-hidden text-ellipsis text-nowrap text-sm text-gray-700">
         {value}
       </div>
     </div>

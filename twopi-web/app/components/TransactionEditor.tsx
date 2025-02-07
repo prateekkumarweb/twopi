@@ -237,7 +237,7 @@ export default function TransactionEditor(props: {
               ))}
               <button
                 type="button"
-                className="d-btn mt-2 d-btn-secondary"
+                className="d-btn d-btn-secondary mt-2"
                 onClick={() =>
                   field.pushValue({
                     notes: "",
