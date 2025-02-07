@@ -73,8 +73,8 @@ function RouteComponent() {
   }
 
   return (
-    <div className="m-4 flex w-full gap-4">
-      <div className="flex grow flex-col gap-4">
+    <div className="flex w-full">
+      <div className="m-4 flex grow flex-col gap-4">
         <h1 className="text-xl font-bold">Sign in</h1>
         <form
           className="flex flex-col gap-4"
@@ -116,7 +116,7 @@ function RouteComponent() {
           </Button>
         </form>
       </div>
-      <div className="flex grow flex-col gap-4">
+      <div className="m-4 flex grow flex-col gap-4">
         <h1 className="text-xl font-bold">Sign up</h1>
         <form
           className="flex flex-col gap-4"

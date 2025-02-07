@@ -3,7 +3,6 @@ import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { createServerFn, Meta, Scripts } from "@tanstack/start";
 import { lazy, Suspense, type ReactNode } from "react";
 import { getWebRequest } from "vinxi/http";
-import Layout from "~/components/Layout";
 import { auth } from "~/lib/server/auth";
 import css from "~/styles/app.css?url";
 
@@ -50,20 +49,13 @@ export const Route = createRootRoute({
     const { session } = await fetchAuth();
     return { session };
   },
-  loader: async ({ context }) => {
-    return { session: context.session };
-  },
   component: RootComponent,
 });
 
 function RootComponent() {
-  const state = Route.useLoaderData();
-
   return (
     <RootDocument>
-      <Layout user={state.session?.user}>
-        <Outlet />
-      </Layout>
+      <Outlet />
     </RootDocument>
   );
 }
