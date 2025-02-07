@@ -27,6 +27,31 @@ import {
 import { authClient } from "~/lib/auth-client";
 import { Button } from "./ui/button";
 
+type NavItem = {
+  label: string;
+  href: string;
+  children?: NavItem[];
+};
+
+export const navItemsTree: NavItem = {
+  label: "TwoPi",
+  href: "/",
+  children: [
+    {
+      label: "Personal Finance",
+      href: "/app",
+      children: [
+        { label: "Dashboard", href: "/app/" },
+        { label: "Currency", href: "/app/currency" },
+        { label: "Category", href: "/app/category" },
+        { label: "Account", href: "/app/account/" },
+        { label: "Transaction", href: "/app/transaction/" },
+        { label: "Import/Export", href: "/app/import-export" },
+      ],
+    },
+  ],
+};
+
 export function AppSidebar(props: { user?: UserType }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
@@ -45,33 +70,22 @@ export function AppSidebar(props: { user?: UserType }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Personal Finance</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link to="/app">Home</Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild>
-                  <Link to="/app/currency">Currency</Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild>
-                  <Link to="/app/category">Category</Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild>
-                  <Link to="/app/account">Account</Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild>
-                  <Link to="/app/transaction">Transaction</Link>
-                </SidebarMenuButton>
-                <SidebarMenuButton asChild>
-                  <Link to="/app/import-export">Import/Export</Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navItemsTree.children?.map((item) => (
+          <SidebarGroup key={item.href}>
+            <SidebarGroupLabel>{item.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  {item.children?.map((item) => (
+                    <SidebarMenuButton key={item.href} asChild>
+                      <Link to={item.href}>{item.label}</Link>
+                    </SidebarMenuButton>
+                  ))}
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
