@@ -5,12 +5,15 @@ edition = "2021"
 publish = false
 
 [workspace]
-members = [".", "migration"]
+members = [".", "migration", "user-migration"]
 
 [dependencies]
 anyhow = "1.0.95"
+argon2 = { version = "0.5.3", features = ["std"] }
+async-trait = "0.1.86"
 axum = { version = "0.8.1", features = ["macros", "http2"] }
 axum-extra = { version = "0.10.0", features = ["typed-header"] }
+axum-login = "0.17.0"
 chrono = { version = "0.4.39", features = ["serde"] }
 jiff = { version = "0.1.29", features = ["serde"] }
 migration = { path = "migration" }
@@ -26,6 +29,7 @@ thiserror = "2.0.11"
 tokio = { version = "1.43.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
+user-migration = { version = "0.1.0", path = "user-migration" }
 utoipa = { version = "5.3.1", features = ["axum_extras", "chrono", "uuid"] }
 utoipa-axum = "0.2.0"
 utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }

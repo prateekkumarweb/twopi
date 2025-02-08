@@ -41,3 +41,15 @@ $ DATABASE_URL='sqlite://../data/dev.sqlite?mode=rwc' sea-orm-cli migrate
 # Generate entities
 $ DATABASE_URL='sqlite://../data/dev.sqlite?mode=rwc' sea-orm-cli generate entity -o src/entity --with-serde both
 ```
+
+User Migration:
+
+```sh
+$ cd twopi-service
+# Generate migration
+$ sea-orm-cli migrate generate <migration_name> -d user-migration
+# Migrate
+$ DATABASE_URL='sqlite://../data/auth.sqlite?mode=rwc' sea-orm-cli migrate -d user-migration
+# Generate entities
+$ DATABASE_URL='sqlite://../data/auth.sqlite?mode=rwc' sea-orm-cli generate entity -o src/user_entity --with-serde both
+```

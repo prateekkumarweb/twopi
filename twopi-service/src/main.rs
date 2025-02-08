@@ -7,10 +7,12 @@
 )]
 #![allow(clippy::cast_sign_loss, clippy::too_many_lines)]
 
+mod auth;
 mod cache;
 mod entity;
 mod model;
 mod routes;
+mod user_entity;
 
 use std::{
     path::PathBuf,
@@ -18,15 +20,24 @@ use std::{
 };
 
 use anyhow::Context;
+use auth::{Backend, Credentials};
 use axum::{
     http::{HeaderName, HeaderValue, StatusCode},
-    response::{IntoResponse, Response},
+    response::{Html, IntoResponse, Redirect, Response},
+    routing::{get, post},
+    Form,
 };
 use axum_extra::headers::Header;
+use axum_login::{
+    login_required,
+    tower_sessions::{MemoryStore, SessionManagerLayer},
+    AuthManagerLayerBuilder,
+};
 use cache::CacheManager;
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use tokio::sync::Mutex;
+use user_migration::Migrator as UserMigrator;
 use utoipa::{IntoParams, OpenApi};
 use utoipa_axum::router::OpenApiRouter;
 use utoipa_rapidoc::RapiDoc;
@@ -58,6 +69,12 @@ async fn main() -> anyhow::Result<()> {
 
     let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
 
+    let session_store = MemoryStore::default();
+    let session_layer = SessionManagerLayer::new(session_store);
+
+    let backend = Backend::new(auth_database().await?);
+    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
+
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
             "/currency",
@@ -70,6 +87,18 @@ async fn main() -> anyhow::Result<()> {
         .nest("/account", routes::account::router())
         .nest("/category", routes::category::router())
         .nest("/transaction", routes::transaction::router())
+        .nest(
+            "/api",
+            OpenApiRouter::new()
+                .route(
+                    "/protected",
+                    get(|| async { "Gotta be logged in to see me!" }),
+                )
+                .route_layer(login_required!(Backend, login_url = "/api/login"))
+                .route("/login", post(login))
+                .route("/login", get(login_page)),
+        )
+        .layer(auth_layer)
         .split_for_parts();
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", api.clone()))
@@ -120,6 +149,18 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
     Ok(db)
 }
 
+#[tracing::instrument]
+async fn auth_database() -> AppResult<DatabaseConnection> {
+    let db_dir = DATA_DIR.join("auth.db");
+    let db_dir = db_dir.to_string_lossy();
+    let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}?mode=rwc"));
+    let db = Database::connect(connect_options)
+        .await
+        .map_err(AppError::DbErr)?;
+    UserMigrator::up(&db, None).await.map_err(AppError::DbErr)?;
+    Ok(db)
+}
+
 #[derive(Debug, IntoParams)]
 #[into_params(names("x-user-id"), parameter_in = Header)]
 struct XUserId(#[param(default = "dev")] String);
@@ -148,4 +189,41 @@ impl Header for XUserId {
         value.set_sensitive(true);
         values.extend(std::iter::once(value));
     }
+}
+
+type AuthSession = axum_login::AuthSession<Backend>;
+
+#[tracing::instrument(skip(auth_session, creds))]
+async fn login(mut auth_session: AuthSession, Form(creds): Form<Credentials>) -> impl IntoResponse {
+    let user = match auth_session.authenticate(creds.clone()).await {
+        Ok(Some(user)) => user,
+        Ok(None) => return StatusCode::UNAUTHORIZED.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if auth_session.login(&user).await.is_err() {
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+
+    Redirect::to("/api/protected").into_response()
+}
+
+async fn login_page() -> impl IntoResponse {
+    Html(
+        "<!doctype html>
+    <html>
+    <head>
+        <title>Login</title>
+    </head>
+    <body>
+        <form method=\"post\">
+            <label for=\"email\">Email</label>
+            <input type=\"email\" id=\"email\" name=\"email\">
+            <label for=\"password\">Password</label>
+            <input type=\"password\" id=\"password\" name=\"password\">
+            <button type=\"submit\">Login</button>
+        </form>
+    </body>
+    </html>",
+    )
 }
