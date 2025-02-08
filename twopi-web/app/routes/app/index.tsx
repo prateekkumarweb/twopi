@@ -2,18 +2,28 @@ import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import clsx from "clsx";
 import { useMemo, useState } from "react";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  Rectangle,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "~/components/ui/chart";
+import { Input } from "~/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   accountQueryOptions,
   currencyRatesQueryOptions,
@@ -158,21 +168,14 @@ function RouteComponent() {
     );
 
   return (
-    <div className="bg-base-100 flex flex-col gap-4 p-4 shadow-sm">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="flex flex-col gap-4">
+      <h1 className="text-xl font-bold">Dashboard</h1>
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">
         {wealthInDifferentCurrencies.map((wealth) => (
           <div
             key={wealth.currency}
-            className={clsx(
-              "bg-base-200 p-2 text-2xl shadow-sm",
-              wealth.value > 0
-                ? "bg-success text-success-content"
-                : wealth.value < 0
-                  ? "bg-error text-error-content"
-                  : "bg-neutral text-neutral-content",
-            )}
+            className={clsx("bg-accent shadow-xs p-2 text-2xl")}
           >
             {new Intl.NumberFormat("en", {
               style: "currency",
@@ -190,34 +193,41 @@ function RouteComponent() {
           }).format(new Date(monthAndYear.year, monthAndYear.month))}
         </h2>
         <div className="flex gap-4">
-          <select
-            value={currentCurrency}
-            onChange={(e) => setCurrency(e.target.value)}
-          >
-            {currenciesToShow.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-          <select
-            value={monthAndYear.month}
-            onChange={(e) =>
+          <Select value={currentCurrency} onValueChange={(e) => setCurrency(e)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Currency" />
+            </SelectTrigger>
+            <SelectContent>
+              {currenciesToShow.map((currency) => (
+                <SelectItem key={currency} value={currency}>
+                  {currency}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={String(monthAndYear.month)}
+            onValueChange={(e) =>
               setMonthAndYear({
                 ...monthAndYear,
-                month: Number(e.target.value),
+                month: Number(e),
               })
             }
           >
-            {Array.from({ length: 12 }, (_, i) => i).map((i) => (
-              <option key={i} value={i}>
-                {Intl.DateTimeFormat("en", { month: "short" }).format(
-                  new Date(0, i),
-                )}
-              </option>
-            ))}
-          </select>
-          <input
+            <SelectTrigger>
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }, (_, i) => i).map((i) => (
+                <SelectItem key={i} value={String(i)}>
+                  {Intl.DateTimeFormat("en", { month: "short" }).format(
+                    new Date(0, i),
+                  )}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
             type="number"
             value={monthAndYear.year}
             onChange={(e) =>
@@ -228,79 +238,133 @@ function RouteComponent() {
             }
           />
         </div>
-        <ResponsiveContainer width="100%" height={250}>
-          <LineChart
-            data={chartData.wealthData.map(({ date, wealth }) => ({
-              date,
-              wealth:
-                wealth * (data.currencyRates?.[currentCurrency]?.value ?? 1),
-            }))}
-          >
-            <Line type="monotone" dataKey="wealth" stroke="#8884d8" />
-            <CartesianGrid stroke="#eee" strokeDasharray="3 3" />
-            <Tooltip
-              labelFormatter={(value) => {
-                return Intl.DateTimeFormat("en", {
-                  day: "2-digit",
-                  month: "short",
+        <div className="flex w-full flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Wealth</CardTitle>
+              <CardDescription>
+                {Intl.DateTimeFormat("en", {
+                  month: "long",
                   year: "numeric",
-                }).format(
-                  new Date(
-                    monthAndYear.year,
-                    monthAndYear.month,
-                    Number(value),
-                  ),
-                );
-              }}
-              formatter={(value) => {
-                return [
-                  Intl.NumberFormat("en", {
-                    currency: currentCurrency,
-                    style: "currency",
-                  }).format(Number(value)),
-                ];
-              }}
-            />
-            <XAxis dataKey="date" />
-            <YAxis />
-          </LineChart>
-        </ResponsiveContainer>
-        <ResponsiveContainer width="100%" height={500}>
-          <BarChart
-            width={400}
-            height={400}
-            data={chartData.categories.map(([name, value]) => ({
-              name,
-              value:
-                value * (data.currencyRates?.[currentCurrency]?.value ?? 1),
-            }))}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="name"
-              interval="preserveStartEnd"
-              angle={270}
-              textAnchor="end"
-              height={150}
-            />
-            <YAxis />
-            <Tooltip
-              formatter={(value) => {
-                return [
-                  Intl.NumberFormat("en", {
-                    currency: currentCurrency,
-                    style: "currency",
-                  }).format(Number(value)),
-                ];
-              }}
-            />
-            <Bar
-              dataKey="value"
-              fill="#8884d8"
-              activeBar={<Rectangle fill="pink" stroke="blue" />}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+                }).format(new Date(monthAndYear.year, monthAndYear.month))}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  desktop: {
+                    label: "Wealth",
+                    color: "var(--color-primary)",
+                  },
+                }}
+              >
+                <LineChart
+                  accessibilityLayer
+                  data={chartData.wealthData.map(({ date, wealth }) => ({
+                    date,
+                    wealth:
+                      wealth *
+                      (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                  }))}
+                  margin={{
+                    left: 12,
+                    right: 12,
+                  }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                    labelFormatter={(value) => {
+                      return Intl.DateTimeFormat("en", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }).format(
+                        new Date(
+                          monthAndYear.year,
+                          monthAndYear.month,
+                          Number(value),
+                        ),
+                      );
+                    }}
+                    formatter={(value) => {
+                      return Intl.NumberFormat("en", {
+                        currency: currentCurrency,
+                        style: "currency",
+                      }).format(Number(value));
+                    }}
+                  />
+                  <Line
+                    dataKey="wealth"
+                    type="natural"
+                    stroke="var(--color-desktop)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
+            <CardFooter>Cumulative wealth over the month</CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Categories</CardTitle>
+              <CardDescription>
+                {Intl.DateTimeFormat("en", {
+                  month: "long",
+                  year: "numeric",
+                }).format(new Date(monthAndYear.year, monthAndYear.month))}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer
+                config={{
+                  desktop: {
+                    label: "Category",
+                    color: "var(--color-primary)",
+                  },
+                }}
+              >
+                <BarChart
+                  accessibilityLayer
+                  data={chartData.categories.map(([name, value]) => ({
+                    name,
+                    value:
+                      value *
+                      (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                  }))}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                    formatter={(value) => {
+                      return Intl.NumberFormat("en", {
+                        currency: currentCurrency,
+                        style: "currency",
+                      }).format(Number(value));
+                    }}
+                  />
+                  <Bar dataKey="value" fill="var(--color-desktop)" radius={8} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+            <CardFooter>Income/Expense in each category</CardFooter>
+          </Card>
+        </div>
       </div>
     </div>
   );
