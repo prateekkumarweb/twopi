@@ -6,6 +6,15 @@ import { AccountType, type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export default function AccountEditor(props: {
   edit?: {
@@ -80,9 +89,9 @@ export default function AccountEditor(props: {
         <h1 className="my-2 grow text-xl font-bold">
           {props.edit ? "Edit" : "New"} Account
         </h1>
-        <Link to=".." className="d-btn d-btn-sm d-btn-secondary">
-          Back
-        </Link>
+        <Button asChild variant="outline">
+          <Link to="..">Back</Link>
+        </Button>
       </div>
       <form
         className="my-2 flex flex-col gap-4"
@@ -94,9 +103,8 @@ export default function AccountEditor(props: {
       >
         <form.Field name="name">
           {(field) => (
-            <input
+            <Input
               type="text"
-              className="w-full"
               placeholder="Name"
               name={field.name}
               value={field.state.value}
@@ -107,29 +115,27 @@ export default function AccountEditor(props: {
         </form.Field>
         <form.Field name="accountType">
           {(field) => (
-            <select
-              className="w-full"
-              name={field.name}
+            <Select
               value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
+              onValueChange={(e) => field.handleChange(e)}
             >
-              <option disabled value="">
-                Select account type
-              </option>
-              {Object.values(AccountType).map((type) => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Account type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.values(AccountType).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </form.Field>
         <form.Field name="createdAt">
           {(field) => (
-            <input
+            <Input
               type="datetime-local"
-              className="w-full"
               placeholder="Date/Time"
               name={field.name}
               value={dayjs(field.state.value).format("YYYY-MM-DDTHH:mm")}
@@ -142,29 +148,27 @@ export default function AccountEditor(props: {
         </form.Field>
         <form.Field name="currencyCode">
           {(field) => (
-            <select
-              className="select w-full"
-              name={field.name}
+            <Select
               value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
+              onValueChange={(e) => field.handleChange(e)}
             >
-              <option disabled value="">
-                Select currency
-              </option>
-              {data.currencies?.map((currency) => (
-                <option key={currency.code} value={currency.code}>
-                  {currency.code} - {currency.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Currency" />
+              </SelectTrigger>
+              <SelectContent>
+                {data.currencies?.map((currency) => (
+                  <SelectItem key={currency.code} value={currency.code}>
+                    {currency.code} - {currency.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </form.Field>
         <form.Field name="startingBalance">
           {(field) => (
-            <input
+            <Input
               type="text"
-              className="w-full"
               placeholder="Starting Balance"
               name={field.name}
               value={field.state.value}
@@ -173,16 +177,12 @@ export default function AccountEditor(props: {
             />
           )}
         </form.Field>
-        <button
-          type="submit"
-          className="d-btn d-btn-primary"
-          disabled={mutation.isPending}
-        >
+        <Button type="submit" disabled={mutation.isPending}>
           {props.edit ? "Update" : "Create"}
-        </button>
+        </Button>
         {mutation.isPending && <p className="text-info-content">Creating...</p>}
         {mutation.isError && (
-          <p className="text-error-content">{mutation.error?.message}</p>
+          <p className="text-destructive">{mutation.error?.message}</p>
         )}
       </form>
     </div>

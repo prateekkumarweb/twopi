@@ -123,8 +123,8 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <div className="flex gap-4">
-        <h1 className="my-4 grow text-xl font-bold">Currency</h1>
+      <div className="mb-4 flex items-center gap-4">
+        <h1 className="grow text-xl font-bold">Currency</h1>
         <Button
           variant="outline"
           onClick={async () => {
@@ -140,7 +140,7 @@ function RouteComponent() {
 
       {mutation.isPending && <p className="text-info-content">Creating...</p>}
       {mutation.isError && (
-        <p className="text-error-content">{mutation.error?.message}</p>
+        <p className="text-destructive">{mutation.error?.message}</p>
       )}
       <form
         onSubmit={(e) => {

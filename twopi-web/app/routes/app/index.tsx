@@ -1,6 +1,5 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import clsx from "clsx";
 import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import {
@@ -175,7 +174,7 @@ function RouteComponent() {
         {wealthInDifferentCurrencies.map((wealth) => (
           <div
             key={wealth.currency}
-            className={clsx("bg-accent shadow-xs p-2 text-2xl")}
+            className="bg-accent shadow-xs p-2 text-2xl"
           >
             {new Intl.NumberFormat("en", {
               style: "currency",

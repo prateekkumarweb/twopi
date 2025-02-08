@@ -1,5 +1,9 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Fragment } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -61,18 +65,20 @@ function RouteComponent() {
     <div className="w-full">
       <div className="flex items-center gap-2">
         <h1 className="my-2 grow text-xl font-bold">Account</h1>
-        <Link to="/app/account/new" className="d-btn d-btn-sm d-btn-secondary">
-          New
-        </Link>
+        <Button asChild variant="outline">
+          <Link to="/app/account/new">New</Link>
+        </Button>
       </div>
       <div className="my-2 flex flex-col gap-2">
         {data.accounts?.length === 0 && <div>No accounts found</div>}
-        {data.accounts?.map((account) => (
-          <AccountItem
-            account={account}
-            currentBalance={calculateBalance(account)}
-            key={account.id}
-          />
+        {data.accounts?.map((account, i) => (
+          <Fragment key={account.id}>
+            <AccountItem
+              account={account}
+              currentBalance={calculateBalance(account)}
+            />
+            {data.accounts?.length !== i + 1 && <Separator />}
+          </Fragment>
         ))}
       </div>
     </div>
@@ -87,31 +93,25 @@ function AccountItem({
   currentBalance: number;
 }) {
   return (
-    <div className="bg-base-100 shadow-xs w-full p-2">
+    <div className="w-full p-2">
       <Link
         to="/app/account/$id"
         params={{ id: account.id }}
         className="flex grow flex-col gap-2"
       >
         <div className="flex gap-2">
-          <div className="grow">{account.name}</div>
+          <div className="flex grow gap-2">
+            {account.name}
+            <Badge variant="outline">{account.account_type}</Badge>
+            <Badge variant="outline">{account.currency.code}</Badge>
+          </div>
           <div>
-            <div className="d-badge d-badge-ghost">
+            <Badge>
               {Intl.NumberFormat("en", {
                 style: "currency",
                 currency: account.currency.code,
               }).format(currentBalance)}
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <div className="grow">
-            <div className="d-badge d-badge-info">{account.account_type}</div>
-          </div>
-          <div>
-            <div className="d-badge d-badge-neutral">
-              {account.currency.code}
-            </div>
+            </Badge>
           </div>
         </div>
       </Link>

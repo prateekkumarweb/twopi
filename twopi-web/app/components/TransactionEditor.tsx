@@ -11,6 +11,15 @@ import {
 } from "~/lib/query-options";
 import { createTransaction } from "~/lib/server-fns/transaction";
 import { isDefined } from "~/lib/utils";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export default function TransactionEditor(props: {
   edit?: {
@@ -103,9 +112,9 @@ export default function TransactionEditor(props: {
         <h1 className="my-2 grow text-xl font-bold">
           {props.edit ? "Edit" : "New"} Transaction
         </h1>
-        <Link to=".." className="d-btn d-btn-sm d-btn-secondary">
-          Back
-        </Link>
+        <Button asChild variant="outline">
+          <Link to="..">Back</Link>
+        </Button>
       </div>
       <form
         className="my-2 flex flex-col gap-4"
@@ -117,9 +126,8 @@ export default function TransactionEditor(props: {
       >
         <form.Field name="title">
           {(field) => (
-            <input
+            <Input
               type="text"
-              className="w-full"
               placeholder="Name"
               name={field.name}
               value={field.state.value}
@@ -130,9 +138,8 @@ export default function TransactionEditor(props: {
         </form.Field>
         <form.Field name="timestamp">
           {(field) => (
-            <input
+            <Input
               type="datetime-local"
-              className="w-full"
               placeholder="Date/Time"
               name={field.name}
               value={dayjs(field.state.value).format("YYYY-MM-DDTHH:mm")}
@@ -152,9 +159,8 @@ export default function TransactionEditor(props: {
                   <div className="flex grow flex-col gap-2">
                     <form.Field name={`transactions[${i}].notes`}>
                       {(subField) => (
-                        <input
+                        <Input
                           type="text"
-                          className="w-full"
                           placeholder="Name"
                           name={subField.name}
                           value={subField.state.value}
@@ -167,31 +173,28 @@ export default function TransactionEditor(props: {
                     </form.Field>
                     <form.Field name={`transactions[${i}].accountName`}>
                       {(subField) => (
-                        <select
-                          className="select w-full"
+                        <Select
                           name={subField.name}
                           value={subField.state.value}
-                          onBlur={subField.handleBlur}
-                          onChange={(e) =>
-                            subField.handleChange(e.target.value)
-                          }
+                          onValueChange={(e) => subField.handleChange(e)}
                         >
-                          <option disabled value="">
-                            Select account
-                          </option>
-                          {data.accounts?.map((account) => (
-                            <option key={account.id} value={account.name}>
-                              {account.name} - {account.currency.code}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select account" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {data.accounts?.map((account) => (
+                              <SelectItem key={account.id} value={account.name}>
+                                {account.name} - {account.currency.code}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
                     </form.Field>
                     <form.Field name={`transactions[${i}].amount`}>
                       {(subField) => (
-                        <input
+                        <Input
                           type="number"
-                          className="w-full"
                           placeholder="Amount"
                           name={subField.name}
                           value={subField.state.value}
@@ -204,40 +207,41 @@ export default function TransactionEditor(props: {
                     </form.Field>
                     <form.Field name={`transactions[${i}].categoryName`}>
                       {(subField) => (
-                        <select
-                          className="select w-full"
+                        <Select
                           name={subField.name}
                           value={subField.state.value}
-                          onBlur={subField.handleBlur}
-                          onChange={(e) =>
-                            subField.handleChange(e.target.value)
-                          }
+                          onValueChange={(e) => subField.handleChange(e)}
                         >
-                          <option disabled value="">
-                            Select category
-                          </option>
-                          {data.categories?.map((category) => (
-                            <option key={category.name} value={category.name}>
-                              {category.group ? category.group + " - " : ""}
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {data.categories?.map((category) => (
+                              <SelectItem
+                                key={category.name}
+                                value={category.name}
+                              >
+                                {category.group ? category.group + " - " : ""}
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
                     </form.Field>
                   </div>
-                  <button
-                    type="button"
-                    className="d-btn d-btn-error"
+                  <Button
+                    variant="destructive"
                     onClick={() => field.removeValue(i)}
                   >
                     <Trash />
-                  </button>
+                  </Button>
                 </div>
               ))}
-              <button
+              <Button
                 type="button"
-                className="d-btn d-btn-secondary mt-2"
+                variant="secondary"
+                className="mt-2"
                 onClick={() =>
                   field.pushValue({
                     notes: "",
@@ -248,7 +252,7 @@ export default function TransactionEditor(props: {
                 }
               >
                 Add transaction
-              </button>
+              </Button>
             </div>
           )}
         </form.Field>
@@ -256,17 +260,13 @@ export default function TransactionEditor(props: {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
         >
           {([canSubmit, isSubmitting]) => (
-            <button
-              type="submit"
-              className="d-btn d-btn-primary"
-              disabled={!canSubmit}
-            >
+            <Button type="submit" disabled={!canSubmit}>
               {isSubmitting ? "..." : props.edit ? "Update" : "Create"}
-            </button>
+            </Button>
           )}
         </form.Subscribe>
         {mutation.isError && (
-          <p className="text-error">{mutation.error?.message}</p>
+          <p className="text-destructive">{mutation.error?.message}</p>
         )}
       </form>
     </div>

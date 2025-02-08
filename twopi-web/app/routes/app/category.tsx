@@ -55,7 +55,7 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h1 className="my-4 text-xl font-bold">Category</h1>
+      <h1 className="mb-4 text-xl font-bold">Category</h1>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
@@ -90,7 +90,7 @@ function RouteComponent() {
         </form.Field>
         <Button type="submit">Create</Button>
         {mutation.isError && (
-          <p className="text-error">{mutation.error?.message}</p>
+          <p className="text-destructive">{mutation.error?.message}</p>
         )}
       </form>
       <div className="mt-4 flex flex-col gap-4">

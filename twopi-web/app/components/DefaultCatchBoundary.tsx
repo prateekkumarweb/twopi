@@ -6,6 +6,7 @@ import {
   useRouter,
   type ErrorComponentProps,
 } from "@tanstack/react-router";
+import { Button } from "./ui/button";
 
 export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   const router = useRouter();
@@ -20,29 +21,30 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
     <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 p-4">
       <ErrorComponent error={error} />
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        <Button
           onClick={() => {
             router.invalidate();
           }}
-          className="d-btn"
+          variant="outline"
         >
           Try Again
-        </button>
+        </Button>
         {isRoot ? (
-          <Link to="/" className="d-btn">
-            Home
-          </Link>
+          <Button asChild variant="outline">
+            <Link to="/">Home</Link>
+          </Button>
         ) : (
-          <Link
-            to="/"
-            className="d-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              window.history.back();
-            }}
-          >
-            Go Back
-          </Link>
+          <Button asChild variant="outline">
+            <Link
+              to="/"
+              onClick={(e) => {
+                e.preventDefault();
+                window.history.back();
+              }}
+            >
+              Go Back
+            </Link>
+          </Button>
         )}
       </div>
     </div>

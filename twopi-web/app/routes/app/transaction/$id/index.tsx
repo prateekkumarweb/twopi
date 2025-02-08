@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import clsx from "clsx";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
+import { Fragment } from "react";
 import LabelAndValue from "~/components/LabelAndValue";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import {
   transactionByIdQueryOptions,
   transactionQueryOptions,
@@ -53,27 +56,25 @@ function RouteComponent() {
   return (
     <div className="flex flex-col gap-2">
       {mutation.isError && (
-        <p className="text-error-content">{mutation.error.message}</p>
+        <p className="text-destructive">{mutation.error.message}</p>
       )}
       <div className="mb-2 flex items-center gap-2">
         <Link to="..">
           <ArrowLeft size={16} />
         </Link>
         <h1 className="grow text-xl font-bold">Transaction details</h1>
-        <Link
-          to="/app/transaction/$id/edit"
-          params={{ id: transaction.id }}
-          className="d-btn d-btn-sm d-btn-primary"
-        >
-          <Edit size={16} />
-        </Link>
-        <button
-          className="d-btn d-btn-sm d-btn-error"
+        <Button asChild variant="outline">
+          <Link to="/app/transaction/$id/edit" params={{ id: transaction.id }}>
+            <Edit size={16} />
+          </Link>
+        </Button>
+        <Button
+          variant="destructive"
           onClick={deleteTransactionHandler}
           disabled={mutation.isPending}
         >
           <Trash size={16} />
-        </button>
+        </Button>
       </div>
       <LabelAndValue label="Id" value={transaction.id} />
       <LabelAndValue label="Title" value={transaction.title} />
@@ -84,40 +85,34 @@ function RouteComponent() {
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transaction items</h2>
         <div className="my-2 flex flex-col gap-2">
-          {transaction.transaction_items.map((transactionItem) => (
-            <div className="bg-base-100 shadow-xs p-2" key={transactionItem.id}>
-              <LabelAndValue label="Notes" value={transactionItem.notes} />
-              <LabelAndValue
-                label="Account"
-                value={transactionItem.account.name}
-              />
-              <LabelAndValue
-                label="Amount"
-                value={
-                  <span
-                    className={clsx(
-                      "d-badge d-badge-sm text-nowrap",
-                      transactionItem.amount > 0
-                        ? "d-badge-success"
-                        : transactionItem.amount < 0
-                          ? "d-badge-error"
-                          : "d-badge-neutral",
-                    )}
-                  >
-                    {Intl.NumberFormat("en", {
-                      style: "currency",
-                      currency: transactionItem.account.currency.code,
-                    }).format(transactionItem.amount)}
-                  </span>
-                }
-              />
-              {transactionItem.category && (
+          {transaction.transaction_items.map((transactionItem, i) => (
+            <Fragment key={transactionItem.id}>
+              <div>
+                <LabelAndValue label="Notes" value={transactionItem.notes} />
                 <LabelAndValue
-                  label="Category"
-                  value={transactionItem.category.name}
+                  label="Account"
+                  value={transactionItem.account.name}
                 />
-              )}
-            </div>
+                <LabelAndValue
+                  label="Amount"
+                  value={
+                    <Badge>
+                      {Intl.NumberFormat("en", {
+                        style: "currency",
+                        currency: transactionItem.account.currency.code,
+                      }).format(transactionItem.amount)}
+                    </Badge>
+                  }
+                />
+                {transactionItem.category && (
+                  <LabelAndValue
+                    label="Category"
+                    value={transactionItem.category.name}
+                  />
+                )}
+              </div>
+              {transaction.transaction_items.length !== i + 1 && <Separator />}
+            </Fragment>
           ))}
         </div>
       </div>

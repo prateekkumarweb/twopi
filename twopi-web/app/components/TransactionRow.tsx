@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import clsx from "clsx";
 import dayjs from "dayjs";
 import type { getTransaction } from "~/lib/server-fns/transaction";
+import { Badge } from "./ui/badge";
 
 type Transaction = Awaited<ReturnType<typeof getTransaction>>;
 
@@ -11,7 +11,7 @@ export default function TransactionRow({
   transaction: Transaction;
 }) {
   return (
-    <div className="bg-base-100 shadow-xs p-2">
+    <div>
       <Link
         to="/app/transaction/$id"
         params={{ id: transaction.id }}
@@ -22,9 +22,9 @@ export default function TransactionRow({
             {transaction.title}
           </h2>
           <div className="flex gap-2">
-            <div className="d-badge d-badge-ghost d-badge-sm text-nowrap">
+            <Badge variant="outline">
               {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
-            </div>
+            </Badge>
           </div>
         </div>
         <div className="flex flex-col gap-2">
@@ -33,28 +33,15 @@ export default function TransactionRow({
               <div className="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
                 {item.notes}
               </div>
-              <div className="d-badge d-badge-sm d-badge-primary text-nowrap">
-                {item.account.name}
-              </div>
-              <div
-                className={clsx(
-                  "d-badge d-badge-sm text-nowrap",
-                  item.amount > 0
-                    ? "d-badge-success"
-                    : item.amount < 0
-                      ? "d-badge-error"
-                      : "d-badge-neutral",
-                )}
-              >
+              <Badge variant="outline">{item.account.name}</Badge>
+              <Badge>
                 {Intl.NumberFormat("en", {
                   style: "currency",
                   currency: item.account.currency.code,
                 }).format(item.amount)}
-              </div>
+              </Badge>
               {item.category && (
-                <div className="d-badge d-badge-sm d-badge-info text-nowrap">
-                  {item.category.name}
-                </div>
+                <Badge variant="secondary">{item.category.name}</Badge>
               )}
             </div>
           ))}

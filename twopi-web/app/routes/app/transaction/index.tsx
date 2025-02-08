@@ -1,6 +1,9 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Fragment } from "react";
 import TransactionRow from "~/components/TransactionRow";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
 import { transactionQueryOptions } from "~/lib/query-options";
 import { isDefined } from "~/lib/utils";
 
@@ -38,17 +41,17 @@ function RouteComponent() {
     <div className="w-full">
       <div className="flex items-center gap-2">
         <h1 className="my-2 grow text-xl font-bold">Transaction</h1>
-        <Link
-          to="/app/transaction/new"
-          className="d-btn d-btn-sm d-btn-secondary"
-        >
-          New
-        </Link>
+        <Button asChild variant="outline">
+          <Link to="/app/transaction/new">New</Link>
+        </Button>
       </div>
       <div className="my-2 flex flex-col gap-2">
         {data.transactions?.length === 0 && <div>No transactions found</div>}
-        {data.transactions?.map((transaction) => (
-          <TransactionRow key={transaction.id} transaction={transaction} />
+        {data.transactions?.map((transaction, i) => (
+          <Fragment key={transaction.id}>
+            <TransactionRow transaction={transaction} />
+            {data.transactions?.length !== i + 1 && <Separator />}
+          </Fragment>
         ))}
       </div>
     </div>
