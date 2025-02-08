@@ -26,6 +26,7 @@
     "@tanstack/react-form": "^0.41.3",
     "@tanstack/react-query": "^5.66.0",
     "@tanstack/react-router": "^1.99.9",
+    "@tanstack/react-table": "^8.20.6",
     "@tanstack/zod-adapter": "^1.99.9",
     "@tanstack/zod-form-adapter": "^0.41.3",
     "better-auth": "^1.1.16",

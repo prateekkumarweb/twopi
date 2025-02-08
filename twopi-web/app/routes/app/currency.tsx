@@ -1,7 +1,24 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
 import { Save, Trash } from "lucide-react";
+import { useMemo } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { currencyQueryOptions } from "~/lib/query-options";
 import {
   createCurrency,
@@ -40,7 +57,7 @@ function RouteComponent() {
     },
   });
 
-  const deleteMutation = useMutation({
+  const { mutate } = useMutation({
     mutationFn: (code: unknown) => deleteCurrency({ data: code }),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -49,6 +66,55 @@ function RouteComponent() {
     },
   });
 
+  type Currency = {
+    code: string;
+    name: string;
+    decimal_digits: number;
+  };
+
+  const columns = useMemo(
+    () =>
+      [
+        {
+          accessorKey: "code",
+          header: "Code",
+        },
+        {
+          accessorKey: "name",
+          header: "Name",
+        },
+        {
+          accessorKey: "decimal_digits",
+          header: "Decimal Digits",
+        },
+        {
+          id: "actions",
+          header: "Actions",
+          enableHiding: false,
+          cell({ row }) {
+            const currency = row.original;
+            return (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  mutate(currency.code);
+                }}
+              >
+                <Trash />
+              </Button>
+            );
+          },
+        },
+      ] satisfies ColumnDef<Currency>[],
+    [mutate],
+  );
+
+  const table = useReactTable({
+    columns,
+    data: data?.data ?? [],
+    getCoreRowModel: getCoreRowModel(),
+  });
   if (isPending) return "Loading...";
 
   if (isFetching) return "Fetching...";
@@ -57,7 +123,21 @@ function RouteComponent() {
 
   return (
     <div className="w-full">
-      <h1 className="my-4 text-xl font-bold">Currency</h1>
+      <div className="flex gap-4">
+        <h1 className="my-4 grow text-xl font-bold">Currency</h1>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await syncCurrencies();
+            await queryClient.invalidateQueries({
+              queryKey: currencyQueryOptions().queryKey,
+            });
+          }}
+        >
+          Sync currencies
+        </Button>
+      </div>
+
       {mutation.isPending && <p className="text-info-content">Creating...</p>}
       {mutation.isError && (
         <p className="text-error-content">{mutation.error?.message}</p>
@@ -69,23 +149,30 @@ function RouteComponent() {
           form.handleSubmit();
         }}
       >
-        <table className="d-table w-full">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Decimal Places</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>
                 <form.Field name="code">
                   {(field) => (
-                    <input
+                    <Input
                       type="text"
-                      className="w-full"
                       placeholder="Code"
                       name={field.name}
                       value={field.state.value}
@@ -94,13 +181,12 @@ function RouteComponent() {
                     />
                   )}
                 </form.Field>
-              </td>
-              <td>
+              </TableCell>
+              <TableCell>
                 <form.Field name="name">
                   {(field) => (
-                    <input
+                    <Input
                       type="text"
-                      className="w-full"
                       placeholder="Name"
                       name={field.name}
                       value={field.state.value}
@@ -109,13 +195,12 @@ function RouteComponent() {
                     />
                   )}
                 </form.Field>
-              </td>
-              <td>
+              </TableCell>
+              <TableCell>
                 <form.Field name="decimalDigits">
                   {(field) => (
-                    <input
+                    <Input
                       type="number"
-                      className="w-full"
                       placeholder="Decimal Digits"
                       name={field.name}
                       value={field.state.value}
@@ -126,47 +211,25 @@ function RouteComponent() {
                     />
                   )}
                 </form.Field>
-              </td>
-              <td>
-                <button type="submit" className="d-btn d-btn-primary">
+              </TableCell>
+              <TableCell>
+                <Button type="submit">
                   <Save />
-                </button>
-              </td>
-            </tr>
-            {data.data
-              ? data.data.map((currency) => (
-                  <tr key={currency.code}>
-                    <td>{currency.code}</td>
-                    <td>{currency.name}</td>
-                    <td>{currency.decimal_digits}</td>
-                    <td>
-                      <button
-                        type="button"
-                        className="d-btn d-btn-error d-btn-outline"
-                        onClick={() => {
-                          deleteMutation.mutate(currency.code);
-                        }}
-                      >
-                        <Trash />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              : null}
-          </tbody>
-        </table>
+                </Button>
+              </TableCell>
+            </TableRow>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </form>
-      <button
-        className="d-btn d-btn-accent"
-        onClick={async () => {
-          await syncCurrencies();
-          await queryClient.invalidateQueries({
-            queryKey: currencyQueryOptions().queryKey,
-          });
-        }}
-      >
-        Sync currencies
-      </button>
     </div>
   );
 }

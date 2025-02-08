@@ -7,7 +7,7 @@ import { authMiddleware } from "../server/utils";
 const createCurrencyValidator = z.object({
   code: z.string().length(3),
   name: z.string().min(1).max(100),
-  decimalDigits: z.number().min(1),
+  decimalDigits: z.number().min(0),
 });
 
 export const createCurrency = createServerFn({ method: "POST" })
@@ -69,7 +69,7 @@ export const getCurrencies = createServerFn({ method: "GET" })
     if (error) {
       throw new Error(error);
     }
-    return { data };
+    return { data: data?.sort((a, b) => a.code.localeCompare(b.code)) };
   });
 
 export const syncCurrencies = createServerFn({ method: "POST" })
