@@ -2,6 +2,9 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Trash } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
 import { categoryQueryOptions } from "~/lib/query-options";
 import { createCategory, deleteCategory } from "~/lib/server-fns/category";
 
@@ -63,9 +66,8 @@ function RouteComponent() {
       >
         <form.Field name="name">
           {(field) => (
-            <input
+            <Input
               type="text"
-              className="w-full"
               placeholder="Name"
               name={field.name}
               value={field.state.value}
@@ -76,9 +78,8 @@ function RouteComponent() {
         </form.Field>
         <form.Field name="group">
           {(field) => (
-            <input
+            <Input
               type="text"
-              className="w-full"
               placeholder="Group"
               name={field.name}
               value={field.state.value}
@@ -87,38 +88,36 @@ function RouteComponent() {
             />
           )}
         </form.Field>
-        <button type="submit" className="d-btn d-btn-primary">
-          Create
-        </button>
+        <Button type="submit">Create</Button>
         {mutation.isError && (
           <p className="text-error">{mutation.error?.message}</p>
         )}
       </form>
       <div className="mt-4 flex flex-col gap-4">
         {data.groups.map((group) => (
-          <div
-            className="bg-base-100 shadow-xs flex flex-col gap-4 p-2"
-            key={group.group}
-          >
-            <h2 className="text-lg">{group.group}</h2>
-            <div className="flex flex-col gap-2">
+          <Card key={group.group}>
+            <CardHeader>
+              <CardTitle>{group.group || "Ungrouped"}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
               {group.categories.map((category) => (
-                <div key={category.name} className="flex w-full">
-                  <div className="grow text-sm text-gray-500">
+                <div className="flex w-full" key={category.name}>
+                  <div className="my-auto grow text-sm text-gray-500">
                     {category.name}
                   </div>
-                  <button
-                    className="d-btn d-btn-xs d-btn-error d-btn-outline"
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       deleteMutation.mutate(category.id);
                     }}
                   >
                     <Trash size={16} />
-                  </button>
+                  </Button>
                 </div>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
