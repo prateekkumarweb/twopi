@@ -3,7 +3,11 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { AccountType, type AccountTypeOrigin } from "~/lib/hacks/account-type";
-import { accountQueryOptions, currencyQueryOptions } from "~/lib/query-options";
+import {
+  accountByIdQueryOptions,
+  accountQueryOptions,
+  currencyQueryOptions,
+} from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
 import { Button } from "./ui/button";
@@ -67,7 +71,12 @@ export default function AccountEditor(props: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: accountQueryOptions().queryKey,
+        queryKey: [
+          accountQueryOptions().queryKey,
+          props.edit?.id
+            ? accountByIdQueryOptions(props.edit.id).queryKey
+            : undefined,
+        ],
       });
     },
   });

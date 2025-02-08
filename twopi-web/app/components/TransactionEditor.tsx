@@ -7,6 +7,7 @@ import {
   accountQueryOptions,
   categoryQueryOptions,
   currencyQueryOptions,
+  transactionByIdQueryOptions,
   transactionQueryOptions,
 } from "~/lib/query-options";
 import { createTransaction } from "~/lib/server-fns/transaction";
@@ -89,7 +90,12 @@ export default function TransactionEditor(props: {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: transactionQueryOptions().queryKey,
+        queryKey: [
+          transactionQueryOptions().queryKey,
+          props.edit?.id
+            ? transactionByIdQueryOptions(props.edit.id).queryKey
+            : undefined,
+        ],
       });
     },
   });
