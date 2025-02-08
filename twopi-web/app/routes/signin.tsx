@@ -5,10 +5,10 @@ import { useState } from "react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { authClient } from "~/lib/auth-client";
+import { apiClient } from "~/lib/openapi";
 
 const signinSearchParamsSchema = z.object({
-  redirect: z.string().optional(),
+  next: z.string().optional(),
 });
 
 export const Route = createFileRoute("/signin")({
@@ -31,13 +31,18 @@ function RouteComponent() {
       password: "",
     },
     onSubmit: async ({ value }) => {
-      const { error } = await authClient.signIn.email(value);
+      const { error } = await apiClient.POST("/twopi-api/api/signin", {
+        body: {
+          email: value.email,
+          password: value.password,
+        },
+      });
       if (error) {
-        setSignInError(error.message);
+        setSignInError(error);
       } else {
         await router.invalidate();
-        if (search.redirect) {
-          router.navigate({ to: search.redirect });
+        if (search.next) {
+          router.navigate({ to: search.next });
         } else {
           router.navigate({ to: "/" });
         }
@@ -51,13 +56,19 @@ function RouteComponent() {
       password: "",
     },
     onSubmit: async ({ value }) => {
-      const { error } = await authClient.signUp.email(value);
+      const { error } = await apiClient.POST("/twopi-api/api/signup", {
+        body: {
+          name: value.name,
+          email: value.email,
+          password: value.password,
+        },
+      });
       if (error) {
-        setSignUpError(error.message);
+        setSignUpError(error);
       } else {
         await router.invalidate();
-        if (search.redirect) {
-          router.navigate({ to: search.redirect });
+        if (search.next) {
+          router.navigate({ to: search.next });
         } else {
           router.navigate({ to: "/" });
         }
@@ -66,8 +77,8 @@ function RouteComponent() {
   });
 
   if (state.session?.user) {
-    if (search.redirect) {
-      router.navigate({ to: search.redirect });
+    if (search.next) {
+      router.navigate({ to: search.next });
     }
     return <div>You are already signed in</div>;
   }

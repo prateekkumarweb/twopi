@@ -1,6 +1,6 @@
 import { Separator } from "@radix-ui/react-separator";
-import { type User } from "better-auth";
 import { type ReactNode } from "react";
+import type { User } from "~/lib/server/utils";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 

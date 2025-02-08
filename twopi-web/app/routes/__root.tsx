@@ -1,9 +1,8 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { createServerFn, Meta, Scripts } from "@tanstack/start";
+import { Meta, Scripts } from "@tanstack/start";
 import { lazy, Suspense, type ReactNode } from "react";
-import { getWebRequest } from "vinxi/http";
-import { auth } from "~/lib/server/auth";
+import { apiClient } from "~/lib/openapi";
 import css from "~/styles/app.css?url";
 
 const TanStackRouterDevtools =
@@ -14,13 +13,6 @@ const TanStackRouterDevtools =
           default: res.TanStackRouterDevtools,
         })),
       );
-
-const fetchAuth = createServerFn({ method: "GET" }).handler(async () => {
-  const session = await auth.api.getSession({
-    headers: getWebRequest().headers,
-  });
-  return { session };
-});
 
 export const Route = createRootRoute({
   head: () => ({
@@ -46,8 +38,14 @@ export const Route = createRootRoute({
     ],
   }),
   beforeLoad: async () => {
-    const { session } = await fetchAuth();
-    return { session };
+    const { data, error } = await apiClient.GET("/twopi-api/api/user");
+    console.log(data);
+    if (error) {
+      console.log("Error", error);
+    }
+    return {
+      session: data ? { user: data } : undefined,
+    };
   },
   component: RootComponent,
 });

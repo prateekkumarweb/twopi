@@ -1,5 +1,4 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import type { User as UserType } from "better-auth";
 import { ChevronsUpDown, LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -24,7 +23,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "~/components/ui/sidebar";
-import { authClient } from "~/lib/auth-client";
+import { apiClient } from "~/lib/openapi";
+import { type User as UserType } from "~/lib/server/utils";
 import { Button } from "./ui/button";
 
 type NavItem = {
@@ -57,7 +57,10 @@ export function AppSidebar(props: { user?: UserType }) {
   const router = useRouter();
 
   const signOut = async () => {
-    await authClient.signOut();
+    const { error } = await apiClient.POST("/twopi-api/api/signout");
+    if (error) {
+      throw new Error(error);
+    }
     await router.invalidate();
     await router.navigate({ to: "/" });
   };

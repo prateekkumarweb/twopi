@@ -20,14 +20,17 @@ use std::{
 };
 
 use anyhow::Context;
+use argon2::{
+    password_hash::{rand_core::OsRng, SaltString},
+    Argon2, PasswordHasher,
+};
 use auth::{Backend, Credentials};
 use axum::{
     body::Body,
     extract::Request,
     http::{HeaderName, HeaderValue, StatusCode, Uri},
     response::{IntoResponse, Response},
-    routing::get,
-    Form, Json,
+    Json,
 };
 use axum_extra::headers::Header;
 use axum_login::{
@@ -107,11 +110,8 @@ async fn main() -> anyhow::Result<()> {
                 .nest(
                     "/api",
                     OpenApiRouter::new()
-                        .route(
-                            "/protected",
-                            get(|| async { "Gotta be logged in to see me!" }),
-                        )
-                        .route_layer(login_required!(Backend, login_url = "/twopi-api/signin"))
+                        .routes(routes![user])
+                        .route_layer(login_required!(Backend))
                         .routes(routes![signin])
                         .routes(routes![signout])
                         .routes(routes![signup]),
@@ -240,21 +240,31 @@ type AuthSession = axum_login::AuthSession<Backend>;
 #[tracing::instrument(skip(auth_session, creds))]
 #[utoipa::path(post, path = "/signin", responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED),
-    (status = INTERNAL_SERVER_ERROR)
+    (status = UNAUTHORIZED, body = String),
+    (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn signin(
     mut auth_session: AuthSession,
-    Form(creds): Form<Credentials>,
-) -> Result<impl IntoResponse, StatusCode> {
+    Json(creds): Json<Credentials>,
+) -> Result<(), (StatusCode, String)> {
     let user = match auth_session.authenticate(creds.clone()).await {
         Ok(Some(user)) => user,
-        Ok(None) => return Err(StatusCode::UNAUTHORIZED),
-        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Ok(None) => return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())),
+        Err(e) => {
+            tracing::error!("Error : {:?}", e);
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Database error".to_string(),
+            ));
+        }
     };
 
-    if auth_session.login(&user).await.is_err() {
-        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    if let Err(e) = auth_session.login(&user).await {
+        tracing::error!("Error logging in: {:?}", e);
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Session error".to_string(),
+        ));
     }
 
     Ok(())
@@ -262,14 +272,18 @@ async fn signin(
 
 #[tracing::instrument(skip(auth_session))]
 #[utoipa::path(post, path = "/signout", responses(
-    (status = OK),
-    (status = INTERNAL_SERVER_ERROR)
+    (status = OK, body = ()),
+    (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn signout(mut auth_session: AuthSession) -> StatusCode {
-    if auth_session.logout().await.is_err() {
-        StatusCode::INTERNAL_SERVER_ERROR
+async fn signout(mut auth_session: AuthSession) -> Result<(), (StatusCode, String)> {
+    if let Err(e) = auth_session.logout().await {
+        tracing::error!("Error logging out: {:?}", e);
+        Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Session error".to_string(),
+        ))
     } else {
-        StatusCode::OK
+        Ok(())
     }
 }
 
@@ -282,28 +296,61 @@ struct NewSignup {
 
 #[tracing::instrument(skip(auth_session, user))]
 #[utoipa::path(post, path = "/signup", responses(
-    (status = OK),
-    (status = INTERNAL_SERVER_ERROR)
+    (status = OK, body = ()),
+    (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn signup(mut auth_session: AuthSession, Json(user): Json<NewSignup>) -> StatusCode {
+async fn signup(
+    mut auth_session: AuthSession,
+    Json(user): Json<NewSignup>,
+) -> Result<(), (StatusCode, String)> {
+    let argon2 = Argon2::default();
+    let salt = SaltString::generate(&mut OsRng);
     let user = match User::create_user(
         auth_session.backend.db(),
         &user.name,
         &user.email,
-        &user.password,
+        &argon2
+            .hash_password(user.password.as_bytes(), &salt)
+            .map_err(|e| {
+                tracing::error!("Error hashing password: {:?}", e);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Hashing error".to_string(),
+                )
+            })?
+            .to_string(),
     )
     .await
     {
         Ok(user) => user,
         Err(e) => {
             tracing::error!("Error creating user: {:?}", e);
-            return StatusCode::INTERNAL_SERVER_ERROR;
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Database error".to_string(),
+            ));
         }
     };
 
-    if auth_session.login(&user).await.is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR;
+    if let Err(e) = auth_session.login(&user).await {
+        tracing::error!("Error logging in: {:?}", e);
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Session error".to_string(),
+        ));
     }
 
-    StatusCode::OK
+    Ok(())
+}
+
+#[tracing::instrument(skip(auth_session))]
+#[utoipa::path(get, path = "/user", responses(
+    (status = OK, body = User),
+    (status = UNAUTHORIZED, body = String)
+))]
+async fn user(auth_session: AuthSession) -> Result<Json<User>, (StatusCode, String)> {
+    let Some(user) = auth_session.user else {
+        return Err((StatusCode::UNAUTHORIZED, "Not logged in".to_string()));
+    };
+    Ok(Json(user))
 }

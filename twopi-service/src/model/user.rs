@@ -1,5 +1,7 @@
 use chrono::{DateTime, Utc};
 use sea_orm::{ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter};
+use serde::Serialize;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::user_entity::{
@@ -8,7 +10,7 @@ use crate::user_entity::{
     user::{ActiveModel, Model},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, ToSchema, Serialize)]
 pub struct User {
     pub id: Uuid,
     pub name: String,
