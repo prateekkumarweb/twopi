@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 
 export const auth = betterAuth({
   database: new Database(
-    (process.env.TWOPI_DATA_DIR ?? "/tmp/data") + "/auth.db",
+    (process.env.TWOPI_DATA_DIR ?? "/tmp/data") + "/auth_old.db",
   ),
   emailAndPassword: {
     enabled: true,

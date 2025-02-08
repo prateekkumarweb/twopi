@@ -3665,6 +3665,7 @@ dependencies = [
  "axum-extra",
  "axum-login",
  "chrono",
+ "hyper-util",
  "jiff",
  "migration",
  "reqwest",

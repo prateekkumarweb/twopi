@@ -22,7 +22,9 @@ use std::{
 use anyhow::Context;
 use auth::{Backend, Credentials};
 use axum::{
-    http::{HeaderName, HeaderValue, StatusCode},
+    body::Body,
+    extract::Request,
+    http::{HeaderName, HeaderValue, StatusCode, Uri},
     response::{Html, IntoResponse, Redirect, Response},
     routing::{get, post},
     Form,
@@ -34,6 +36,7 @@ use axum_login::{
     AuthManagerLayerBuilder,
 };
 use cache::CacheManager;
+use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use tokio::sync::Mutex;
@@ -51,6 +54,15 @@ static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
         .unwrap();
     PathBuf::from(dir)
 });
+
+static HYPER_CLIENT: LazyLock<Client> = LazyLock::new(|| {
+    let client: Client =
+        hyper_util::client::legacy::Client::<(), ()>::builder(TokioExecutor::new())
+            .build(HttpConnector::new());
+    client
+});
+
+type Client = hyper_util::client::legacy::Client<HttpConnector, Body>;
 
 #[tokio::main]
 #[tracing::instrument]
@@ -99,6 +111,7 @@ async fn main() -> anyhow::Result<()> {
                 .route("/login", get(login_page)),
         )
         .layer(auth_layer)
+        .fallback(twopi_web)
         .split_for_parts();
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", api.clone()))
@@ -132,6 +145,28 @@ impl IntoResponse for AppError {
         )
             .into_response()
     }
+}
+
+#[tracing::instrument(skip(req))]
+async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
+    let path = req.uri().path();
+    let path_query = req
+        .uri()
+        .path_and_query()
+        .map(|v| v.as_str())
+        .unwrap_or(path);
+
+    let uri = format!("http://localhost:3000{}", path_query);
+
+    *req.uri_mut() = Uri::try_from(uri).unwrap();
+    Ok(HYPER_CLIENT
+        .request(req)
+        .await
+        .map_err(|e| {
+            tracing::info!("Error: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?
+        .into_response())
 }
 
 #[tracing::instrument]
@@ -211,19 +246,20 @@ async fn login(mut auth_session: AuthSession, Form(creds): Form<Credentials>) ->
 async fn login_page() -> impl IntoResponse {
     Html(
         "<!doctype html>
-    <html>
-    <head>
-        <title>Login</title>
-    </head>
-    <body>
-        <form method=\"post\">
-            <label for=\"email\">Email</label>
-            <input type=\"email\" id=\"email\" name=\"email\">
-            <label for=\"password\">Password</label>
-            <input type=\"password\" id=\"password\" name=\"password\">
-            <button type=\"submit\">Login</button>
-        </form>
-    </body>
-    </html>",
+        <html>
+        <head>
+            <title>Login</title>
+        </head>
+        <body>
+            <form method=\"post\">
+                <label for=\"email\">Email</label>
+                <input type=\"email\" id=\"email\" name=\"email\">
+                <label for=\"password\">Password</label>
+                <input type=\"password\" id=\"password\" name=\"password\">
+                <button type=\"submit\">Login</button>
+            </form>
+        </body>
+        </html>
+        ",
     )
 }
