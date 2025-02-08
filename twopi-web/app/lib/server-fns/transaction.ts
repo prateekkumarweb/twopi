@@ -25,7 +25,7 @@ export const createTransaction = createServerFn({ method: "POST" })
     return createTransactionValidtor.parse(transaction);
   })
   .handler(async ({ data, context }) => {
-    const accounts = await apiClient.GET("/account", {
+    const accounts = await apiClient.GET("/twopi-api/account", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -35,7 +35,7 @@ export const createTransaction = createServerFn({ method: "POST" })
     if (accounts.error) {
       throw new Error(accounts.error);
     }
-    const categories = await apiClient.GET("/category", {
+    const categories = await apiClient.GET("/twopi-api/category", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -46,7 +46,7 @@ export const createTransaction = createServerFn({ method: "POST" })
       throw new Error(categories.error);
     }
 
-    const { error } = await apiClient.PUT("/transaction", {
+    const { error } = await apiClient.PUT("/twopi-api/transaction", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -84,7 +84,7 @@ export const createTransactions = createServerFn({ method: "POST" })
     z.array(createTransactionValidtor).parse(transactions),
   )
   .handler(async ({ data, context }) => {
-    const accounts = await apiClient.GET("/account", {
+    const accounts = await apiClient.GET("/twopi-api/account", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -94,7 +94,7 @@ export const createTransactions = createServerFn({ method: "POST" })
     if (accounts.error) {
       throw new Error(accounts.error);
     }
-    const categories = await apiClient.GET("/category", {
+    const categories = await apiClient.GET("/twopi-api/category", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -104,7 +104,7 @@ export const createTransactions = createServerFn({ method: "POST" })
     if (categories.error) {
       throw new Error(categories.error);
     }
-    const { error } = await apiClient.PUT("/transaction/import", {
+    const { error } = await apiClient.PUT("/twopi-api/transaction/import", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -144,7 +144,7 @@ export const createTransactions = createServerFn({ method: "POST" })
 export const getTransactions = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    const { data, error } = await apiClient.GET("/transaction", {
+    const { data, error } = await apiClient.GET("/twopi-api/transaction", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -172,7 +172,7 @@ export const getTransaction = createServerFn({ method: "GET" })
   .validator((id: unknown) => z.string().parse(id))
   .handler(async ({ data, context }) => {
     const { data: transaction, error } = await apiClient.GET(
-      "/transaction/{transaction_id}",
+      "/twopi-api/transaction/{transaction_id}",
       {
         params: {
           header: {
@@ -214,7 +214,7 @@ export const deleteTransactionItem = createServerFn({
     return z.string().parse(id);
   })
   .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE(`/transaction/item`, {
+    const { error } = await apiClient.DELETE(`/twopi-api/transaction/item`, {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -238,7 +238,7 @@ export const deleteTransaction = createServerFn({
     return z.string().parse(id);
   })
   .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE(`/transaction`, {
+    const { error } = await apiClient.DELETE(`/twopi-api/transaction`, {
       params: {
         header: {
           "x-user-id": context.userId,

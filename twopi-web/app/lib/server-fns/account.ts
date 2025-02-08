@@ -18,7 +18,7 @@ export const createAccount = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((account: unknown) => createAccountValidator.parse(account))
   .handler(async ({ data, context }) => {
-    const currency = await apiClient.GET("/currency/{code}", {
+    const currency = await apiClient.GET("/twopi-api/currency/{code}", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -31,7 +31,7 @@ export const createAccount = createServerFn({ method: "POST" })
     if (currency.error) {
       throw new Error(currency.error);
     }
-    const { error } = await apiClient.PUT("/account", {
+    const { error } = await apiClient.PUT("/twopi-api/account", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -62,7 +62,7 @@ export const createAccounts = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     for (const item of data) {
-      const currency = await apiClient.GET("/currency/{code}", {
+      const currency = await apiClient.GET("/twopi-api/currency/{code}", {
         params: {
           header: {
             "x-user-id": context.userId,
@@ -76,7 +76,7 @@ export const createAccounts = createServerFn({ method: "POST" })
         item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0),
       );
     }
-    const { error } = await apiClient.PUT("/account/import", {
+    const { error } = await apiClient.PUT("/twopi-api/account/import", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -99,7 +99,7 @@ export const createAccounts = createServerFn({ method: "POST" })
 export const getAccounts = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    const { data: value, error } = await apiClient.GET("/account", {
+    const { data: value, error } = await apiClient.GET("/twopi-api/account", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -125,7 +125,7 @@ export const getAccount = createServerFn({ method: "GET" })
   .validator((id: unknown) => z.string().parse(id))
   .handler(async ({ data, context }) => {
     const { data: account, error } = await apiClient.GET(
-      "/account/{account_id}",
+      "/twopi-api/account/{account_id}",
       {
         params: {
           header: {
@@ -168,7 +168,7 @@ export const deleteAccount = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((id: unknown) => z.string().parse(id))
   .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE("/account", {
+    const { error } = await apiClient.DELETE("/twopi-api/account", {
       params: {
         header: {
           "x-user-id": context.userId,

@@ -1,7 +1,9 @@
 import { apiClient } from "../openapi";
 
 export async function getCurrenciesCache() {
-  const { data, error } = await apiClient.GET("/currency-cache/currencies");
+  const { data, error } = await apiClient.GET(
+    "/twopi-api/currency-cache/currencies",
+  );
   if (error) {
     throw new Error(error);
   }
@@ -9,7 +11,9 @@ export async function getCurrenciesCache() {
 }
 
 export async function getCurrenciesLatestCache() {
-  const { data, error } = await apiClient.GET("/currency-cache/latest");
+  const { data, error } = await apiClient.GET(
+    "/twopi-api/currency-cache/latest",
+  );
   if (error) {
     throw new Error(error);
   }

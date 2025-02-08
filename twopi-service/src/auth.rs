@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use sea_orm::{DbConn, DbErr};
 use serde::Deserialize;
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::model::user::User;
@@ -28,9 +29,13 @@ impl Backend {
     pub const fn new(db: DbConn) -> Self {
         Self { db }
     }
+
+    pub const fn db(&self) -> &DbConn {
+        &self.db
+    }
 }
 
-#[derive(Clone, Deserialize)]
+#[derive(Clone, Deserialize, ToSchema)]
 pub struct Credentials {
     email: String,
     password: String,

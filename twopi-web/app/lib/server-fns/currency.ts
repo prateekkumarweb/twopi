@@ -16,7 +16,7 @@ export const createCurrency = createServerFn({ method: "POST" })
     return createCurrencyValidator.parse(currency);
   })
   .handler(async ({ data, context }) => {
-    const { error } = await apiClient.POST("/currency", {
+    const { error } = await apiClient.POST("/twopi-api/currency", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -40,7 +40,7 @@ export const deleteCurrency = createServerFn({ method: "POST" })
     return z.string().length(3).parse(code);
   })
   .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE("/currency", {
+    const { error } = await apiClient.DELETE("/twopi-api/currency", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -59,7 +59,7 @@ export const deleteCurrency = createServerFn({ method: "POST" })
 export const getCurrencies = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    const { data, error } = await apiClient.GET("/currency", {
+    const { data, error } = await apiClient.GET("/twopi-api/currency", {
       params: {
         header: {
           "x-user-id": context.userId,
@@ -75,7 +75,7 @@ export const getCurrencies = createServerFn({ method: "GET" })
 export const syncCurrencies = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    const { error } = await apiClient.PUT("/currency/sync", {
+    const { error } = await apiClient.PUT("/twopi-api/currency/sync", {
       params: {
         header: {
           "x-user-id": context.userId,

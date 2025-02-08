@@ -25,9 +25,9 @@ use axum::{
     body::Body,
     extract::Request,
     http::{HeaderName, HeaderValue, StatusCode, Uri},
-    response::{Html, IntoResponse, Redirect, Response},
-    routing::{get, post},
-    Form,
+    response::{IntoResponse, Response},
+    routing::get,
+    Form, Json,
 };
 use axum_extra::headers::Header;
 use axum_login::{
@@ -38,11 +38,13 @@ use axum_login::{
 use cache::CacheManager;
 use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
 use migration::{Migrator, MigratorTrait};
+use model::user::User;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+use serde::Deserialize;
 use tokio::sync::Mutex;
 use user_migration::Migrator as UserMigrator;
-use utoipa::{IntoParams, OpenApi};
-use utoipa_axum::router::OpenApiRouter;
+use utoipa::{IntoParams, OpenApi, ToSchema};
+use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
@@ -89,28 +91,33 @@ async fn main() -> anyhow::Result<()> {
 
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
-            "/currency",
-            routes::currency::router().with_state(cache.clone()),
-        )
-        .nest(
-            "/currency-cache",
-            routes::currency_cache::router().with_state(cache),
-        )
-        .nest("/account", routes::account::router())
-        .nest("/category", routes::category::router())
-        .nest("/transaction", routes::transaction::router())
-        .nest(
-            "/api",
+            "/twopi-api",
             OpenApiRouter::new()
-                .route(
-                    "/protected",
-                    get(|| async { "Gotta be logged in to see me!" }),
+                .nest(
+                    "/currency",
+                    routes::currency::router().with_state(cache.clone()),
                 )
-                .route_layer(login_required!(Backend, login_url = "/api/login"))
-                .route("/login", post(login))
-                .route("/login", get(login_page)),
+                .nest(
+                    "/currency-cache",
+                    routes::currency_cache::router().with_state(cache),
+                )
+                .nest("/account", routes::account::router())
+                .nest("/category", routes::category::router())
+                .nest("/transaction", routes::transaction::router())
+                .nest(
+                    "/api",
+                    OpenApiRouter::new()
+                        .route(
+                            "/protected",
+                            get(|| async { "Gotta be logged in to see me!" }),
+                        )
+                        .route_layer(login_required!(Backend, login_url = "/twopi-api/signin"))
+                        .routes(routes![signin])
+                        .routes(routes![signout])
+                        .routes(routes![signup]),
+                )
+                .layer(auth_layer),
         )
-        .layer(auth_layer)
         .fallback(twopi_web)
         .split_for_parts();
     let router = router
@@ -153,12 +160,14 @@ async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
     let path_query = req
         .uri()
         .path_and_query()
-        .map(|v| v.as_str())
-        .unwrap_or(path);
+        .map_or(path, axum::http::uri::PathAndQuery::as_str);
 
-    let uri = format!("http://localhost:3000{}", path_query);
+    let uri = format!("http://localhost:3000{path_query}");
 
-    *req.uri_mut() = Uri::try_from(uri).unwrap();
+    #[allow(clippy::unwrap_used)]
+    let new_uri = Uri::try_from(uri).unwrap();
+    *req.uri_mut() = new_uri;
+
     Ok(HYPER_CLIENT
         .request(req)
         .await
@@ -229,37 +238,72 @@ impl Header for XUserId {
 type AuthSession = axum_login::AuthSession<Backend>;
 
 #[tracing::instrument(skip(auth_session, creds))]
-async fn login(mut auth_session: AuthSession, Form(creds): Form<Credentials>) -> impl IntoResponse {
+#[utoipa::path(post, path = "/signin", responses(
+    (status = OK, body = ()),
+    (status = UNAUTHORIZED),
+    (status = INTERNAL_SERVER_ERROR)
+))]
+async fn signin(
+    mut auth_session: AuthSession,
+    Form(creds): Form<Credentials>,
+) -> Result<impl IntoResponse, StatusCode> {
     let user = match auth_session.authenticate(creds.clone()).await {
         Ok(Some(user)) => user,
-        Ok(None) => return StatusCode::UNAUTHORIZED.into_response(),
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Ok(None) => return Err(StatusCode::UNAUTHORIZED),
+        Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
     };
 
     if auth_session.login(&user).await.is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
     }
 
-    Redirect::to("/api/protected").into_response()
+    Ok(())
 }
 
-async fn login_page() -> impl IntoResponse {
-    Html(
-        "<!doctype html>
-        <html>
-        <head>
-            <title>Login</title>
-        </head>
-        <body>
-            <form method=\"post\">
-                <label for=\"email\">Email</label>
-                <input type=\"email\" id=\"email\" name=\"email\">
-                <label for=\"password\">Password</label>
-                <input type=\"password\" id=\"password\" name=\"password\">
-                <button type=\"submit\">Login</button>
-            </form>
-        </body>
-        </html>
-        ",
+#[tracing::instrument(skip(auth_session))]
+#[utoipa::path(post, path = "/signout", responses(
+    (status = OK),
+    (status = INTERNAL_SERVER_ERROR)
+))]
+async fn signout(mut auth_session: AuthSession) -> StatusCode {
+    if auth_session.logout().await.is_err() {
+        StatusCode::INTERNAL_SERVER_ERROR
+    } else {
+        StatusCode::OK
+    }
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+struct NewSignup {
+    name: String,
+    email: String,
+    password: String,
+}
+
+#[tracing::instrument(skip(auth_session, user))]
+#[utoipa::path(post, path = "/signup", responses(
+    (status = OK),
+    (status = INTERNAL_SERVER_ERROR)
+))]
+async fn signup(mut auth_session: AuthSession, Json(user): Json<NewSignup>) -> StatusCode {
+    let user = match User::create_user(
+        auth_session.backend.db(),
+        &user.name,
+        &user.email,
+        &user.password,
     )
+    .await
+    {
+        Ok(user) => user,
+        Err(e) => {
+            tracing::error!("Error creating user: {:?}", e);
+            return StatusCode::INTERNAL_SERVER_ERROR;
+        }
+    };
+
+    if auth_session.login(&user).await.is_err() {
+        return StatusCode::INTERNAL_SERVER_ERROR;
+    }
+
+    StatusCode::OK
 }

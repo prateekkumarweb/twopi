@@ -33,7 +33,7 @@ type NavItem = {
   children?: NavItem[];
 };
 
-export const navItemsTree: NavItem = {
+const navItemsTree: NavItem = {
   label: "TwoPi",
   href: "/",
   children: [
