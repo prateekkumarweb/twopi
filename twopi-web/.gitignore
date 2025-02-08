@@ -3,6 +3,3 @@ node_modules
 .vinxi
 app/**/*.gen.ts
 *.env
-auth.db
-*.db
-*.db-journal

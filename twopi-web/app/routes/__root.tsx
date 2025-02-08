@@ -1,6 +1,7 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { Meta, Scripts } from "@tanstack/start";
+import { createServerFn, Meta, Scripts } from "@tanstack/start";
+import { getWebRequest } from "@tanstack/start/server";
 import { lazy, Suspense, type ReactNode } from "react";
 import { apiClient } from "~/lib/openapi";
 import css from "~/styles/app.css?url";
@@ -13,6 +14,23 @@ const TanStackRouterDevtools =
           default: res.TanStackRouterDevtools,
         })),
       );
+
+const fetchAuth = createServerFn({
+  method: "GET",
+}).handler(async () => {
+  const headers = getWebRequest()?.headers;
+  const { data, error } = await apiClient.GET("/twopi-api/api/user", {
+    headers: {
+      cookie: headers?.get("cookie"),
+    },
+  });
+  if (error) {
+    console.error("Auth Error", error);
+  }
+  return {
+    session: data ? { user: data } : undefined,
+  };
+});
 
 export const Route = createRootRoute({
   head: () => ({
@@ -38,13 +56,9 @@ export const Route = createRootRoute({
     ],
   }),
   beforeLoad: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/api/user");
-    console.log(data);
-    if (error) {
-      console.log("Error", error);
-    }
+    const { session } = await fetchAuth();
     return {
-      session: data ? { user: data } : undefined,
+      session,
     };
   },
   component: RootComponent,
