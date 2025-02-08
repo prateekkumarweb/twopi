@@ -1,6 +1,8 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Textarea } from "~/components/ui/textarea";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -160,34 +162,30 @@ function RouteComponent() {
         <summary>
           <h2 className="inline font-semibold">Import Accounts</h2>
         </summary>
-        <textarea
-          className="h-64 w-full font-mono"
+        <Textarea
+          className="mb-2 h-64 font-mono"
           value={accountCsv}
           onChange={(e) => setAccountCsv(e.target.value)}
-        ></textarea>
-        <button className="d-btn d-btn-primary" onClick={importAccounts}>
-          Import
-        </button>
+        />
+        <Button onClick={importAccounts}>Import</Button>
       </details>
       <details>
         <summary>
           <h2 className="inline font-semibold">Import Transactions</h2>
         </summary>
-        <textarea
-          className="h-64 w-full font-mono"
+        <Textarea
+          className="mb-2 h-64 font-mono"
           value={transactionCsv}
           onChange={(e) => setTransactionCsv(e.target.value)}
-        ></textarea>
-        <button className="d-btn d-btn-primary" onClick={importTransactions}>
-          Import
-        </button>
+        />
+        <Button onClick={importTransactions}>Import</Button>
       </details>
       <details>
         <summary>
           <h2 className="inline font-semibold">Export everything</h2>
         </summary>
-        <textarea
-          className="mt-4 h-64 w-full font-mono"
+        <Textarea
+          className="mt-4 h-64 font-mono"
           defaultValue={JSON.stringify(
             {
               accounts,
@@ -196,7 +194,7 @@ function RouteComponent() {
             null,
             2,
           )}
-        ></textarea>
+        />
       </details>
     </div>
   );
