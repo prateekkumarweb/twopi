@@ -24,7 +24,6 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { apiClient } from "~/lib/openapi";
-import { type User as UserType } from "~/lib/server/utils";
 import { Button } from "./ui/button";
 
 type NavItem = {
@@ -52,7 +51,9 @@ const navItemsTree: NavItem = {
   ],
 };
 
-export function AppSidebar(props: { user?: UserType }) {
+export function AppSidebar(props: {
+  user?: { id: string; name: string; email: string };
+}) {
   const { isMobile } = useSidebar();
   const router = useRouter();
 

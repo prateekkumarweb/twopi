@@ -15,6 +15,7 @@ mod routes;
 mod user_entity;
 
 use std::{
+    collections::HashMap,
     path::PathBuf,
     sync::{Arc, LazyLock},
 };
@@ -27,12 +28,11 @@ use argon2::{
 use auth::{Backend, Credentials};
 use axum::{
     body::Body,
-    extract::Request,
-    http::{HeaderName, HeaderValue, StatusCode, Uri},
+    extract::{FromRequestParts, Request},
+    http::{StatusCode, Uri},
     response::{IntoResponse, Response},
     Json,
 };
-use axum_extra::headers::Header;
 use axum_login::{
     login_required,
     tower_sessions::{MemoryStore, SessionManagerLayer},
@@ -44,9 +44,9 @@ use migration::{Migrator, MigratorTrait};
 use model::user::User;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::Deserialize;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use user_migration::Migrator as UserMigrator;
-use utoipa::{IntoParams, OpenApi, ToSchema};
+use utoipa::{OpenApi, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
@@ -131,8 +131,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-static USER_ID_HEADER_NAME: &str = "x-user-id";
-
 #[derive(Debug, thiserror::Error)]
 enum AppError {
     #[error("Database error: {0}")]
@@ -178,8 +176,16 @@ async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
         .into_response())
 }
 
+static DATABASE_LOCK: LazyLock<RwLock<HashMap<String, DatabaseConnection>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
+
 #[tracing::instrument]
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
+    let lock = DATABASE_LOCK.read().await;
+    if let Some(db) = lock.get(id) {
+        return Ok(db.clone());
+    }
+    std::mem::drop(lock);
     let db_dir = DATA_DIR.join("database");
     std::fs::create_dir_all(&db_dir)
         .context("Could not create database directory")
@@ -189,6 +195,9 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
     let db = Database::connect(connect_options)
         .await
         .map_err(AppError::DbErr)?;
+    let mut lock = DATABASE_LOCK.write().await;
+    lock.insert(id.to_string(), db.clone());
+    std::mem::drop(lock);
     Migrator::up(&db, None).await.map_err(AppError::DbErr)?;
     Ok(db)
 }
@@ -205,33 +214,26 @@ async fn auth_database() -> AppResult<DatabaseConnection> {
     Ok(db)
 }
 
-#[derive(Debug, IntoParams)]
-#[into_params(names("x-user-id"), parameter_in = Header)]
-struct XUserId(#[param(default = "dev")] String);
+#[derive(Debug)]
+struct XUserId(String);
 
-static XUSER_ID_HEADER_NAME: HeaderName = HeaderName::from_static(USER_ID_HEADER_NAME);
+impl<S> FromRequestParts<S> for XUserId
+where
+    S: Send + Sync,
+{
+    type Rejection = StatusCode;
 
-impl Header for XUserId {
-    fn name() -> &'static HeaderName {
-        &XUSER_ID_HEADER_NAME
-    }
-
-    fn decode<'i, I>(values: &mut I) -> Result<Self, axum_extra::headers::Error>
-    where
-        Self: Sized,
-        I: Iterator<Item = &'i axum::http::HeaderValue>,
-    {
-        values
-            .next()
-            .and_then(|value| value.to_str().map(|v| Self(v.to_string())).ok())
-            .ok_or_else(axum_extra::headers::Error::invalid)
-    }
-
-    fn encode<E: Extend<axum::http::HeaderValue>>(&self, values: &mut E) {
-        #[allow(clippy::expect_used)] // safe because we know the value is valid
-        let mut value = HeaderValue::from_str(&self.0).expect("HeaderValue could not be encoded");
-        value.set_sensitive(true);
-        values.extend(std::iter::once(value));
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let session: AuthSession = axum_login::AuthSession::from_request_parts(parts, state)
+            .await
+            .map_err(|(s, _)| s)?;
+        let user_id = session.user.map(|u| u.id);
+        user_id
+            .ok_or(StatusCode::UNAUTHORIZED)
+            .map(|id| Self(id.to_string()))
     }
 }
 

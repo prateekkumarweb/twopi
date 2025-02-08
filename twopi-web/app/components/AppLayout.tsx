@@ -1,10 +1,16 @@
 import { Separator } from "@radix-ui/react-separator";
 import { type ReactNode } from "react";
-import type { User } from "~/lib/server/utils";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 
-export default function Layout(props: { user?: User; children: ReactNode }) {
+export default function Layout(props: {
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  children: ReactNode;
+}) {
   return (
     <>
       <SidebarProvider>

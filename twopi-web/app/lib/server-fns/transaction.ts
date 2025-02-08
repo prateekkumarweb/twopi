@@ -26,20 +26,16 @@ export const createTransaction = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const accounts = await apiClient.GET("/twopi-api/account", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (accounts.error) {
       throw new Error(accounts.error);
     }
     const categories = await apiClient.GET("/twopi-api/category", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (categories.error) {
@@ -47,10 +43,8 @@ export const createTransaction = createServerFn({ method: "POST" })
     }
 
     const { error } = await apiClient.PUT("/twopi-api/transaction", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: {
         id: data.id,
@@ -85,30 +79,24 @@ export const createTransactions = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const accounts = await apiClient.GET("/twopi-api/account", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (accounts.error) {
       throw new Error(accounts.error);
     }
     const categories = await apiClient.GET("/twopi-api/category", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (categories.error) {
       throw new Error(categories.error);
     }
     const { error } = await apiClient.PUT("/twopi-api/transaction/import", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: data.map((transaction) => {
         return {
@@ -145,10 +133,8 @@ export const getTransactions = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/twopi-api/transaction", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (error) {
@@ -174,10 +160,10 @@ export const getTransaction = createServerFn({ method: "GET" })
     const { data: transaction, error } = await apiClient.GET(
       "/twopi-api/transaction/{transaction_id}",
       {
+        headers: {
+          cookie: context.cookie,
+        },
         params: {
-          header: {
-            "x-user-id": context.userId,
-          },
           path: {
             transaction_id: data,
           },
@@ -215,10 +201,10 @@ export const deleteTransactionItem = createServerFn({
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE(`/twopi-api/transaction/item`, {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         query: {
           id: data,
         },
@@ -239,10 +225,10 @@ export const deleteTransaction = createServerFn({
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE(`/twopi-api/transaction`, {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         query: {
           id: data,
         },

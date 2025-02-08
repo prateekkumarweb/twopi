@@ -1,5 +1,4 @@
 use axum::{extract::Query, Json};
-use axum_extra::TypedHeader;
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -16,11 +15,11 @@ pub fn router() -> OpenApiRouter<()> {
 }
 
 #[tracing::instrument]
-#[utoipa::path(get, path = "/", params(XUserId), responses(
+#[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CategoryModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn category(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<Json<Vec<CategoryModel>>> {
+async fn category(id: XUserId) -> AppResult<Json<Vec<CategoryModel>>> {
     let db = database(&id.0).await?;
     Ok(Json(CategoryModel::find_all(&db).await?))
 }
@@ -32,12 +31,12 @@ struct DeleteCategoryParams {
 }
 
 #[tracing::instrument]
-#[utoipa::path(delete, path = "/", params(XUserId, DeleteCategoryParams), responses(
+#[utoipa::path(delete, path = "/", params(DeleteCategoryParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_category(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Query(DeleteCategoryParams { id: category_id }): Query<DeleteCategoryParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
@@ -46,15 +45,12 @@ async fn delete_category(
 }
 
 #[tracing::instrument(skip(category))]
-#[utoipa::path(post, path = "/", params(XUserId),
+#[utoipa::path(post, path = "/",
     request_body = NewCategoryModel, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn post_category(
-    TypedHeader(id): TypedHeader<XUserId>,
-    Json(category): Json<NewCategoryModel>,
-) -> AppResult<()> {
+async fn post_category(id: XUserId, Json(category): Json<NewCategoryModel>) -> AppResult<()> {
     let db = database(&id.0).await?;
     CategoryModel::upsert(category, &db).await?;
     Ok(())

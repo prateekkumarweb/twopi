@@ -15,10 +15,8 @@ export const createCategory = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.POST("/twopi-api/category", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: {
         name: data.name,
@@ -39,10 +37,10 @@ export const deleteCategory = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE("/twopi-api/category", {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         query: {
           id: data,
         },
@@ -58,10 +56,8 @@ export const getCategories = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/twopi-api/category", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (error) {

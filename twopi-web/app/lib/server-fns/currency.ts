@@ -17,10 +17,8 @@ export const createCurrency = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.POST("/twopi-api/currency", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: {
         code: data.code,
@@ -41,10 +39,10 @@ export const deleteCurrency = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE("/twopi-api/currency", {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         query: {
           code: data,
         },
@@ -60,10 +58,8 @@ export const getCurrencies = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const { data, error } = await apiClient.GET("/twopi-api/currency", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (error) {
@@ -76,10 +72,8 @@ export const syncCurrencies = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const { error } = await apiClient.PUT("/twopi-api/currency/sync", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (error) {

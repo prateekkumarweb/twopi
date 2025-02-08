@@ -2,7 +2,6 @@ use axum::{
     extract::{Path, Query},
     Json,
 };
-use axum_extra::TypedHeader;
 use sea_orm::prelude::Uuid;
 use serde::Deserialize;
 use utoipa::IntoParams;
@@ -25,25 +24,23 @@ pub fn router() -> OpenApiRouter<()> {
 }
 
 #[tracing::instrument]
-#[utoipa::path(get, path = "/", params(XUserId), responses(
+#[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<TransactionWithAccount>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn transaction(
-    TypedHeader(id): TypedHeader<XUserId>,
-) -> AppResult<Json<Vec<TransactionWithAccount>>> {
+async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>> {
     let db = database(&id.0).await?;
     tracing::info!("Querying Transaction for {}", id.0);
     Ok(Json(TransactionModel::find_all(&db).await?))
 }
 
 #[tracing::instrument]
-#[utoipa::path(get, path = "/{transaction_id}", params(XUserId, ("transaction_id" = Uuid, Path)), responses(
+#[utoipa::path(get, path = "/{transaction_id}", params(("transaction_id" = Uuid, Path)), responses(
     (status = OK, body = Option<TransactionWithAccount>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn transaction_by_id(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Path(transaction_id): Path<Uuid>,
 ) -> AppResult<Json<Option<TransactionWithAccount>>> {
     let db = database(&id.0).await?;
@@ -59,12 +56,12 @@ struct DeleteTransactionParams {
 }
 
 #[tracing::instrument]
-#[utoipa::path(delete, path = "/", params(XUserId, DeleteTransactionParams), responses(
+#[utoipa::path(delete, path = "/", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_transaction(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Query(DeleteTransactionParams { id: transaction_id }): Query<DeleteTransactionParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
@@ -73,12 +70,12 @@ async fn delete_transaction(
 }
 
 #[tracing::instrument]
-#[utoipa::path(delete, path = "/item", params(XUserId, DeleteTransactionParams), responses(
+#[utoipa::path(delete, path = "/item", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_transaction_item(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Query(DeleteTransactionParams { id: transaction_id }): Query<DeleteTransactionParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
@@ -87,13 +84,13 @@ async fn delete_transaction_item(
 }
 
 #[tracing::instrument(skip(transaction))]
-#[utoipa::path(put, path = "/", params(XUserId),
+#[utoipa::path(put, path = "/",
     request_body = NewTransactionModel, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transaction(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Json(transaction): Json<NewTransactionModel>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
@@ -102,13 +99,13 @@ async fn put_transaction(
 }
 
 #[tracing::instrument(skip(transactions))]
-#[utoipa::path(put, path = "/import", params(XUserId),
+#[utoipa::path(put, path = "/import",
     request_body = Vec<NewTransactionModel>, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transactions(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Json(transactions): Json<Vec<NewTransactionModel>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;

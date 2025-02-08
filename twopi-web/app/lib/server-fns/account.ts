@@ -19,10 +19,10 @@ export const createAccount = createServerFn({ method: "POST" })
   .validator((account: unknown) => createAccountValidator.parse(account))
   .handler(async ({ data, context }) => {
     const currency = await apiClient.GET("/twopi-api/currency/{code}", {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         path: {
           code: data.currencyCode,
         },
@@ -32,10 +32,8 @@ export const createAccount = createServerFn({ method: "POST" })
       throw new Error(currency.error);
     }
     const { error } = await apiClient.PUT("/twopi-api/account", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: {
         id: data.id,
@@ -63,10 +61,10 @@ export const createAccounts = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     for (const item of data) {
       const currency = await apiClient.GET("/twopi-api/currency/{code}", {
+        headers: {
+          cookie: context.cookie,
+        },
         params: {
-          header: {
-            "x-user-id": context.userId,
-          },
           path: {
             code: item.currencyCode,
           },
@@ -77,10 +75,8 @@ export const createAccounts = createServerFn({ method: "POST" })
       );
     }
     const { error } = await apiClient.PUT("/twopi-api/account/import", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
       body: data.map((item) => ({
         name: item.name,
@@ -100,10 +96,8 @@ export const getAccounts = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const { data: value, error } = await apiClient.GET("/twopi-api/account", {
-      params: {
-        header: {
-          "x-user-id": context.userId,
-        },
+      headers: {
+        cookie: context.cookie,
       },
     });
     if (error) {
@@ -127,10 +121,10 @@ export const getAccount = createServerFn({ method: "GET" })
     const { data: account, error } = await apiClient.GET(
       "/twopi-api/account/{account_id}",
       {
+        headers: {
+          cookie: context.cookie,
+        },
         params: {
-          header: {
-            "x-user-id": context.userId,
-          },
           path: {
             account_id: data,
           },
@@ -169,10 +163,10 @@ export const deleteAccount = createServerFn({ method: "POST" })
   .validator((id: unknown) => z.string().parse(id))
   .handler(async ({ data, context }) => {
     const { error } = await apiClient.DELETE("/twopi-api/account", {
+      headers: {
+        cookie: context.cookie,
+      },
       params: {
-        header: {
-          "x-user-id": context.userId,
-        },
         query: {
           id: data,
         },

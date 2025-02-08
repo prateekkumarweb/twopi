@@ -4,7 +4,6 @@ use axum::{
     extract::{Path, Query, State},
     Json,
 };
-use axum_extra::TypedHeader;
 use serde::Deserialize;
 use tokio::sync::Mutex;
 use utoipa::IntoParams;
@@ -26,22 +25,22 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
 }
 
 #[tracing::instrument]
-#[utoipa::path(get, path = "/", params(XUserId), responses(
+#[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn currency(TypedHeader(id): TypedHeader<XUserId>) -> AppResult<Json<Vec<CurrencyModel>>> {
+async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
     let db = database(&id.0).await?;
     Ok(Json(CurrencyModel::find_all(&db).await?))
 }
 
 #[tracing::instrument]
-#[utoipa::path(get, path = "/{code}", params(XUserId, ("code" = String, Path)), responses(
+#[utoipa::path(get, path = "/{code}", params(("code" = String, Path)), responses(
     (status = OK, body = Option<CurrencyModel>),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn currency_by_id(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Path(code): Path<String>,
 ) -> AppResult<Json<Option<CurrencyModel>>> {
     let db = database(&id.0).await?;
@@ -55,12 +54,12 @@ struct DeleteCurrencyParams {
 }
 
 #[tracing::instrument]
-#[utoipa::path(delete, path = "/", params(XUserId, DeleteCurrencyParams), responses(
+#[utoipa::path(delete, path = "/", params(DeleteCurrencyParams), responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_currency(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     Query(DeleteCurrencyParams { code }): Query<DeleteCurrencyParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
@@ -69,27 +68,24 @@ async fn delete_currency(
 }
 
 #[tracing::instrument(skip(currency))]
-#[utoipa::path(post, path = "/", params(XUserId),
+#[utoipa::path(post, path = "/",
     request_body = CurrencyModel, responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
-async fn post_currency(
-    TypedHeader(id): TypedHeader<XUserId>,
-    Json(currency): Json<CurrencyModel>,
-) -> AppResult<()> {
+async fn post_currency(id: XUserId, Json(currency): Json<CurrencyModel>) -> AppResult<()> {
     let db = database(&id.0).await?;
     currency.insert(&db).await?;
     Ok(())
 }
 
 #[tracing::instrument(skip(cache))]
-#[utoipa::path(put, path = "/sync", params(XUserId), responses(
+#[utoipa::path(put, path = "/sync", responses(
     (status = OK, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn sync_currency(
-    TypedHeader(id): TypedHeader<XUserId>,
+    id: XUserId,
     State(cache): State<Arc<Mutex<CacheManager>>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
