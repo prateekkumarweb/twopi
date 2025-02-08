@@ -122,7 +122,7 @@ function RouteComponent() {
       const items = itemsByDate[key];
       if (!items || !items.length) continue;
       data.push({
-        name: items.find((item) => item.notes)?.notes ?? "",
+        title: items.find((item) => item.notes)?.notes ?? "",
         transactions: items.map((item) => ({
           amount: item.amount,
           accountName: item.account?.trim(),
