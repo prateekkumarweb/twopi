@@ -2,6 +2,7 @@ use argon2::{Argon2, PasswordHash, PasswordVerifier};
 use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use sea_orm::{DbConn, DbErr};
+use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -16,7 +17,7 @@ impl AuthUser for User {
     }
 
     fn session_auth_hash(&self) -> &[u8] {
-        self.password_hash.as_bytes()
+        self.password_hash.expose_secret().as_bytes()
     }
 }
 
@@ -38,7 +39,8 @@ impl Backend {
 #[derive(Clone, Deserialize, ToSchema)]
 pub struct Credentials {
     email: String,
-    password: String,
+    #[serde(skip_serializing)]
+    password: SecretString,
 }
 
 #[async_trait]
@@ -54,8 +56,9 @@ impl AuthnBackend for Backend {
         let user = User::find_by_email(&self.db, &email).await?;
         if let Some(user) = user {
             #[allow(clippy::unwrap_used)]
-            let parsed_hash = PasswordHash::new(&user.password_hash).unwrap();
-            let verified = Argon2::default().verify_password(password.as_bytes(), &parsed_hash);
+            let parsed_hash = PasswordHash::new(user.password_hash.expose_secret()).unwrap();
+            let verified = Argon2::default()
+                .verify_password(password.expose_secret().as_bytes(), &parsed_hash);
             if verified.is_ok() {
                 Ok(Some(user))
             } else {

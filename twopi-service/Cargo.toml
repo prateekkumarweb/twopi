@@ -24,6 +24,7 @@ sea-orm = { version = "1.1.4", features = [
     "runtime-tokio-rustls",
     "macros",
 ] }
+secrecy = { version = "0.10.3", features = ["serde"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.138"
 thiserror = "2.0.11"

@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use sea_orm::{ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter};
+use secrecy::{ExposeSecret, SecretString};
 use serde::Serialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -15,7 +16,8 @@ pub struct User {
     pub id: Uuid,
     pub name: String,
     pub email: String,
-    pub password_hash: String,
+    #[serde(skip_serializing)]
+    pub password_hash: SecretString,
     pub email_verified: bool,
     pub created_at: DateTime<Utc>,
 }
@@ -26,7 +28,7 @@ impl User {
             id: model.id,
             name: model.name,
             email: model.email,
-            password_hash: model.password_hash,
+            password_hash: model.password_hash.into(),
             email_verified: model.email_verified,
             created_at: model.created_at,
         }
@@ -57,7 +59,7 @@ impl User {
             id: Uuid::now_v7(),
             name: name.to_string(),
             email: email.to_string(),
-            password_hash: password_hash.to_string(),
+            password_hash: password_hash.into(),
             email_verified: false,
             created_at: Utc::now(),
         };
@@ -65,7 +67,7 @@ impl User {
             id: ActiveValue::Set(model.id),
             name: ActiveValue::Set(model.name.clone()),
             email: ActiveValue::Set(model.email.clone()),
-            password_hash: ActiveValue::Set(model.password_hash.clone()),
+            password_hash: ActiveValue::Set(model.password_hash.expose_secret().to_owned()),
             email_verified: ActiveValue::Set(model.email_verified),
             created_at: ActiveValue::Set(model.created_at),
         })

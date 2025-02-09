@@ -177,29 +177,35 @@ async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
         .into_response())
 }
 
-static DATABASE_LOCK: LazyLock<Mutex<LruCache<String, DatabaseConnection>>> =
-    LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(100).unwrap())));
+static DATABASE_LOCK: LazyLock<Mutex<LruCache<String, DatabaseConnection>>> = LazyLock::new(|| {
+    Mutex::new(LruCache::new(
+        #[allow(clippy::unwrap_used)]
+        NonZeroUsize::new(100).unwrap(),
+    ))
+});
 
 #[tracing::instrument]
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
     let mut lock = DATABASE_LOCK.lock().await;
-    let db = lock.try_get_or_insert(id.to_string(), || -> AppResult<DatabaseConnection> {
-        let db_dir = DATA_DIR.join("database");
-        std::fs::create_dir_all(&db_dir)
-            .context("Could not create database directory")
-            .map_err(AppError::Other)?;
-        let db_dir = db_dir.to_string_lossy();
-        let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}/{id}.db?mode=rwc"));
-        let db = tokio::task::block_in_place(|| {
-            Handle::current().block_on(async {
-                Database::connect(connect_options)
-                    .await
-                    .map_err(AppError::DbErr)
-            })
-        })?;
-        Ok(db)
-    })?;
-    Ok(db.clone())
+    Ok(lock
+        .try_get_or_insert(id.to_string(), || -> AppResult<DatabaseConnection> {
+            let db_dir = DATA_DIR.join("database");
+            std::fs::create_dir_all(&db_dir)
+                .context("Could not create database directory")
+                .map_err(AppError::Other)?;
+            let db_dir = db_dir.to_string_lossy();
+            let connect_options =
+                ConnectOptions::new(format!("sqlite://{db_dir}/{id}.db?mode=rwc"));
+            let db = tokio::task::block_in_place(|| {
+                Handle::current().block_on(async {
+                    Database::connect(connect_options)
+                        .await
+                        .map_err(AppError::DbErr)
+                })
+            })?;
+            Ok(db)
+        })?
+        .clone())
 }
 
 #[tracing::instrument]
