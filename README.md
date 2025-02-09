@@ -7,6 +7,7 @@
 ```txt
 TWOPI_DATA_DIR=../data
 TWOPI_API_URL=http://localhost:8000
+TWOPI_SECRET_KEY=<twopi_secret_key>
 CURRENCY_API_KEY=<currency_api_key>
 ```
 

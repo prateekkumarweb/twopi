@@ -10,6 +10,7 @@
 mod auth;
 mod cache;
 mod entity;
+mod keys;
 mod model;
 mod routes;
 mod user_entity;
@@ -28,7 +29,7 @@ use argon2::{
 use auth::{Backend, Credentials};
 use axum::{
     body::Body,
-    extract::{FromRequestParts, Request},
+    extract::{FromRequestParts, Query, Request},
     http::{StatusCode, Uri},
     response::{IntoResponse, Response},
     Json,
@@ -40,6 +41,7 @@ use axum_login::{
 };
 use cache::CacheManager;
 use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
+use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
 use migration::MigratorTrait;
 use model::user::User;
@@ -47,7 +49,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::Deserialize;
 use tokio::{runtime::Handle, sync::Mutex};
 use user_migration::Migrator as UserMigrator;
-use utoipa::{OpenApi, ToSchema};
+use utoipa::{IntoParams, OpenApi, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
@@ -66,6 +68,14 @@ static HYPER_CLIENT: LazyLock<Client> = LazyLock::new(|| {
         hyper_util::client::legacy::Client::<(), ()>::builder(TokioExecutor::new())
             .build(HttpConnector::new());
     client
+});
+
+static KEYS: LazyLock<keys::Keys> = LazyLock::new(|| {
+    #[allow(clippy::unwrap_used)]
+    let secret_key = std::env::var("TWOPI_SECRET_KEY")
+        .context("TWOPI_SECRET_KEY env var not set")
+        .unwrap();
+    keys::Keys::new(secret_key.as_bytes())
 });
 
 type Client = hyper_util::client::legacy::Client<HttpConnector, Body>;
@@ -93,6 +103,8 @@ async fn main() -> anyhow::Result<()> {
     let backend = Backend::new(auth_database().await?);
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
+    LazyLock::force(&KEYS);
+
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
             "/twopi-api",
@@ -112,7 +124,9 @@ async fn main() -> anyhow::Result<()> {
                     "/api",
                     OpenApiRouter::new()
                         .routes(routes![user])
+                        .routes(routes![send_verify_url])
                         .route_layer(login_required!(Backend))
+                        .routes(routes![get_verify_email])
                         .routes(routes![signin])
                         .routes(routes![signout])
                         .routes(routes![signup]),
@@ -256,7 +270,20 @@ async fn signin(
     Json(creds): Json<Credentials>,
 ) -> Result<(), (StatusCode, String)> {
     let user = match auth_session.authenticate(creds.clone()).await {
-        Ok(Some(user)) => user,
+        Ok(Some(user)) => {
+            if user.email_verified {
+                user
+            } else {
+                print_verify_url(&user).await.map_err(|e| {
+                    tracing::error!("Error generating verify url: {:?}", e);
+                    (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "Error generating verify url".to_string(),
+                    )
+                })?;
+                return Err((StatusCode::UNAUTHORIZED, "Email not verified".to_string()));
+            }
+        }
         Ok(None) => return Err((StatusCode::UNAUTHORIZED, "Invalid credentials".to_string())),
         Err(e) => {
             tracing::error!("Error : {:?}", e);
@@ -361,4 +388,57 @@ async fn user(auth_session: AuthSession) -> Result<Json<User>, (StatusCode, Stri
         return Err((StatusCode::UNAUTHORIZED, "Not logged in".to_string()));
     };
     Ok(Json(user))
+}
+
+#[tracing::instrument(skip(auth_session))]
+#[utoipa::path(get, path = "/generate-verify-url", responses(
+    (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ())
+))]
+async fn send_verify_url(auth_session: AuthSession) -> Result<(), StatusCode> {
+    let user = auth_session.user.ok_or(StatusCode::UNAUTHORIZED)?;
+    print_verify_url(&user).await.map_err(|e| {
+        tracing::error!("Error generating verify url: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+    Ok(())
+}
+
+async fn print_verify_url(user: &User) -> jsonwebtoken::errors::Result<()> {
+    let url = generate_verify_url(user.id, &user.email).await?;
+    tracing::info!("Verify URL: {}", url);
+    Ok(())
+}
+
+#[derive(Debug, Deserialize, IntoParams)]
+struct VerifyQuery {
+    token: String,
+}
+
+#[tracing::instrument]
+#[utoipa::path(get, path = "/verify-email",
+params(VerifyQuery), responses(
+    (status = OK, body = String),
+    (status = UNAUTHORIZED, body = ()),
+    (status = INTERNAL_SERVER_ERROR, body = ())
+))]
+#[axum::debug_handler]
+async fn get_verify_email(
+    Query(VerifyQuery { token }): Query<VerifyQuery>,
+) -> Result<String, StatusCode> {
+    let id = verify_email(token).await.map_err(|e| {
+        tracing::error!("Error verifying url: {:?}", e);
+        StatusCode::UNAUTHORIZED
+    })?;
+    let db = auth_database().await.map_err(|e| {
+        tracing::error!("Error getting database: {:?}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+    User::update_email_verified(&db, id, true)
+        .await
+        .map_err(|e| {
+            tracing::error!("Error updating email verified: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+    Ok(id.to_string())
 }

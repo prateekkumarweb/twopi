@@ -75,4 +75,22 @@ impl User {
         .await?;
         Ok(model)
     }
+
+    pub async fn update_email_verified(
+        db: &DbConn,
+        id: Uuid,
+        email_verified: bool,
+    ) -> Result<(), DbErr> {
+        UserEnitty::update(ActiveModel {
+            id: ActiveValue::Set(id),
+            name: ActiveValue::NotSet,
+            email: ActiveValue::NotSet,
+            password_hash: ActiveValue::NotSet,
+            email_verified: ActiveValue::Set(email_verified),
+            created_at: ActiveValue::NotSet,
+        })
+        .exec(db)
+        .await?;
+        Ok(())
+    }
 }
