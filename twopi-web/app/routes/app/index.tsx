@@ -73,12 +73,6 @@ function RouteComponent() {
         t.amount / (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
     });
   });
-  const wealthInDifferentCurrencies = currenciesToShow.map((currency) => {
-    return {
-      currency,
-      value: wealth * (data.currencyRates?.[currency]?.value ?? 1),
-    };
-  });
 
   const chartData = useMemo(() => {
     const daysInMonth = [];
@@ -168,30 +162,9 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">Dashboard</h1>
-      <h2 className="text-center text-lg font-bold">Total wealth</h2>
-      <div className="flex flex-wrap items-center justify-center gap-4">
-        {wealthInDifferentCurrencies.map((wealth) => (
-          <div
-            key={wealth.currency}
-            className="bg-accent shadow-xs p-2 text-2xl"
-          >
-            {new Intl.NumberFormat("en", {
-              style: "currency",
-              currency: wealth.currency,
-            }).format(wealth.value)}
-          </div>
-        ))}
-      </div>
-      <div className="m-4 flex flex-col items-center gap-4">
-        <h2 className="text-center text-lg font-bold">
-          Wealth chart ({currentCurrency}) for{" "}
-          {Intl.DateTimeFormat("en", {
-            month: "long",
-            year: "numeric",
-          }).format(new Date(monthAndYear.year, monthAndYear.month))}
-        </h2>
-        <div className="flex gap-4">
+      <div className="flex">
+        <h1 className="grow text-xl font-bold">Dashboard</h1>
+        <div>
           <Select value={currentCurrency} onValueChange={(e) => setCurrency(e)}>
             <SelectTrigger>
               <SelectValue placeholder="Currency" />
@@ -204,6 +177,28 @@ function RouteComponent() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+      </div>
+      <h2 className="text-center text-lg font-bold">Total wealth</h2>
+      <div className="flex flex-wrap items-center justify-center gap-4">
+        <div className="bg-accent shadow-xs p-2 text-2xl">
+          {new Intl.NumberFormat("en", {
+            style: "currency",
+            currency: currentCurrency,
+          }).format(
+            wealth * (data.currencyRates?.[currentCurrency]?.value ?? 1),
+          )}
+        </div>
+      </div>
+      <div className="m-4 flex flex-col items-center gap-4">
+        <h2 className="text-center text-lg font-bold">
+          Wealth chart ({currentCurrency}) for{" "}
+          {Intl.DateTimeFormat("en", {
+            month: "long",
+            year: "numeric",
+          }).format(new Date(monthAndYear.year, monthAndYear.month))}
+        </h2>
+        <div className="flex gap-4">
           <Select
             value={String(monthAndYear.month)}
             onValueChange={(e) =>

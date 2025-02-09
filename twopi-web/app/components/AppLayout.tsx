@@ -1,5 +1,7 @@
 import { Separator } from "@radix-ui/react-separator";
 import { type ReactNode } from "react";
+import { useIsMobile } from "~/hooks/use-mobile";
+import { cn } from "~/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./ui/sidebar";
 
@@ -11,6 +13,8 @@ export default function Layout(props: {
   };
   children: ReactNode;
 }) {
+  const isMobile = useIsMobile();
+
   return (
     <>
       <SidebarProvider>
@@ -21,7 +25,9 @@ export default function Layout(props: {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <h1 className="font-semibold">TwoPi Personal Finance</h1>
           </header>
-          <div className="w-screen p-4">{props.children}</div>
+          <div className={cn("p-4", isMobile ? "w-screen" : "w-full")}>
+            {props.children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </>

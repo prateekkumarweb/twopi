@@ -24,7 +24,6 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import { apiClient } from "~/lib/openapi";
-import { Button } from "./ui/button";
 
 type NavItem = {
   label: string;
@@ -142,11 +141,9 @@ export function AppSidebar(props: {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Button onClick={signOut} variant="ghost">
-                    <LogOut />
-                    Sign out
-                  </Button>
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut />
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
