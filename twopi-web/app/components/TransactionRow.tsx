@@ -29,7 +29,7 @@ export default function TransactionRow({
         </div>
         <div className="flex flex-col gap-2">
           {transaction.transaction_items?.map((item) => (
-            <div key={item.id} className="flex w-full items-center gap-2">
+            <div key={item.id} className="flex items-center gap-2">
               <div className="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
                 {item.notes}
               </div>

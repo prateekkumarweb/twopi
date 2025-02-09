@@ -21,7 +21,7 @@ export default function Layout(props: {
             <Separator orientation="vertical" className="mr-2 h-4" />
             <h1 className="font-semibold">TwoPi Personal Finance</h1>
           </header>
-          <div className="m-4">{props.children}</div>
+          <div className="w-screen p-4">{props.children}</div>
         </SidebarInset>
       </SidebarProvider>
     </>
