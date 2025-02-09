@@ -138,7 +138,7 @@ function RouteComponent() {
         </Button>
       </div>
 
-      {mutation.isPending && <p className="text-info-content">Creating...</p>}
+      {mutation.isPending && <p className="text-accent">Creating...</p>}
       {mutation.isError && (
         <p className="text-destructive">{mutation.error?.message}</p>
       )}
