@@ -26,6 +26,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<TransactionWithAccount>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>> {
@@ -37,6 +38,7 @@ async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{transaction_id}", params(("transaction_id" = Uuid, Path)), responses(
     (status = OK, body = Option<TransactionWithAccount>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn transaction_by_id(
@@ -58,6 +60,7 @@ struct DeleteTransactionParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_transaction(
@@ -72,6 +75,7 @@ async fn delete_transaction(
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/item", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_transaction_item(
@@ -87,6 +91,7 @@ async fn delete_transaction_item(
 #[utoipa::path(put, path = "/",
     request_body = NewTransactionModel, responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transaction(
@@ -102,6 +107,7 @@ async fn put_transaction(
 #[utoipa::path(put, path = "/import",
     request_body = Vec<NewTransactionModel>, responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_transactions(

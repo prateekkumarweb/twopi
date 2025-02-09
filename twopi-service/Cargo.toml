@@ -16,6 +16,7 @@ axum-login = "0.17.0"
 chrono = { version = "0.4.39", features = ["serde"] }
 hyper-util = { version = "0.1.10", features = ["client", "http2"] }
 jiff = { version = "0.1.29", features = ["serde"] }
+lru = "0.13.0"
 migration = { path = "migration" }
 reqwest = { version = "0.12.12", features = ["json"] }
 sea-orm = { version = "1.1.4", features = [

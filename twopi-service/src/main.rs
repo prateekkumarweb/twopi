@@ -15,7 +15,7 @@ mod routes;
 mod user_entity;
 
 use std::{
-    collections::HashMap,
+    num::NonZeroUsize,
     path::PathBuf,
     sync::{Arc, LazyLock},
 };
@@ -40,11 +40,12 @@ use axum_login::{
 };
 use cache::CacheManager;
 use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
-use migration::{Migrator, MigratorTrait};
+use lru::LruCache;
+use migration::MigratorTrait;
 use model::user::User;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::Deserialize;
-use tokio::sync::{Mutex, RwLock};
+use tokio::{runtime::Handle, sync::Mutex};
 use user_migration::Migrator as UserMigrator;
 use utoipa::{OpenApi, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -176,30 +177,29 @@ async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
         .into_response())
 }
 
-static DATABASE_LOCK: LazyLock<RwLock<HashMap<String, DatabaseConnection>>> =
-    LazyLock::new(|| RwLock::new(HashMap::new()));
+static DATABASE_LOCK: LazyLock<Mutex<LruCache<String, DatabaseConnection>>> =
+    LazyLock::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(100).unwrap())));
 
 #[tracing::instrument]
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
-    let lock = DATABASE_LOCK.read().await;
-    if let Some(db) = lock.get(id) {
-        return Ok(db.clone());
-    }
-    std::mem::drop(lock);
-    let db_dir = DATA_DIR.join("database");
-    std::fs::create_dir_all(&db_dir)
-        .context("Could not create database directory")
-        .map_err(AppError::Other)?;
-    let db_dir = db_dir.to_string_lossy();
-    let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}/{id}.db?mode=rwc"));
-    let db = Database::connect(connect_options)
-        .await
-        .map_err(AppError::DbErr)?;
-    let mut lock = DATABASE_LOCK.write().await;
-    lock.insert(id.to_string(), db.clone());
-    std::mem::drop(lock);
-    Migrator::up(&db, None).await.map_err(AppError::DbErr)?;
-    Ok(db)
+    let mut lock = DATABASE_LOCK.lock().await;
+    let db = lock.try_get_or_insert(id.to_string(), || -> AppResult<DatabaseConnection> {
+        let db_dir = DATA_DIR.join("database");
+        std::fs::create_dir_all(&db_dir)
+            .context("Could not create database directory")
+            .map_err(AppError::Other)?;
+        let db_dir = db_dir.to_string_lossy();
+        let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}/{id}.db?mode=rwc"));
+        let db = tokio::task::block_in_place(|| {
+            Handle::current().block_on(async {
+                Database::connect(connect_options)
+                    .await
+                    .map_err(AppError::DbErr)
+            })
+        })?;
+        Ok(db)
+    })?;
+    Ok(db.clone())
 }
 
 #[tracing::instrument]

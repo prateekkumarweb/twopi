@@ -17,6 +17,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CategoryModel>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn category(id: XUserId) -> AppResult<Json<Vec<CategoryModel>>> {
@@ -33,6 +34,7 @@ struct DeleteCategoryParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteCategoryParams), responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_category(
@@ -48,6 +50,7 @@ async fn delete_category(
 #[utoipa::path(post, path = "/",
     request_body = NewCategoryModel, responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn post_category(id: XUserId, Json(category): Json<NewCategoryModel>) -> AppResult<()> {

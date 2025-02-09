@@ -27,6 +27,7 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CurrencyModel>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
@@ -37,6 +38,7 @@ async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{code}", params(("code" = String, Path)), responses(
     (status = OK, body = Option<CurrencyModel>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn currency_by_id(
@@ -56,6 +58,7 @@ struct DeleteCurrencyParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteCurrencyParams), responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_currency(
@@ -71,6 +74,7 @@ async fn delete_currency(
 #[utoipa::path(post, path = "/",
     request_body = CurrencyModel, responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn post_currency(id: XUserId, Json(currency): Json<CurrencyModel>) -> AppResult<()> {
@@ -82,6 +86,7 @@ async fn post_currency(id: XUserId, Json(currency): Json<CurrencyModel>) -> AppR
 #[tracing::instrument(skip(cache))]
 #[utoipa::path(put, path = "/sync", responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn sync_currency(

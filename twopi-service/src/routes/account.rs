@@ -23,6 +23,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<AccountWithCurrency>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn account(id: XUserId) -> AppResult<Json<Vec<AccountWithCurrency>>> {
@@ -33,6 +34,7 @@ async fn account(id: XUserId) -> AppResult<Json<Vec<AccountWithCurrency>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{account_id}", params(("account_id" = Uuid, Path)), responses(
     (status = OK, body = Option<AccountWithTransactions>),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn account_by_id(
@@ -54,6 +56,7 @@ struct DeleteAccountParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteAccountParams), responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn delete_account(
@@ -69,6 +72,7 @@ async fn delete_account(
 #[utoipa::path(put, path = "/",
     request_body = NewAccountModel, responses(
     (status = OK, body = Uuid),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppResult<Json<Uuid>> {
@@ -81,6 +85,7 @@ async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppRe
 #[utoipa::path(put, path = "/import",
     request_body = Vec<NewAccountModel>, responses(
     (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn put_accounts(id: XUserId, Json(accounts): Json<Vec<NewAccountModel>>) -> AppResult<()> {
