@@ -36,7 +36,7 @@ use axum::{
 };
 use axum_login::{
     login_required,
-    tower_sessions::{MemoryStore, SessionManagerLayer},
+    tower_sessions::{ExpiredDeletion, SessionManagerLayer},
     AuthManagerLayerBuilder,
 };
 use cache::CacheManager;
@@ -45,9 +45,10 @@ use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
 use migration::MigratorTrait;
 use model::user::User;
-use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
+use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection, DbErr};
 use serde::{de::DeserializeOwned, Deserialize};
 use tokio::{runtime::Handle, sync::Mutex};
+use tower_sessions_sqlx_store::SqliteStore;
 use user_migration::Migrator as UserMigrator;
 use utoipa::{openapi::ResponsesBuilder, IntoParams, OpenApi, ToResponse, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
@@ -98,7 +99,18 @@ async fn main() -> anyhow::Result<()> {
 
     let cache = Arc::new(Mutex::new(CacheManager::new(data_dir.clone(), api_key)));
 
-    let session_store = MemoryStore::default();
+    let db_path = DATA_DIR.join("sessions.db");
+    let db_path = db_path.to_string_lossy();
+    let pool = SqlitePool::connect(&format!("sqlite://{db_path}?mode=rwc")).await?;
+    let session_store = SqliteStore::new(pool);
+    session_store.migrate().await?;
+
+    let deletion_task = tokio::task::spawn(
+        session_store
+            .clone()
+            .continuously_delete_expired(tokio::time::Duration::from_secs(60)),
+    );
+
     let session_layer = SessionManagerLayer::new(session_store);
 
     let backend = Backend::new(auth_database().await?);
@@ -136,6 +148,7 @@ async fn main() -> anyhow::Result<()> {
         )
         .fallback(twopi_web)
         .split_for_parts();
+
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", api.clone()))
         .merge(RapiDoc::new("/openapi.json").path("/rapidoc"))
@@ -144,6 +157,8 @@ async fn main() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
     axum::serve(listener, router).await?;
+
+    deletion_task.await??;
     Ok(())
 }
 
@@ -252,9 +267,9 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
 
 #[tracing::instrument]
 async fn auth_database() -> AppResult<DatabaseConnection> {
-    let db_dir = DATA_DIR.join("auth.db");
-    let db_dir = db_dir.to_string_lossy();
-    let connect_options = ConnectOptions::new(format!("sqlite://{db_dir}?mode=rwc"));
+    let db_path = DATA_DIR.join("auth.db");
+    let db_path = db_path.to_string_lossy();
+    let connect_options = ConnectOptions::new(format!("sqlite://{db_path}?mode=rwc"));
     let db = Database::connect(connect_options)
         .await
         .map_err(AppError::DbErr)?;
