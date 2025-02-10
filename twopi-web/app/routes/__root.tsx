@@ -54,12 +54,6 @@ export const Route = createRootRoute({
       { rel: "icon", href: "/2pi.svg" },
       { rel: "stylesheet", href: css },
     ],
-    scripts: [
-      {
-        crossOrigin: "anonymous",
-        src: "https://unpkg.com/react-scan/dist/auto.global.js",
-      },
-    ],
   }),
   beforeLoad: async () => {
     const { session } = await fetchAuth();
