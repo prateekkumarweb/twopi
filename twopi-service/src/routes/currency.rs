@@ -10,7 +10,8 @@ use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    cache::CacheManager, database, model::currency::CurrencyModel, AppError, AppResult, XUserId,
+    cache::CacheManager, database, model::currency::CurrencyModel, AppError, AppResult,
+    ValidatedJson, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
@@ -27,8 +28,7 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CurrencyModel>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
     let db = database(&id.0).await?;
@@ -38,8 +38,7 @@ async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{code}", params(("code" = String, Path)), responses(
     (status = OK, body = Option<CurrencyModel>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn currency_by_id(
     id: XUserId,
@@ -58,8 +57,7 @@ struct DeleteCurrencyParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteCurrencyParams), responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn delete_currency(
     id: XUserId,
@@ -73,11 +71,12 @@ async fn delete_currency(
 #[tracing::instrument(skip(currency))]
 #[utoipa::path(post, path = "/",
     request_body = CurrencyModel, responses(
-    (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    (status = OK, body = ()), AppError
 ))]
-async fn post_currency(id: XUserId, Json(currency): Json<CurrencyModel>) -> AppResult<()> {
+async fn post_currency(
+    id: XUserId,
+    ValidatedJson(currency): ValidatedJson<CurrencyModel>,
+) -> AppResult<()> {
     let db = database(&id.0).await?;
     currency.insert(&db).await?;
     Ok(())
@@ -86,8 +85,7 @@ async fn post_currency(id: XUserId, Json(currency): Json<CurrencyModel>) -> AppR
 #[tracing::instrument(skip(cache))]
 #[utoipa::path(put, path = "/sync", responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn sync_currency(
     id: XUserId,

@@ -29,7 +29,7 @@ use argon2::{
 use auth::{Backend, Credentials};
 use axum::{
     body::Body,
-    extract::{FromRequestParts, Query, Request},
+    extract::{rejection::JsonRejection, FromRequest, FromRequestParts, Query, Request},
     http::{StatusCode, Uri},
     response::{IntoResponse, Response},
     Json,
@@ -46,14 +46,15 @@ use lru::LruCache;
 use migration::MigratorTrait;
 use model::user::User;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
-use serde::Deserialize;
+use serde::{de::DeserializeOwned, Deserialize};
 use tokio::{runtime::Handle, sync::Mutex};
 use user_migration::Migrator as UserMigrator;
-use utoipa::{IntoParams, OpenApi, ToSchema};
+use utoipa::{openapi::ResponsesBuilder, IntoParams, OpenApi, ToResponse, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
+use validator::{Validate, ValidationErrors};
 
 static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[allow(clippy::unwrap_used)]
@@ -86,7 +87,7 @@ async fn main() -> anyhow::Result<()> {
     #[derive(OpenApi)]
     #[openapi(info(
         title = "TwoPi API",
-        license(name = "MIT", url = "https://opensource.org/licenses/MIT")
+        license(name = "MIT", url = "https://opensource.org/licenses/MIT"),
     ))]
     struct ApiDoc;
 
@@ -147,23 +148,50 @@ async fn main() -> anyhow::Result<()> {
 }
 
 #[derive(Debug, thiserror::Error)]
-enum AppError {
+pub enum AppError {
     #[error("Database error: {0}")]
     DbErr(#[from] DbErr),
     #[error("App error: {0}")]
     Other(anyhow::Error),
+    #[error(transparent)]
+    ValidationError(#[from] ValidationErrors),
+    #[error(transparent)]
+    AxumJsonRejection(#[from] JsonRejection),
 }
 
 type AppResult<T> = Result<T, AppError>;
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        tracing::error!("{:?}", self);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {self}"),
-        )
-            .into_response()
+        tracing::error!("Error: {:?}", self);
+        match self {
+            Self::ValidationError(_) => {
+                let message = format!("Input validation error: [{self}]").replace('\n', ", ");
+                (StatusCode::BAD_REQUEST, message)
+            }
+            Self::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, self.to_string()),
+            Self::DbErr(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+            Self::Other(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+        }
+        .into_response()
+    }
+}
+
+#[derive(ToSchema, ToResponse)]
+#[allow(dead_code)]
+struct AppErrorSchema(String);
+
+impl utoipa::IntoResponses for AppError {
+    fn responses() -> std::collections::BTreeMap<
+        String,
+        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
+    > {
+        let mut builder = ResponsesBuilder::new();
+        let mut string_schemas = vec![];
+        <String as ToSchema>::schemas(&mut string_schemas);
+        builder = builder.response("400", <AppErrorSchema as ToResponse>::response().1);
+        builder = builder.response("500", <AppErrorSchema as ToResponse>::response().1);
+        builder.build().into()
     }
 }
 
@@ -241,7 +269,7 @@ impl<S> FromRequestParts<S> for XUserId
 where
     S: Send + Sync,
 {
-    type Rejection = StatusCode;
+    type Rejection = (StatusCode, String);
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
@@ -249,10 +277,10 @@ where
     ) -> Result<Self, Self::Rejection> {
         let session: AuthSession = axum_login::AuthSession::from_request_parts(parts, state)
             .await
-            .map_err(|(s, _)| s)?;
+            .map_err(|(s, e)| (s, e.to_owned()))?;
         let user_id = session.user.map(|u| u.id);
         user_id
-            .ok_or(StatusCode::UNAUTHORIZED)
+            .ok_or_else(|| (StatusCode::UNAUTHORIZED, "Not logged in".to_string()))
             .map(|id| Self(id.to_string()))
     }
 }
@@ -262,8 +290,7 @@ type AuthSession = axum_login::AuthSession<Backend>;
 #[tracing::instrument(skip(auth_session, creds))]
 #[utoipa::path(post, path = "/signin", responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = String),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn signin(
     mut auth_session: AuthSession,
@@ -419,7 +446,7 @@ struct VerifyQuery {
 #[utoipa::path(get, path = "/verify-email",
 params(VerifyQuery), responses(
     (status = OK, body = String),
-    (status = UNAUTHORIZED, body = ()),
+    (status = UNAUTHORIZED, body = String),
     (status = INTERNAL_SERVER_ERROR, body = ())
 ))]
 #[axum::debug_handler]
@@ -441,4 +468,22 @@ async fn get_verify_email(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
     Ok(id.to_string())
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ValidatedJson<T>(pub T);
+
+impl<T, S> FromRequest<S> for ValidatedJson<T>
+where
+    T: DeserializeOwned + Validate,
+    S: Send + Sync,
+    Json<T>: FromRequest<S, Rejection = JsonRejection>,
+{
+    type Rejection = AppError;
+
+    async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
+        let Json(value) = Json::<T>::from_request(req, state).await?;
+        value.validate()?;
+        Ok(Self(value))
+    }
 }

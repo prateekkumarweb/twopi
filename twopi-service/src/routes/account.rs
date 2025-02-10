@@ -10,7 +10,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     database,
     model::account::{AccountModel, AccountWithCurrency, AccountWithTransactions, NewAccountModel},
-    AppResult, XUserId,
+    AppError, AppResult, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -23,8 +23,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<AccountWithCurrency>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn account(id: XUserId) -> AppResult<Json<Vec<AccountWithCurrency>>> {
     let db = database(&id.0).await?;
@@ -34,8 +33,7 @@ async fn account(id: XUserId) -> AppResult<Json<Vec<AccountWithCurrency>>> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{account_id}", params(("account_id" = Uuid, Path)), responses(
     (status = OK, body = Option<AccountWithTransactions>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn account_by_id(
     id: XUserId,
@@ -56,8 +54,7 @@ struct DeleteAccountParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteAccountParams), responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn delete_account(
     id: XUserId,
@@ -72,8 +69,7 @@ async fn delete_account(
 #[utoipa::path(put, path = "/",
     request_body = NewAccountModel, responses(
     (status = OK, body = Uuid),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppResult<Json<Uuid>> {
     let db = database(&id.0).await?;
@@ -85,8 +81,7 @@ async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppRe
 #[utoipa::path(put, path = "/import",
     request_body = Vec<NewAccountModel>, responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn put_accounts(id: XUserId, Json(accounts): Json<Vec<NewAccountModel>>) -> AppResult<()> {
     let db = database(&id.0).await?;

@@ -40,3 +40,4 @@ utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
 uuid = { version = "1.13.1", features = ["v7", "serde"] }
+validator = { version = "0.20.0", features = ["derive"] }

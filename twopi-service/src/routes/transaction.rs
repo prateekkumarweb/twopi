@@ -12,7 +12,7 @@ use crate::{
     model::transaction::{
         NewTransactionModel, TransactionItemModel, TransactionModel, TransactionWithAccount,
     },
-    AppResult, XUserId,
+    AppError, AppResult, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -26,8 +26,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<TransactionWithAccount>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>> {
     let db = database(&id.0).await?;
@@ -38,8 +37,7 @@ async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{transaction_id}", params(("transaction_id" = Uuid, Path)), responses(
     (status = OK, body = Option<TransactionWithAccount>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn transaction_by_id(
     id: XUserId,
@@ -60,8 +58,7 @@ struct DeleteTransactionParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn delete_transaction(
     id: XUserId,
@@ -75,8 +72,7 @@ async fn delete_transaction(
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/item", params(DeleteTransactionParams), responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn delete_transaction_item(
     id: XUserId,
@@ -91,8 +87,7 @@ async fn delete_transaction_item(
 #[utoipa::path(put, path = "/",
     request_body = NewTransactionModel, responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn put_transaction(
     id: XUserId,
@@ -107,8 +102,7 @@ async fn put_transaction(
 #[utoipa::path(put, path = "/import",
     request_body = Vec<NewTransactionModel>, responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn put_transactions(
     id: XUserId,

@@ -23,19 +23,18 @@ impl Keys {
 pub struct VerifyEmailClaim {
     id: Uuid,
     email: String,
-    exp: usize,
+    exp: i64,
 }
 
 pub async fn generate_verify_url(id: Uuid, email: &str) -> jsonwebtoken::errors::Result<String> {
     let claim = VerifyEmailClaim {
         id,
         email: email.to_string(),
-        exp: Utc::now().timestamp() as usize + 600,
+        exp: Utc::now().timestamp() + 600,
     };
     let token = encode(&Header::default(), &claim, &KEYS.encoding)?;
     Ok(format!(
-        "http://localhost:8000/twopi-api/api/verify-email?token={}",
-        token
+        "http://localhost:8000/twopi-api/api/verify-email?token={token}"
     ))
 }
 

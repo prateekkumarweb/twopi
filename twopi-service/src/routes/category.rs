@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     database,
     model::category::{CategoryModel, NewCategoryModel},
-    AppResult, XUserId,
+    AppError, AppResult, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -17,8 +17,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
     (status = OK, body = Vec<CategoryModel>),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn category(id: XUserId) -> AppResult<Json<Vec<CategoryModel>>> {
     let db = database(&id.0).await?;
@@ -34,8 +33,7 @@ struct DeleteCategoryParams {
 #[tracing::instrument]
 #[utoipa::path(delete, path = "/", params(DeleteCategoryParams), responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn delete_category(
     id: XUserId,
@@ -50,8 +48,7 @@ async fn delete_category(
 #[utoipa::path(post, path = "/",
     request_body = NewCategoryModel, responses(
     (status = OK, body = ()),
-    (status = UNAUTHORIZED, body = ()),
-    (status = INTERNAL_SERVER_ERROR, body = String)
+    AppError
 ))]
 async fn post_category(id: XUserId, Json(category): Json<NewCategoryModel>) -> AppResult<()> {
     let db = database(&id.0).await?;

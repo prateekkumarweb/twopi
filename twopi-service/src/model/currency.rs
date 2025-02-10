@@ -2,16 +2,20 @@ use migration::OnConflict;
 use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use validator::Validate;
 
 use crate::entity::{
     currency::{ActiveModel, Column, Model},
     prelude::*,
 };
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Serialize, Deserialize, Validate)]
 pub struct CurrencyModel {
+    #[validate(length(min = 3, max = 3))]
     code: String,
+    #[validate(length(min = 1, max = 100))]
     name: String,
+    #[validate(range(min = 0, max = 10))]
     decimal_digits: i32,
 }
 
@@ -67,12 +71,7 @@ impl CurrencyModel {
     }
 
     pub async fn delete(db: &DbConn, code: String) -> Result<(), DbErr> {
-        Currency::delete(ActiveModel {
-            code: ActiveValue::Set(code),
-            ..Default::default()
-        })
-        .exec(db)
-        .await?;
+        Currency::delete_by_id(code).exec(db).await?;
         Ok(())
     }
 

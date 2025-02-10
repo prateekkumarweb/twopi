@@ -35,7 +35,7 @@ function RouteComponent() {
     defaultValues: {
       code: "",
       name: "",
-      decimalDigits: 0,
+      decimal_digits: 0,
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
@@ -46,8 +46,12 @@ function RouteComponent() {
     currencyQueryOptions(),
   );
   const mutation = useMutation({
-    mutationFn: (data: unknown) =>
-      createCurrency({ data }).then(() => {
+    mutationFn: (data: {
+      code: string;
+      name: string;
+      decimal_digits: number;
+    }) =>
+      createCurrency(data).then(() => {
         form.reset();
       }),
     onSuccess: () => {
@@ -58,7 +62,7 @@ function RouteComponent() {
   });
 
   const { mutate } = useMutation({
-    mutationFn: (code: unknown) => deleteCurrency({ data: code }),
+    mutationFn: (code: string) => deleteCurrency(code),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: currencyQueryOptions().queryKey,
@@ -197,7 +201,7 @@ function RouteComponent() {
                 </form.Field>
               </TableCell>
               <TableCell>
-                <form.Field name="decimalDigits">
+                <form.Field name="decimal_digits">
                   {(field) => (
                     <Input
                       type="number"
