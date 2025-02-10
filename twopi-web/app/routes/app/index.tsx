@@ -1,7 +1,15 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -328,6 +336,7 @@ function RouteComponent() {
               >
                 <BarChart
                   accessibilityLayer
+                  layout="vertical"
                   data={chartData.categories.map(([name, value]) => ({
                     name,
                     value:
@@ -335,12 +344,12 @@ function RouteComponent() {
                       (data.currencyRates?.[currentCurrency]?.value ?? 1),
                   }))}
                 >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
+                  <XAxis type="number" dataKey="value" />
+                  <YAxis
                     dataKey="name"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
+                    type="category"
+                    tickMargin={5}
+                    tickFormatter={(value) => value.slice(0, 5)}
                   />
                   <ChartTooltip
                     cursor={false}
@@ -352,7 +361,12 @@ function RouteComponent() {
                       }).format(Number(value));
                     }}
                   />
-                  <Bar dataKey="value" fill="var(--color-desktop)" radius={8} />
+                  <Bar
+                    dataKey="value"
+                    layout="vertical"
+                    fill="var(--color-desktop)"
+                    radius={5}
+                  />
                 </BarChart>
               </ChartContainer>
             </CardContent>
