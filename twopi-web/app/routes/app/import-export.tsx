@@ -3,6 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
+import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -63,12 +64,12 @@ function RouteComponent() {
     for (const line of lines) {
       if (line.trim() === "") continue;
       const values = line.split("\t");
-      const name = values[accountIndex];
-      const accountType = values[accountTypeIndex];
+      const name = values[accountIndex] ?? "";
+      const accountType = values[accountTypeIndex] as AccountTypeOrigin;
       const startingBalance = Number(
         values[startingBalanceIndex]?.replaceAll(",", ""),
       );
-      const currencyCode = values[currencyIndex];
+      const currencyCode = values[currencyIndex] ?? "";
       const createdAt = values[createdAtIndex]
         ? new Date(values[createdAtIndex])
         : new Date();
@@ -81,7 +82,7 @@ function RouteComponent() {
       });
     }
     try {
-      await createAccounts({ data });
+      await createAccounts(data);
       router.navigate({ to: "/app/account" });
     } catch (e) {
       // @ts-expect-error e is of type any
@@ -125,15 +126,15 @@ function RouteComponent() {
         title: items.find((item) => item.notes)?.notes ?? "",
         transactions: items.map((item) => ({
           amount: item.amount,
-          accountName: item.account?.trim(),
-          notes: item.notes,
-          categoryName: item.category,
+          accountName: item.account?.trim() ?? "",
+          notes: item.notes ?? "",
+          categoryName: item.category ?? "",
         })),
         timestamp: items[0]?.date ? new Date(items[0]?.date) : new Date(),
       });
     }
     try {
-      await createTransactions({ data });
+      await createTransactions(data);
       router.navigate({ to: "/app/transaction" });
     } catch (e) {
       // @ts-expect-error e is of type any

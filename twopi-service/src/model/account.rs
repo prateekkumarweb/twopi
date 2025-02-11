@@ -2,6 +2,7 @@ use migration::{AccountType, OnConflict};
 use sea_orm::{prelude::Uuid, ActiveValue, DbConn, DbErr, EntityTrait, Linked, RelationTrait};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use validator::Validate;
 
 use super::{
     category::CategoryModel,
@@ -25,11 +26,13 @@ pub struct AccountModel {
     account_extra: Option<serde_json::Value>,
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Serialize, Deserialize, Validate)]
 pub struct NewAccountModel {
     id: Option<Uuid>,
+    #[validate(length(min = 1, max = 100))]
     name: String,
     account_type: AccountType,
+    #[validate(length(min = 3, max = 3))]
     currency_code: String,
     starting_balance: i64,
     created_at: chrono::DateTime<chrono::Utc>,

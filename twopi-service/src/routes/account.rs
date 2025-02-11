@@ -10,7 +10,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     database,
     model::account::{AccountModel, AccountWithCurrency, AccountWithTransactions, NewAccountModel},
-    AppError, AppResult, XUserId,
+    AppError, AppResult, ValidatedJson, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -71,7 +71,10 @@ async fn delete_account(
     (status = OK, body = Uuid),
     AppError
 ))]
-async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppResult<Json<Uuid>> {
+async fn put_account(
+    id: XUserId,
+    ValidatedJson(account): ValidatedJson<NewAccountModel>,
+) -> AppResult<Json<Uuid>> {
     let db = database(&id.0).await?;
     let id = AccountModel::upsert(account, &db).await?;
     Ok(Json(id))
@@ -83,7 +86,10 @@ async fn put_account(id: XUserId, Json(account): Json<NewAccountModel>) -> AppRe
     (status = OK, body = ()),
     AppError
 ))]
-async fn put_accounts(id: XUserId, Json(accounts): Json<Vec<NewAccountModel>>) -> AppResult<()> {
+async fn put_accounts(
+    id: XUserId,
+    ValidatedJson(accounts): ValidatedJson<Vec<NewAccountModel>>,
+) -> AppResult<()> {
     let db = database(&id.0).await?;
     AccountModel::upsert_many(accounts, &db).await?;
     Ok(())

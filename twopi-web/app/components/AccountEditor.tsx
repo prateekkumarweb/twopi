@@ -52,7 +52,8 @@ export default function AccountEditor(props: {
     defaultValues: {
       id: props.edit?.id,
       name: props.edit?.name || "",
-      accountType: props.edit?.accountType || "",
+      accountType: (props.edit?.accountType ||
+        "Bank") satisfies AccountTypeOrigin,
       createdAt: props.edit?.createdAt || createdAt,
       currencyCode: props.edit?.currencyCode || "",
       startingBalance: props.edit?.startingBalance || 0,
@@ -62,8 +63,15 @@ export default function AccountEditor(props: {
     },
   });
   const mutation = useMutation({
-    mutationFn: async (data: unknown) => {
-      createAccount({ data });
+    mutationFn: async (data: {
+      id?: string;
+      name: string;
+      accountType: AccountTypeOrigin;
+      createdAt: Date;
+      currencyCode: string;
+      startingBalance: number;
+    }) => {
+      createAccount(data);
       form.reset();
       navigate({
         to: "..",
@@ -126,7 +134,7 @@ export default function AccountEditor(props: {
           {(field) => (
             <Select
               value={field.state.value}
-              onValueChange={(e) => field.handleChange(e)}
+              onValueChange={(e) => field.handleChange(e as AccountTypeOrigin)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Account type" />

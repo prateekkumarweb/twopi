@@ -24,8 +24,8 @@ function RouteComponent() {
   const navigate = Route.useNavigate();
 
   const mutation = useMutation({
-    mutationFn: async (data: unknown) => {
-      await deleteTransaction({ data });
+    mutationFn: async (id: string) => {
+      await deleteTransaction(id);
       navigate({
         to: "..",
       });

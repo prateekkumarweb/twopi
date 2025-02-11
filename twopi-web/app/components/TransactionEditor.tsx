@@ -79,10 +79,19 @@ export default function TransactionEditor(props: {
     },
   });
   const mutation = useMutation({
-    mutationFn: async (data: unknown) => {
-      await createTransaction({
-        data,
-      });
+    mutationFn: async (data: {
+      id?: string;
+      title: string;
+      transactions: {
+        id?: string;
+        notes: string;
+        accountName: string;
+        amount: number;
+        categoryName?: string;
+      }[];
+      timestamp: Date;
+    }) => {
+      await createTransaction(data);
       form.reset();
       navigate({
         to: "..",

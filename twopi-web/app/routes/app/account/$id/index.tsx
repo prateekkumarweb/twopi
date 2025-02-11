@@ -24,8 +24,8 @@ function RouteComponent() {
   const query = useQuery(accountByIdQueryOptions(params.id));
   const navigate = Route.useNavigate();
   const mutation = useMutation({
-    mutationFn: async (data: unknown) => {
-      await deleteAccount({ data });
+    mutationFn: async (id: string) => {
+      await deleteAccount(id);
       navigate({
         to: "..",
       });

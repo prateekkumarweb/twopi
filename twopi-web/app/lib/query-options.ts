@@ -51,7 +51,7 @@ export function accountByIdQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["account", id],
     queryFn: async () => {
-      return await getAccount({ data: id });
+      return await getAccount(id);
     },
   });
 }
@@ -69,7 +69,7 @@ export function transactionByIdQueryOptions(id: string) {
   return queryOptions({
     queryKey: ["account", id],
     queryFn: async () => {
-      return await getTransaction({ data: id });
+      return await getTransaction(id);
     },
   });
 }

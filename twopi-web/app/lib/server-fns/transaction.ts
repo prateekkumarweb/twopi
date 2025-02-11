@@ -1,241 +1,181 @@
 import { notFound } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/start";
-import { z } from "zod";
 import { apiClient } from "../openapi";
-import { authMiddleware } from "../server/utils";
 
-const createTransactionValidtor = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  transactions: z.array(
-    z.object({
-      id: z.string().optional(),
-      notes: z.string(),
-      accountName: z.string(),
-      amount: z.number(),
-      categoryName: z.string().optional(),
-    }),
-  ),
-  timestamp: z.date().optional(),
-});
+export async function createTransaction(transaction: {
+  id?: string;
+  title: string;
+  transactions: {
+    id?: string;
+    notes: string;
+    accountName: string;
+    amount: number;
+    categoryName?: string;
+  }[];
+  timestamp?: Date;
+}) {
+  const accounts = await apiClient.GET("/twopi-api/account");
+  if (accounts.error) {
+    throw new Error(accounts.error);
+  }
+  const categories = await apiClient.GET("/twopi-api/category");
+  if (categories.error) {
+    throw new Error(categories.error);
+  }
 
-export const createTransaction = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((transaction: unknown) => {
-    return createTransactionValidtor.parse(transaction);
-  })
-  .handler(async ({ data, context }) => {
-    const accounts = await apiClient.GET("/twopi-api/account", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (accounts.error) {
-      throw new Error(accounts.error);
-    }
-    const categories = await apiClient.GET("/twopi-api/category", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (categories.error) {
-      throw new Error(categories.error);
-    }
+  const { error } = await apiClient.PUT("/twopi-api/transaction", {
+    body: {
+      id: transaction.id,
+      title: transaction.title,
+      transaction_items: transaction.transactions.map((transaction) => ({
+        id: transaction.id,
+        notes: transaction.notes,
+        account_name: transaction.accountName,
+        amount: Math.round(
+          transaction.amount *
+            Math.pow(
+              10,
+              accounts?.data?.find((a) => a.name === transaction.accountName)
+                ?.currency.decimal_digits ?? 0,
+            ),
+        ),
+        category_name: transaction.categoryName,
+      })),
+      timestamp: (transaction.timestamp ?? new Date()).toISOString(),
+    },
+  });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
 
-    const { error } = await apiClient.PUT("/twopi-api/transaction", {
-      headers: {
-        cookie: context.cookie,
-      },
-      body: {
-        id: data.id,
-        title: data.title,
-        transaction_items: data.transactions.map((transaction) => ({
-          id: transaction.id,
-          notes: transaction.notes,
-          account_name: transaction.accountName,
+export async function createTransactions(
+  transactions: {
+    id?: string;
+    title: string;
+    transactions: {
+      id?: string;
+      notes: string;
+      accountName: string;
+      amount: number;
+      categoryName: string;
+    }[];
+    timestamp: Date;
+  }[],
+) {
+  const accounts = await apiClient.GET("/twopi-api/account");
+  if (accounts.error) {
+    throw new Error(accounts.error);
+  }
+  const categories = await apiClient.GET("/twopi-api/category");
+  if (categories.error) {
+    throw new Error(categories.error);
+  }
+  const { error } = await apiClient.PUT("/twopi-api/transaction/import", {
+    body: transactions.map((transaction) => {
+      return {
+        id: transaction.id,
+        title: transaction.title,
+        transaction_items: transaction.transactions.map((transactionItem) => ({
+          id: transactionItem.id,
+          notes: transactionItem.notes,
+          account_name: transactionItem.accountName,
           amount: Math.round(
-            transaction.amount *
+            transactionItem.amount *
               Math.pow(
                 10,
-                accounts?.data?.find((a) => a.name === transaction.accountName)
-                  ?.currency.decimal_digits ?? 0,
+                accounts?.data?.find(
+                  (a) => a.name === transactionItem.accountName,
+                )?.currency.decimal_digits ?? 0,
               ),
           ),
-          category_name: transaction.categoryName,
+          category_name: transactionItem.categoryName,
         })),
-        timestamp: (data.timestamp ?? new Date()).toISOString(),
-      },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
+        timestamp: (transaction.timestamp ?? new Date()).toISOString(),
+      };
+    }),
   });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
 
-export const createTransactions = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((transactions: unknown) =>
-    z.array(createTransactionValidtor).parse(transactions),
-  )
-  .handler(async ({ data, context }) => {
-    const accounts = await apiClient.GET("/twopi-api/account", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (accounts.error) {
-      throw new Error(accounts.error);
-    }
-    const categories = await apiClient.GET("/twopi-api/category", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (categories.error) {
-      throw new Error(categories.error);
-    }
-    const { error } = await apiClient.PUT("/twopi-api/transaction/import", {
-      headers: {
-        cookie: context.cookie,
-      },
-      body: data.map((transaction) => {
-        return {
-          id: transaction.id,
-          title: transaction.title,
-          transaction_items: transaction.transactions.map(
-            (transactionItem) => ({
-              id: transactionItem.id,
-              notes: transactionItem.notes,
-              account_name: transactionItem.accountName,
-              amount: Math.round(
-                transactionItem.amount *
-                  Math.pow(
-                    10,
-                    accounts?.data?.find(
-                      (a) => a.name === transactionItem.accountName,
-                    )?.currency.decimal_digits ?? 0,
-                  ),
-              ),
-              category_name: transactionItem.categoryName,
-            }),
-          ),
-          timestamp: (transaction.timestamp ?? new Date()).toISOString(),
-        };
-      }),
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
-  });
-
-export const getTransactions = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .handler(async ({ context }) => {
-    const { data, error } = await apiClient.GET("/twopi-api/transaction", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return {
-      transactions: data?.map((tx) => ({
-        ...tx,
-        transaction_items: tx?.transaction_items?.map((transactionItem) => ({
-          ...transactionItem,
-          amount:
-            transactionItem.amount /
-            Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
-        })),
+export async function getTransactions() {
+  const { data, error } = await apiClient.GET("/twopi-api/transaction");
+  if (error) {
+    throw new Error(error);
+  }
+  return {
+    transactions: data?.map((tx) => ({
+      ...tx,
+      transaction_items: tx?.transaction_items?.map((transactionItem) => ({
+        ...transactionItem,
+        amount:
+          transactionItem.amount /
+          Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
       })),
-    };
-  });
+    })),
+  };
+}
 
-export const getTransaction = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .validator((id: unknown) => z.string().parse(id))
-  .handler(async ({ data, context }) => {
-    const { data: transaction, error } = await apiClient.GET(
-      "/twopi-api/transaction/{transaction_id}",
-      {
-        headers: {
-          cookie: context.cookie,
-        },
-        params: {
-          path: {
-            transaction_id: data,
-          },
-        },
-      },
-    );
-    if (error) {
-      throw new Error(error);
-    }
-    if (!transaction) {
-      throw notFound({ data: "Account not found" });
-    }
-    return {
-      ...transaction,
-      transaction_items: transaction?.transaction_items?.map(
-        (transactionItem) => ({
-          ...transactionItem,
-          amount:
-            transactionItem.amount /
-            Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
-          account: {
-            ...transactionItem.account,
-          },
-        }),
-      ),
-    };
-  });
-
-export const deleteTransactionItem = createServerFn({
-  method: "POST",
-})
-  .middleware([authMiddleware])
-  .validator((id: unknown) => {
-    return z.string().parse(id);
-  })
-  .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE(`/twopi-api/transaction/item`, {
-      headers: {
-        cookie: context.cookie,
-      },
+export async function getTransaction(id: string) {
+  const { data: transaction, error } = await apiClient.GET(
+    "/twopi-api/transaction/{transaction_id}",
+    {
       params: {
-        query: {
-          id: data,
+        path: {
+          transaction_id: id,
         },
       },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
-  });
+    },
+  );
+  if (error) {
+    throw new Error(error);
+  }
+  if (!transaction) {
+    throw notFound({ data: "Account not found" });
+  }
+  return {
+    ...transaction,
+    transaction_items: transaction?.transaction_items?.map(
+      (transactionItem) => ({
+        ...transactionItem,
+        amount:
+          transactionItem.amount /
+          Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
+        account: {
+          ...transactionItem.account,
+        },
+      }),
+    ),
+  };
+}
 
-export const deleteTransaction = createServerFn({
-  method: "POST",
-})
-  .middleware([authMiddleware])
-  .validator((id: unknown) => {
-    return z.string().parse(id);
-  })
-  .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE(`/twopi-api/transaction`, {
-      headers: {
-        cookie: context.cookie,
+export async function deleteTransactionItem(id: string) {
+  const { error } = await apiClient.DELETE(`/twopi-api/transaction/item`, {
+    params: {
+      query: {
+        id,
       },
-      params: {
-        query: {
-          id: data,
-        },
-      },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
+    },
   });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
+
+export async function deleteTransaction(id: string) {
+  const { error } = await apiClient.DELETE(`/twopi-api/transaction`, {
+    params: {
+      query: {
+        id,
+      },
+    },
+  });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}

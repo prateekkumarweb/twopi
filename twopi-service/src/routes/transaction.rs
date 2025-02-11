@@ -12,7 +12,7 @@ use crate::{
     model::transaction::{
         NewTransactionModel, TransactionItemModel, TransactionModel, TransactionWithAccount,
     },
-    AppError, AppResult, XUserId,
+    AppError, AppResult, ValidatedJson, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -91,7 +91,7 @@ async fn delete_transaction_item(
 ))]
 async fn put_transaction(
     id: XUserId,
-    Json(transaction): Json<NewTransactionModel>,
+    ValidatedJson(transaction): ValidatedJson<NewTransactionModel>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
     TransactionModel::upsert(transaction, &db).await?;
@@ -106,7 +106,7 @@ async fn put_transaction(
 ))]
 async fn put_transactions(
     id: XUserId,
-    Json(transactions): Json<Vec<NewTransactionModel>>,
+    ValidatedJson(transactions): ValidatedJson<Vec<NewTransactionModel>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
     TransactionModel::upsert_many(transactions, &db).await?;

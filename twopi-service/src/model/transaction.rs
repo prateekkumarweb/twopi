@@ -7,6 +7,7 @@ use sea_orm::{
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use validator::Validate;
 
 use super::{
     account::{AccountModel, AccountWithCurrency},
@@ -38,19 +39,23 @@ pub struct TransactionItemModel {
     pub amount: i64,
 }
 
-#[derive(ToSchema, Serialize, Deserialize)]
+#[derive(ToSchema, Serialize, Deserialize, Validate)]
 pub struct NewTransactionModel {
     id: Option<Uuid>,
+    #[validate(length(min = 1, max = 100))]
     title: String,
     timestamp: chrono::DateTime<chrono::Utc>,
     transaction_items: Vec<NewTransactionItemModel>,
 }
 
-#[derive(ToSchema, Serialize, Deserialize)]
+#[derive(ToSchema, Serialize, Deserialize, Validate)]
 pub struct NewTransactionItemModel {
     id: Option<Uuid>,
+    #[validate(length(min = 0, max = 100))]
     notes: String,
+    #[validate(length(min = 1, max = 100))]
     account_name: String,
+    #[validate(length(min = 1, max = 100))]
     category_name: Option<String>,
     amount: i64,
 }

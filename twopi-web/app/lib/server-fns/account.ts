@@ -1,179 +1,143 @@
 import { notFound } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/start";
-import { z } from "zod";
-import { AccountType } from "~/lib/hacks/account-type";
+import { type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { apiClient } from "../openapi";
-import { authMiddleware } from "../server/utils";
 
-const createAccountValidator = z.object({
-  id: z.string().optional(),
-  name: z.string(),
-  accountType: z.nativeEnum(AccountType),
-  currencyCode: z.string(),
-  startingBalance: z.number().default(0),
-  createdAt: z.date().optional(),
-});
-
-export const createAccount = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((account: unknown) => createAccountValidator.parse(account))
-  .handler(async ({ data, context }) => {
-    const currency = await apiClient.GET("/twopi-api/currency/{code}", {
-      headers: {
-        cookie: context.cookie,
+export async function createAccount(account: {
+  id?: string;
+  name: string;
+  accountType: AccountTypeOrigin;
+  currencyCode: string;
+  startingBalance: number;
+  createdAt: Date;
+}) {
+  const currency = await apiClient.GET("/twopi-api/currency/{code}", {
+    params: {
+      path: {
+        code: account.currencyCode,
       },
+    },
+  });
+  if (currency.error) {
+    throw new Error(currency.error);
+  }
+  const { error } = await apiClient.PUT("/twopi-api/account", {
+    body: {
+      id: account.id,
+      name: account.name,
+      account_type: account.accountType,
+      currency_code: account.currencyCode,
+      starting_balance: Math.round(
+        account.startingBalance *
+          Math.pow(10, currency.data?.decimal_digits ?? 0),
+      ),
+      created_at: account.createdAt.toISOString(),
+    },
+  });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
+
+export async function createAccounts(
+  accounts: {
+    name: string;
+    accountType: AccountTypeOrigin;
+    currencyCode: string;
+    startingBalance: number;
+    createdAt?: Date;
+  }[],
+) {
+  for (const item of accounts) {
+    const currency = await apiClient.GET("/twopi-api/currency/{code}", {
       params: {
         path: {
-          code: data.currencyCode,
+          code: item.currencyCode,
         },
       },
     });
-    if (currency.error) {
-      throw new Error(currency.error);
-    }
-    const { error } = await apiClient.PUT("/twopi-api/account", {
-      headers: {
-        cookie: context.cookie,
-      },
-      body: {
-        id: data.id,
-        name: data.name,
-        account_type: data.accountType,
-        currency_code: data.currencyCode,
-        starting_balance: Math.round(
-          data.startingBalance *
-            Math.pow(10, currency.data?.decimal_digits ?? 0),
-        ),
-        created_at: (data.createdAt ?? new Date())?.toISOString(),
-      },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
-  });
-
-export const createAccounts = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((accounts: unknown) =>
-    z.array(createAccountValidator).parse(accounts),
-  )
-  .handler(async ({ data, context }) => {
-    for (const item of data) {
-      const currency = await apiClient.GET("/twopi-api/currency/{code}", {
-        headers: {
-          cookie: context.cookie,
-        },
-        params: {
-          path: {
-            code: item.currencyCode,
-          },
-        },
-      });
-      item.startingBalance = Math.round(
-        item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0),
-      );
-    }
-    const { error } = await apiClient.PUT("/twopi-api/account/import", {
-      headers: {
-        cookie: context.cookie,
-      },
-      body: data.map((item) => ({
-        name: item.name,
-        account_type: item.accountType,
-        currency_code: item.currencyCode,
-        starting_balance: item.startingBalance,
-        created_at: (item.createdAt ?? new Date())?.toISOString(),
-      })),
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
-  });
-
-export const getAccounts = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .handler(async ({ context }) => {
-    const { data: value, error } = await apiClient.GET("/twopi-api/account", {
-      headers: {
-        cookie: context.cookie,
-      },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return {
-      accounts:
-        value?.map((account) => ({
-          ...account,
-          starting_balance:
-            account.starting_balance /
-            Math.pow(10, account.currency?.decimal_digits ?? 0),
-        })) ?? [],
-    };
-  });
-
-export const getAccount = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .validator((id: unknown) => z.string().parse(id))
-  .handler(async ({ data, context }) => {
-    const { data: account, error } = await apiClient.GET(
-      "/twopi-api/account/{account_id}",
-      {
-        headers: {
-          cookie: context.cookie,
-        },
-        params: {
-          path: {
-            account_id: data,
-          },
-        },
-      },
+    item.startingBalance = Math.round(
+      item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0),
     );
-    if (error) {
-      throw new Error(error);
-    }
-    if (!account) {
-      throw notFound({ data: "Account not found" });
-    }
-    return {
-      ...account,
-      starting_balance:
-        account.starting_balance /
-        Math.pow(10, account.currency?.decimal_digits ?? 0),
-      transactions: account.transactions?.map((transaction) => ({
-        ...transaction,
-        transaction_items: transaction.transaction_items?.map((item) => ({
-          ...item,
-          amount: item.amount / Math.pow(10, account.currency.decimal_digits),
-          account: {
-            ...item.account,
-            starting_balance:
-              item.account.starting_balance /
-              Math.pow(10, item.account.currency.decimal_digits),
-          },
-        })),
-      })),
-    };
+  }
+  const { error } = await apiClient.PUT("/twopi-api/account/import", {
+    body: accounts.map((item) => ({
+      name: item.name,
+      account_type: item.accountType,
+      currency_code: item.currencyCode,
+      starting_balance: item.startingBalance,
+      created_at: (item.createdAt ?? new Date())?.toISOString(),
+    })),
   });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
 
-export const deleteAccount = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator((id: unknown) => z.string().parse(id))
-  .handler(async ({ data, context }) => {
-    const { error } = await apiClient.DELETE("/twopi-api/account", {
-      headers: {
-        cookie: context.cookie,
-      },
+export async function getAccounts() {
+  const { data, error } = await apiClient.GET("/twopi-api/account");
+  if (error) {
+    throw new Error(error);
+  }
+  return {
+    accounts:
+      data?.map((account) => ({
+        ...account,
+        starting_balance:
+          account.starting_balance /
+          Math.pow(10, account.currency?.decimal_digits ?? 0),
+      })) ?? [],
+  };
+}
+
+export async function getAccount(id: string) {
+  const { data, error } = await apiClient.GET(
+    "/twopi-api/account/{account_id}",
+    {
       params: {
-        query: {
-          id: data,
+        path: {
+          account_id: id,
         },
       },
-    });
-    if (error) {
-      throw new Error(error);
-    }
-    return { success: true };
+    },
+  );
+  if (error) {
+    throw new Error(error);
+  }
+  if (!data) {
+    throw notFound({ data: "Account not found" });
+  }
+  return {
+    ...data,
+    starting_balance:
+      data.starting_balance / Math.pow(10, data.currency?.decimal_digits ?? 0),
+    transactions: data.transactions?.map((transaction) => ({
+      ...transaction,
+      transaction_items: transaction.transaction_items?.map((item) => ({
+        ...item,
+        amount: item.amount / Math.pow(10, data.currency.decimal_digits),
+        account: {
+          ...item.account,
+          starting_balance:
+            item.account.starting_balance /
+            Math.pow(10, item.account.currency.decimal_digits),
+        },
+      })),
+    })),
+  };
+}
+
+export async function deleteAccount(id: string) {
+  const { error } = await apiClient.DELETE("/twopi-api/account", {
+    params: {
+      query: {
+        id,
+      },
+    },
   });
+  if (error) {
+    throw new Error(error);
+  }
+  return { success: true };
+}
