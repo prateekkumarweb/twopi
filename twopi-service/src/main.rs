@@ -10,6 +10,7 @@
 mod auth;
 mod cache;
 mod entity;
+mod error;
 mod keys;
 mod model;
 mod routes;
@@ -40,22 +41,23 @@ use axum_login::{
     AuthManagerLayerBuilder,
 };
 use cache::CacheManager;
+use error::{AppError, AppResult};
 use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
 use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
 use migration::MigratorTrait;
 use model::user::User;
-use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection, DbErr};
+use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection};
 use serde::{de::DeserializeOwned, Deserialize};
 use tokio::{runtime::Handle, sync::Mutex};
 use tower_sessions_sqlx_store::SqliteStore;
 use user_migration::Migrator as UserMigrator;
-use utoipa::{openapi::ResponsesBuilder, IntoParams, OpenApi, ToResponse, ToSchema};
+use utoipa::{IntoParams, OpenApi, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 use utoipa_rapidoc::RapiDoc;
 use utoipa_scalar::{Scalar, Servable as ScalarServable};
 use utoipa_swagger_ui::SwaggerUi;
-use validator::{Validate, ValidationErrors};
+use validator::Validate;
 
 static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[allow(clippy::unwrap_used)]
@@ -162,54 +164,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum AppError {
-    #[error("Database error: {0}")]
-    DbErr(#[from] DbErr),
-    #[error("App error: {0}")]
-    Other(anyhow::Error),
-    #[error(transparent)]
-    ValidationError(#[from] ValidationErrors),
-    #[error(transparent)]
-    AxumJsonRejection(#[from] JsonRejection),
-}
-
-type AppResult<T> = Result<T, AppError>;
-
-impl IntoResponse for AppError {
-    fn into_response(self) -> Response {
-        tracing::error!("Error: {:?}", self);
-        match self {
-            Self::ValidationError(_) => {
-                let message = format!("Input validation error: [{self}]").replace('\n', ", ");
-                (StatusCode::BAD_REQUEST, message)
-            }
-            Self::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, self.to_string()),
-            Self::DbErr(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
-            Self::Other(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
-        }
-        .into_response()
-    }
-}
-
-#[derive(ToSchema, ToResponse)]
-#[allow(dead_code)]
-struct AppErrorSchema(String);
-
-impl utoipa::IntoResponses for AppError {
-    fn responses() -> std::collections::BTreeMap<
-        String,
-        utoipa::openapi::RefOr<utoipa::openapi::response::Response>,
-    > {
-        let mut builder = ResponsesBuilder::new();
-        let mut string_schemas = vec![];
-        <String as ToSchema>::schemas(&mut string_schemas);
-        builder = builder.response("400", <AppErrorSchema as ToResponse>::response().1);
-        builder = builder.response("500", <AppErrorSchema as ToResponse>::response().1);
-        builder.build().into()
-    }
-}
-
 #[tracing::instrument(skip(req))]
 async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
     let path = req.uri().path();
@@ -277,6 +231,8 @@ async fn auth_database() -> AppResult<DatabaseConnection> {
     Ok(db)
 }
 
+type AuthSession = axum_login::AuthSession<Backend>;
+
 #[derive(Debug)]
 struct XUserId(String);
 
@@ -284,7 +240,7 @@ impl<S> FromRequestParts<S> for XUserId
 where
     S: Send + Sync,
 {
-    type Rejection = (StatusCode, String);
+    type Rejection = AppError;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
@@ -292,15 +248,13 @@ where
     ) -> Result<Self, Self::Rejection> {
         let session: AuthSession = axum_login::AuthSession::from_request_parts(parts, state)
             .await
-            .map_err(|(s, e)| (s, e.to_owned()))?;
+            .map_err(|(_, e)| AppError::Other(anyhow::anyhow!(e)))?;
         let user_id = session.user.map(|u| u.id);
         user_id
-            .ok_or_else(|| (StatusCode::UNAUTHORIZED, "Not logged in".to_string()))
+            .ok_or_else(|| AppError::Unauthorized(anyhow::anyhow!("Not logged in")))
             .map(|id| Self(id.to_string()))
     }
 }
-
-type AuthSession = axum_login::AuthSession<Backend>;
 
 #[tracing::instrument(skip(auth_session, creds))]
 #[utoipa::path(post, path = "/signin", responses(
