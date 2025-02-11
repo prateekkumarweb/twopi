@@ -45,7 +45,7 @@ use error::{AppError, AppResult};
 use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
 use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
-use migration::MigratorTrait;
+use migration::{Migrator, MigratorTrait};
 use model::user::User;
 use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection};
 use serde::{de::DeserializeOwned, Deserialize};
@@ -198,7 +198,7 @@ static DATABASE_LOCK: LazyLock<Mutex<LruCache<String, DatabaseConnection>>> = La
 #[tracing::instrument]
 async fn database(id: &str) -> AppResult<DatabaseConnection> {
     let mut lock = DATABASE_LOCK.lock().await;
-    Ok(lock
+    let db = lock
         .try_get_or_insert(id.to_string(), || -> AppResult<DatabaseConnection> {
             let db_dir = DATA_DIR.join("database");
             std::fs::create_dir_all(&db_dir)
@@ -216,7 +216,10 @@ async fn database(id: &str) -> AppResult<DatabaseConnection> {
             })?;
             Ok(db)
         })?
-        .clone())
+        .clone();
+    drop(lock);
+    Migrator::up(&db, None).await.map_err(AppError::DbErr)?;
+    Ok(db)
 }
 
 #[tracing::instrument]
@@ -249,10 +252,16 @@ where
         let session: AuthSession = axum_login::AuthSession::from_request_parts(parts, state)
             .await
             .map_err(|(_, e)| AppError::Other(anyhow::anyhow!(e)))?;
-        let user_id = session.user.map(|u| u.id);
-        user_id
-            .ok_or_else(|| AppError::Unauthorized(anyhow::anyhow!("Not logged in")))
-            .map(|id| Self(id.to_string()))
+        let user = session
+            .user
+            .ok_or_else(|| AppError::Unauthorized(anyhow::anyhow!("Not logged in")))?;
+        if user.email_verified {
+            Ok(Self(user.id.to_string()))
+        } else {
+            Err(AppError::Unauthorized(anyhow::anyhow!(
+                "Email not verified"
+            )))
+        }
     }
 }
 
@@ -331,7 +340,7 @@ struct NewSignup {
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn signup(
-    mut auth_session: AuthSession,
+    auth_session: AuthSession,
     Json(user): Json<NewSignup>,
 ) -> Result<(), (StatusCode, String)> {
     let argon2 = Argon2::default();
@@ -363,15 +372,18 @@ async fn signup(
         }
     };
 
-    if let Err(e) = auth_session.login(&user).await {
-        tracing::error!("Error logging in: {:?}", e);
-        return Err((
+    print_verify_url(&user).await.map_err(|e| {
+        tracing::error!("Error generating verify url: {:?}", e);
+        (
             StatusCode::INTERNAL_SERVER_ERROR,
-            "Session error".to_string(),
-        ));
-    }
+            "Error generating verify url".to_string(),
+        )
+    })?;
 
-    Ok(())
+    Err((
+        StatusCode::UNAUTHORIZED,
+        "Please verify your email".to_string(),
+    ))
 }
 
 #[tracing::instrument(skip(auth_session))]
