@@ -21,14 +21,15 @@ function RouteComponent() {
     defaultValues: {
       name: "",
       group: "",
+      icon: "",
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
     },
   });
   const mutation = useMutation({
-    mutationFn: (data: unknown) =>
-      createCategory({ data }).then(() => {
+    mutationFn: (data: { name: string; group: string; icon: string }) =>
+      createCategory(data).then(() => {
         form.reset();
       }),
     onSuccess: () => {
@@ -39,7 +40,7 @@ function RouteComponent() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: unknown) => deleteCategory({ data: id }),
+    mutationFn: (id: string) => deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: categoryQueryOptions().queryKey,

@@ -3,6 +3,7 @@ use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
+use validator::Validate;
 
 use crate::entity::{
     category::{self, ActiveModel},
@@ -17,11 +18,14 @@ pub struct CategoryModel {
     icon: String,
 }
 
-#[derive(Clone, ToSchema, Serialize, Deserialize)]
+#[derive(Clone, ToSchema, Serialize, Deserialize, Validate)]
 pub struct NewCategoryModel {
     id: Option<Uuid>,
+    #[validate(length(min = 1, max = 100))]
     name: String,
+    #[validate(length(min = 0, max = 100))]
     group: String,
+    #[validate(length(min = 0, max = 100))]
     icon: String,
 }
 

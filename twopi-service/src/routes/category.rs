@@ -7,7 +7,7 @@ use uuid::Uuid;
 use crate::{
     database,
     model::category::{CategoryModel, NewCategoryModel},
-    AppError, AppResult, XUserId,
+    AppError, AppResult, ValidatedJson, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -50,7 +50,10 @@ async fn delete_category(
     (status = OK, body = ()),
     AppError
 ))]
-async fn post_category(id: XUserId, Json(category): Json<NewCategoryModel>) -> AppResult<()> {
+async fn post_category(
+    id: XUserId,
+    ValidatedJson(category): ValidatedJson<NewCategoryModel>,
+) -> AppResult<()> {
     let db = database(&id.0).await?;
     CategoryModel::upsert(category, &db).await?;
     Ok(())
