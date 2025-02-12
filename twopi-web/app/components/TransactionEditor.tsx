@@ -62,7 +62,7 @@ export default function TransactionEditor(props: {
   timestamp.setSeconds(0);
   const form = useForm({
     defaultValues: {
-      id: props.edit?.id ?? "",
+      id: props.edit?.id,
       title: props.edit?.title ?? "",
       transactions: props.edit?.transactionItems ?? [
         {

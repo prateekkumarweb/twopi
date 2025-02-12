@@ -30,7 +30,6 @@ pub fn router() -> OpenApiRouter<()> {
 ))]
 async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>> {
     let db = database(&id.0).await?;
-    tracing::info!("Querying Transaction for {}", id.0);
     Ok(Json(TransactionModel::find_all(&db).await?))
 }
 

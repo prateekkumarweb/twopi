@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use migration::OnConflict;
 use sea_orm::{
-    prelude::Uuid, ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter,
+    prelude::Uuid, ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder,
     TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ use super::{
 use crate::entity::{
     account, category,
     prelude::*,
-    transaction::{ActiveModel, Column},
+    transaction::{self, ActiveModel, Column},
     transaction_item,
 };
 
@@ -63,6 +63,7 @@ pub struct NewTransactionItemModel {
 impl TransactionModel {
     pub async fn find_all(db: &DbConn) -> Result<Vec<TransactionWithAccount>, DbErr> {
         let transactions = Transaction::find()
+            .order_by_desc(transaction::Column::Timestamp)
             .find_with_related(TransactionItem)
             .all(db)
             .await?;
