@@ -1,11 +1,11 @@
 use migration::OnConflict;
-use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
+use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
 
 use crate::entity::{
-    currency::{ActiveModel, Column, Model},
+    currency::{self, ActiveModel, Column, Model},
     prelude::*,
 };
 
@@ -37,16 +37,20 @@ impl CurrencyModel {
     }
 
     pub async fn find_all(db: &DbConn) -> Result<Vec<Self>, DbErr> {
-        Currency::find().all(db).await.map(|currencies| {
-            currencies
-                .into_iter()
-                .map(|c| Self {
-                    code: c.code.to_string(),
-                    name: c.name,
-                    decimal_digits: c.decimal_digits,
-                })
-                .collect()
-        })
+        Currency::find()
+            .order_by_asc(currency::Column::Code)
+            .all(db)
+            .await
+            .map(|currencies| {
+                currencies
+                    .into_iter()
+                    .map(|c| Self {
+                        code: c.code.to_string(),
+                        name: c.name,
+                        decimal_digits: c.decimal_digits,
+                    })
+                    .collect()
+            })
     }
 
     pub async fn find_by_code(db: &DbConn, code: &str) -> Result<Option<Self>, DbErr> {

@@ -1,5 +1,5 @@
 use migration::OnConflict;
-use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait};
+use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -44,17 +44,21 @@ impl CategoryModel {
     }
 
     pub async fn find_all(db: &DbConn) -> Result<Vec<Self>, DbErr> {
-        Category::find().all(db).await.map(|categories| {
-            categories
-                .into_iter()
-                .map(|c| Self {
-                    id: c.id,
-                    name: c.name,
-                    group: c.group,
-                    icon: c.icon,
-                })
-                .collect()
-        })
+        Category::find()
+            .order_by_asc(category::Column::Name)
+            .all(db)
+            .await
+            .map(|categories| {
+                categories
+                    .into_iter()
+                    .map(|c| Self {
+                        id: c.id,
+                        name: c.name,
+                        group: c.group,
+                        icon: c.icon,
+                    })
+                    .collect()
+            })
     }
 
     pub async fn upsert(cat: NewCategoryModel, db: &DbConn) -> Result<Uuid, DbErr> {

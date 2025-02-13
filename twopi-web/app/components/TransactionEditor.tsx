@@ -12,6 +12,7 @@ import {
 } from "~/lib/query-options";
 import { createTransaction } from "~/lib/server-fns/transaction";
 import { isDefined } from "~/lib/utils";
+import CurrencyInput from "./CurrencyInput";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import {
@@ -208,14 +209,25 @@ export default function TransactionEditor(props: {
                     </form.Field>
                     <form.Field name={`transactions[${i}].amount`}>
                       {(subField) => (
-                        <Input
-                          type="number"
-                          placeholder="Amount"
-                          name={subField.name}
+                        <CurrencyInput
                           value={subField.state.value}
                           onBlur={subField.handleBlur}
-                          onChange={(e) =>
-                            subField.handleChange(Number(e.target.value))
+                          onChange={subField.handleChange}
+                          currencyCode={
+                            data.accounts?.find(
+                              (a) =>
+                                a.name ===
+                                subField.form.state.values.transactions[i]
+                                  ?.accountName,
+                            )?.currency.code ?? ""
+                          }
+                          decimalDigits={
+                            data.accounts?.find(
+                              (a) =>
+                                a.name ===
+                                subField.form.state.values.transactions[i]
+                                  ?.accountName,
+                            )?.currency.decimal_digits ?? 0
                           }
                         />
                       )}

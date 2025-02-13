@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import type { getTransaction } from "~/lib/server-fns/transaction";
+import CurrencyDisplay from "./CurrencyDisplay";
 import { Badge } from "./ui/badge";
 
 type Transaction = Awaited<ReturnType<typeof getTransaction>>;
@@ -35,10 +36,11 @@ export default function TransactionRow({
               </div>
               <Badge variant="outline">{item.account.name}</Badge>
               <Badge>
-                {Intl.NumberFormat("en", {
-                  style: "currency",
-                  currency: item.account.currency.code,
-                }).format(item.amount)}
+                <CurrencyDisplay
+                  value={item.amount}
+                  currencyCode={item.account.currency.code}
+                  decimalDigits={item.account.currency.decimal_digits}
+                />
               </Badge>
               {item.category && (
                 <Badge variant="secondary">{item.category.name}</Badge>

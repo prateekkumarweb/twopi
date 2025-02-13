@@ -1,5 +1,7 @@
 use migration::{AccountType, OnConflict};
-use sea_orm::{prelude::Uuid, ActiveValue, DbConn, DbErr, EntityTrait, Linked, RelationTrait};
+use sea_orm::{
+    prelude::Uuid, ActiveValue, DbConn, DbErr, EntityTrait, Linked, QueryOrder, RelationTrait,
+};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
@@ -10,7 +12,7 @@ use super::{
     transaction::{TransactionItemModel, TransactionWithAccount},
 };
 use crate::entity::{
-    account::{ActiveModel, Column, Model},
+    account::{self, ActiveModel, Column, Model},
     prelude::*,
 };
 
@@ -169,6 +171,7 @@ impl AccountWithCurrency {
 
     pub async fn find_all(db: &DbConn) -> Result<Vec<Self>, DbErr> {
         Account::find()
+            .order_by_asc(account::Column::Name)
             .find_also_related(Currency)
             .all(db)
             .await

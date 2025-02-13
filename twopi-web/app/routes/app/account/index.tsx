@@ -1,6 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Fragment } from "react";
+import CurrencyDisplay from "~/components/CurrencyDisplay";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
@@ -107,10 +108,11 @@ function AccountItem({
           </div>
           <div>
             <Badge>
-              {Intl.NumberFormat("en", {
-                style: "currency",
-                currency: account.currency.code,
-              }).format(currentBalance)}
+              <CurrencyDisplay
+                value={currentBalance}
+                currencyCode={account.currency.code}
+                decimalDigits={account.currency.decimal_digits}
+              />
             </Badge>
           </div>
         </div>

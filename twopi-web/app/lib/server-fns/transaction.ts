@@ -30,14 +30,7 @@ export async function createTransaction(transaction: {
         id: transaction.id,
         notes: transaction.notes,
         account_name: transaction.accountName,
-        amount: Math.round(
-          transaction.amount *
-            Math.pow(
-              10,
-              accounts?.data?.find((a) => a.name === transaction.accountName)
-                ?.currency.decimal_digits ?? 0,
-            ),
-        ),
+        amount: transaction.amount,
         category_name: transaction.categoryName,
       })),
       timestamp: (transaction.timestamp ?? new Date()).toISOString(),
@@ -107,15 +100,7 @@ export async function getTransactions() {
     throw new Error(error);
   }
   return {
-    transactions: data?.map((tx) => ({
-      ...tx,
-      transaction_items: tx?.transaction_items?.map((transactionItem) => ({
-        ...transactionItem,
-        amount:
-          transactionItem.amount /
-          Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
-      })),
-    })),
+    transactions: data,
   };
 }
 
@@ -136,20 +121,7 @@ export async function getTransaction(id: string) {
   if (!transaction) {
     throw notFound({ data: "Account not found" });
   }
-  return {
-    ...transaction,
-    transaction_items: transaction?.transaction_items?.map(
-      (transactionItem) => ({
-        ...transactionItem,
-        amount:
-          transactionItem.amount /
-          Math.pow(10, transactionItem.account.currency.decimal_digits ?? 0),
-        account: {
-          ...transactionItem.account,
-        },
-      }),
-    ),
-  };
+  return transaction;
 }
 
 export async function deleteTransactionItem(id: string) {

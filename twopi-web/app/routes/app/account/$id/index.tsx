@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
 import { Fragment } from "react";
+import CurrencyDisplay from "~/components/CurrencyDisplay";
 import LabelAndValue from "~/components/LabelAndValue";
 import TransactionRow from "~/components/TransactionRow";
 import { Badge } from "~/components/ui/badge";
@@ -88,10 +89,11 @@ function RouteComponent() {
         label="Starting balance"
         value={
           <Badge>
-            {Intl.NumberFormat("en", {
-              style: "currency",
-              currency: account.currency.code,
-            }).format(account.starting_balance)}
+            <CurrencyDisplay
+              value={account.starting_balance}
+              currencyCode={account.currency.code}
+              decimalDigits={account.currency.decimal_digits}
+            />
           </Badge>
         }
       />

@@ -34,7 +34,7 @@ export async function getCurrencies() {
   if (error) {
     throw new Error(error);
   }
-  return { data: data?.sort((a, b) => a.code.localeCompare(b.code)) };
+  return { data };
 }
 
 export async function syncCurrencies() {

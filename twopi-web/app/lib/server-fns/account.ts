@@ -26,10 +26,7 @@ export async function createAccount(account: {
       name: account.name,
       account_type: account.accountType,
       currency_code: account.currencyCode,
-      starting_balance: Math.round(
-        account.startingBalance *
-          Math.pow(10, currency.data?.decimal_digits ?? 0),
-      ),
+      starting_balance: account.startingBalance,
       created_at: account.createdAt.toISOString(),
     },
   });
@@ -81,13 +78,7 @@ export async function getAccounts() {
     throw new Error(error);
   }
   return {
-    accounts:
-      data?.map((account) => ({
-        ...account,
-        starting_balance:
-          account.starting_balance /
-          Math.pow(10, account.currency?.decimal_digits ?? 0),
-      })) ?? [],
+    accounts: data ?? [],
   };
 }
 
@@ -108,24 +99,7 @@ export async function getAccount(id: string) {
   if (!data) {
     throw notFound({ data: "Account not found" });
   }
-  return {
-    ...data,
-    starting_balance:
-      data.starting_balance / Math.pow(10, data.currency?.decimal_digits ?? 0),
-    transactions: data.transactions?.map((transaction) => ({
-      ...transaction,
-      transaction_items: transaction.transaction_items?.map((item) => ({
-        ...item,
-        amount: item.amount / Math.pow(10, data.currency.decimal_digits),
-        account: {
-          ...item.account,
-          starting_balance:
-            item.account.starting_balance /
-            Math.pow(10, item.account.currency.decimal_digits),
-        },
-      })),
-    })),
-  };
+  return data;
 }
 
 export async function deleteAccount(id: string) {
