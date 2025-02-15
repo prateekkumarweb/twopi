@@ -144,7 +144,8 @@ async fn main() -> anyhow::Result<()> {
                         .routes(routes![get_verify_email])
                         .routes(routes![signin])
                         .routes(routes![signout])
-                        .routes(routes![signup]),
+                        .routes(routes![signup])
+                        .routes(routes![reset_data]),
                 )
                 .layer(auth_layer),
         )
@@ -427,10 +428,9 @@ struct VerifyQuery {
 #[utoipa::path(get, path = "/verify-email",
 params(VerifyQuery), responses(
     (status = OK, body = String),
-    (status = UNAUTHORIZED, body = String),
+    (status = UNAUTHORIZED, body = ()),
     (status = INTERNAL_SERVER_ERROR, body = ())
 ))]
-#[axum::debug_handler]
 async fn get_verify_email(
     Query(VerifyQuery { token }): Query<VerifyQuery>,
 ) -> Result<String, StatusCode> {
@@ -449,6 +449,37 @@ async fn get_verify_email(
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
     Ok(id.to_string())
+}
+
+#[tracing::instrument]
+#[utoipa::path(post, path = "/reset-account", responses(
+    (status = OK, body = ()),
+    (status = UNAUTHORIZED, body = String),
+    (status = INTERNAL_SERVER_ERROR, body = String)
+))]
+async fn reset_data(XUserId(id): XUserId) -> Result<(), (StatusCode, String)> {
+    let db = database(&id).await.map_err(|e| {
+        tracing::error!("Error getting database: {:?}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Database error".to_string(),
+        )
+    })?;
+    Migrator::down(&db, None).await.map_err(|e| {
+        tracing::error!("Error migrating down: {:?}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Migration error".to_string(),
+        )
+    })?;
+    Migrator::up(&db, None).await.map_err(|e| {
+        tracing::error!("Error migrating up: {:?}", e);
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Migration error".to_string(),
+        )
+    })?;
+    Ok(())
 }
 
 #[derive(Debug, Clone, Copy, Default)]
