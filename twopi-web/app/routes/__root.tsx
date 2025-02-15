@@ -1,6 +1,11 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { createServerFn, Meta, Scripts } from "@tanstack/start";
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+} from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/start";
 import { getWebRequest } from "@tanstack/start/server";
 import { lazy, Suspense, type ReactNode } from "react";
 import { apiClient } from "~/lib/openapi";
@@ -76,7 +81,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html>
       <head>
-        <Meta />
+        <HeadContent />
       </head>
       <body>
         {children}

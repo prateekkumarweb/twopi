@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import CurrencyDisplay from "~/components/CurrencyDisplay";
 import {
   Card,
   CardContent,
@@ -33,6 +34,7 @@ import {
 } from "~/components/ui/select";
 import {
   accountQueryOptions,
+  currencyQueryOptions,
   currencyRatesQueryOptions,
   transactionQueryOptions,
 } from "~/lib/query-options";
@@ -48,6 +50,7 @@ function RouteComponent() {
       accountQueryOptions(),
       transactionQueryOptions(),
       currencyRatesQueryOptions(),
+      currencyQueryOptions(),
     ],
     combine: (results) => {
       return {
@@ -55,6 +58,7 @@ function RouteComponent() {
           accounts: results[0].data?.accounts,
           transactions: results[1].data?.transactions,
           currencyRates: results[2].data?.data,
+          currencies: results[3].data?.data,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
@@ -68,17 +72,25 @@ function RouteComponent() {
   });
   const [currentCurrency, setCurrency] = useState("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
+  const currencies =
+    data.currencies?.filter((c) => currenciesToShow.includes(c.code)) ?? [];
+  const currentCurrencyData = currencies.find(
+    (c) => c.code === currentCurrency,
+  );
 
   let wealth = 0;
   data.accounts?.forEach((account) => {
     wealth +=
       account.starting_balance /
+      Math.pow(10, account.currency.decimal_digits) /
       (data.currencyRates?.[account.currency.code]?.value ?? 1);
   });
   data.transactions?.forEach((transaction) => {
     transaction.transaction_items.forEach((t) => {
       wealth +=
-        t.amount / (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+        t.amount /
+        Math.pow(10, t.account.currency.decimal_digits) /
+        (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
     });
   });
 
@@ -86,13 +98,34 @@ function RouteComponent() {
     const daysInMonth = [];
     daysInMonth.push();
     const date = new Date(Date.UTC(monthAndYear.year, monthAndYear.month, 1));
+    const firstDay = date.getTime();
     while (date.getUTCMonth() === monthAndYear.month) {
       daysInMonth.push(new Date(date));
       date.setDate(date.getUTCDate() + 1);
     }
 
-    let cummulative = 0;
+    let cumulative = 0;
     const categories: { [key: string]: number } = {};
+    data.accounts
+      ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
+      .forEach((account) => {
+        cumulative +=
+          account.starting_balance /
+          Math.pow(10, account.currency.decimal_digits) /
+          (data.currencyRates?.[account.currency.code]?.value ?? 1);
+      });
+    data.transactions
+      ?.filter(
+        (transaction) => new Date(transaction.timestamp).getTime() < firstDay,
+      )
+      .forEach((transaction) => {
+        transaction.transaction_items.forEach((t) => {
+          cumulative +=
+            t.amount /
+            Math.pow(10, t.account.currency.decimal_digits) /
+            (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+        });
+      });
 
     const wealthData = daysInMonth.map((d) => {
       const dateStart = d.getTime();
@@ -107,6 +140,7 @@ function RouteComponent() {
         .forEach((account) => {
           wealth +=
             account.starting_balance /
+            Math.pow(10, account.currency.decimal_digits) /
             (data.currencyRates?.[account.currency.code]?.value ?? 1);
         });
       data.transactions
@@ -117,32 +151,22 @@ function RouteComponent() {
         )
         .forEach((transaction) => {
           transaction.transaction_items.forEach((t) => {
-            wealth +=
+            const amount =
               t.amount /
+              Math.pow(10, t.account.currency.decimal_digits) /
               (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+            if (t.category) {
+              categories[t.category.name] =
+                (categories[t.category.name] ?? 0) + amount;
+            }
+            wealth += amount;
           });
         });
 
-      data.transactions
-        ?.filter(
-          (transaction) =>
-            dateStart <= new Date(transaction.timestamp).getTime() &&
-            new Date(transaction.timestamp).getTime() < dateEnd,
-        )
-        .forEach((transaction) => {
-          transaction.transaction_items.forEach((t) => {
-            if (t.category) {
-              categories[t.category.name] =
-                (categories[t.category.name] ?? 0) +
-                t.amount /
-                  (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-            }
-          });
-        });
-      cummulative += wealth;
+      cumulative += wealth;
       return {
         date: `${d.getUTCDate()}`,
-        wealth: cummulative,
+        wealth: cumulative,
       };
     });
 
@@ -190,12 +214,13 @@ function RouteComponent() {
       <h2 className="text-center text-lg font-bold">Total wealth</h2>
       <div className="flex flex-wrap items-center justify-center gap-4">
         <div className="bg-accent shadow-xs p-2 text-2xl">
-          {new Intl.NumberFormat("en", {
-            style: "currency",
-            currency: currentCurrency,
-          }).format(
-            wealth * (data.currencyRates?.[currentCurrency]?.value ?? 1),
-          )}
+          <CurrencyDisplay
+            value={
+              wealth * Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+            }
+            currencyCode={currentCurrency}
+            decimalDigits={currentCurrencyData?.decimal_digits ?? 0}
+          />
         </div>
       </div>
       <div className="m-4 flex flex-col items-center gap-4">
