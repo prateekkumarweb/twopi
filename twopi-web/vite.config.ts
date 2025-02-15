@@ -21,6 +21,7 @@ export default defineConfig({
       "/twopi-api": "http://localhost:8000",
       "/swagger-ui": "http://localhost:8000",
       "/scalar": "http://localhost:8000",
+      "/rapidoc": "http://localhost:8000",
       "/openapi.json": "http://localhost:8000",
     },
   },

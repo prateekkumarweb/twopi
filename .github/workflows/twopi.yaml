@@ -1,0 +1,54 @@
+name: "TwoPi build and lint"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install the Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: rustfmt,clippy
+      - name: twopi-service - fmt
+        run: cargo +nightly fmt --check
+        working-directory: twopi-service
+      - name: twopi-service - lint
+        run: cargo clippy -- -D warnings
+        working-directory: twopi-service
+      - name: twopi-service - build
+        run: cargo build --release
+        working-directory: twopi-service
+      - name: twopi-service - gen openapi
+        run: cargo run --release -- --gen-api ../twopi-web/openapi.gen.json
+        working-directory: twopi-service
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: twopi-web/pnpm-lock.yaml
+      - name: twopi-web - install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: twopi-web
+      - name: twopi-web - fmt
+        run: pnpm run fmt
+        working-directory: twopi-web
+      - name: twopi-web - lint
+        run: pnpm run lint
+        working-directory: twopi-web
+      - name: twopi-web - build
+        run: pnpm run build
+        working-directory: twopi-web

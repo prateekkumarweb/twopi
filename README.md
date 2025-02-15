@@ -17,7 +17,7 @@ $ pnpm install
 $ pnpm run dev
 # Build for production
 $ pnpm run build
-$ pnpm run start
+$ pnpm run preview
 ```
 
 Running `twopi-service`:

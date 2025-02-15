@@ -39,6 +39,7 @@ use axum_login::{
     AuthManagerLayerBuilder,
 };
 use cache::CacheManager;
+use clap::{Parser, Subcommand};
 use error::{AppError, AppResult};
 use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
@@ -73,6 +74,21 @@ static KEYS: LazyLock<keys::Keys> = LazyLock::new(|| {
     keys::Keys::new(secret_key.as_bytes())
 });
 
+#[derive(Parser)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Command>,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Generate the `OpenAPI` schema
+    GenApi {
+        /// Output file
+        output: PathBuf,
+    },
+}
+
 #[tokio::main]
 #[tracing::instrument]
 async fn main() -> anyhow::Result<()> {
@@ -84,6 +100,15 @@ async fn main() -> anyhow::Result<()> {
     struct ApiDoc;
 
     tracing_subscriber::fmt::init();
+
+    let cli = Cli::parse();
+
+    if let Some(Command::GenApi { output }) = cli.command {
+        let api_doc = ApiDoc::openapi();
+        let api_doc = serde_json::to_string_pretty(&api_doc)?;
+        std::fs::write(&output, api_doc)?;
+        return Ok(());
+    }
 
     let data_dir = DATA_DIR.join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
