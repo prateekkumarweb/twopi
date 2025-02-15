@@ -33,6 +33,7 @@ jobs:
         env:
           TWOPI_DATA_DIR: ../data
           CURRENCY_API_KEY:
+          TWOPI_SECRET_KEY:
         working-directory: twopi-service
       - name: Install pnpm
         uses: pnpm/action-setup@v4
