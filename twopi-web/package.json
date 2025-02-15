@@ -6,11 +6,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "lint": "oxlint && eslint .",
+    "typecheck": "tsr generate && tsc -b",
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/openapi.gen.ts",
     "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
   },
@@ -46,6 +47,7 @@
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/eslint-plugin-query": "^5.66.1",
     "@tanstack/react-query-devtools": "^5.66.0",
+    "@tanstack/router-cli": "^1.105.0",
     "@tanstack/router-devtools": "^1.105.0",
     "@tanstack/router-plugin": "^1.105.0",
     "@types/react": "^19.0.8",
