@@ -31,6 +31,7 @@ jobs:
         run: cargo run --release -- gen-api ../twopi-web/openapi.gen.json
         env:
           TWOPI_DATA_DIR: ../data
+          CURRENCY_API_KEY:
         working-directory: twopi-service
       - name: Install pnpm
         uses: pnpm/action-setup@v4
