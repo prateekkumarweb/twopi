@@ -28,7 +28,7 @@ jobs:
         run: cargo build --release
         working-directory: twopi-service
       - name: twopi-service - gen openapi
-        run: cargo run --release -- --gen-api ../twopi-web/openapi.gen.json
+        run: cargo run --release -- gen-api ../twopi-web/openapi.gen.json
         env:
           TWOPI_DATA_DIR: ../data
         working-directory: twopi-service

@@ -4,7 +4,7 @@ COPY twopi-service twopi-service
 WORKDIR /app/twopi-service
 RUN cargo build --release
 ENV TWOPI_DATA_DIR=../data
-RUN cargo run --release -- --gen-api openapi.gen.json
+RUN cargo run --release -- gen-api openapi.gen.json
 
 FROM node:22 AS node_builder
 RUN npm install -g pnpm
