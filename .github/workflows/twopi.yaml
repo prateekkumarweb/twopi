@@ -16,6 +16,7 @@ jobs:
       - name: Install the Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          toolchain: stable,nightly
           components: rustfmt,clippy
       - name: twopi-service - fmt
         run: cargo +nightly fmt --check
@@ -28,6 +29,8 @@ jobs:
         working-directory: twopi-service
       - name: twopi-service - gen openapi
         run: cargo run --release -- --gen-api ../twopi-web/openapi.gen.json
+        env:
+          TWOPI_DATA_DIR: ../data
         working-directory: twopi-service
       - name: Install pnpm
         uses: pnpm/action-setup@v4

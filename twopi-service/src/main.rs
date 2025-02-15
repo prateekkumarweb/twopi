@@ -103,13 +103,6 @@ async fn main() -> anyhow::Result<()> {
 
     let cli = Cli::parse();
 
-    if let Some(Command::GenApi { output }) = cli.command {
-        let api_doc = ApiDoc::openapi();
-        let api_doc = serde_json::to_string_pretty(&api_doc)?;
-        std::fs::write(&output, api_doc)?;
-        return Ok(());
-    }
-
     let data_dir = DATA_DIR.join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 
@@ -167,6 +160,12 @@ async fn main() -> anyhow::Result<()> {
         )
         .fallback_service(serve_dir)
         .split_for_parts();
+
+    if let Some(Command::GenApi { output }) = cli.command {
+        let api_doc = api.to_pretty_json()?;
+        std::fs::write(&output, api_doc)?;
+        return Ok(());
+    }
 
     let router = router
         .merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", api.clone()))
