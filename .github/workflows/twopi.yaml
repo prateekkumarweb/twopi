@@ -55,6 +55,9 @@ jobs:
       - name: twopi-web - lint
         run: pnpm run lint
         working-directory: twopi-web
+      - name: twopi-web - gen openapi types
+        run: pnpm run gen:api-file
+        working-directory: twopi-web
       - name: twopi-web - build
         run: pnpm run build
         working-directory: twopi-web
