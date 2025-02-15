@@ -102,7 +102,9 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let cli = Cli::parse();
-
+    if !tokio::fs::try_exists(DATA_DIR.as_path()).await? {
+        tokio::fs::create_dir_all(DATA_DIR.as_path()).await?;
+    }
     let data_dir = DATA_DIR.join("currency");
     let api_key = std::env::var("CURRENCY_API_KEY").context("CURRENCY_API_KEY env var not set")?;
 

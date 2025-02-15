@@ -18,6 +18,7 @@ jobs:
         with:
           toolchain: stable,nightly
           components: rustfmt,clippy
+          cache-workspaces: "twopi-service -> target"
       - name: twopi-service - fmt
         run: cargo +nightly fmt --check
         working-directory: twopi-service
