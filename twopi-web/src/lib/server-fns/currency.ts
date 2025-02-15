@@ -1,5 +1,4 @@
 import { apiClient } from "../openapi";
-import { getCurrenciesLatestCache } from "../server/currency-cache";
 
 export async function createCurrency(currency: {
   code: string;
@@ -46,5 +45,11 @@ export async function syncCurrencies() {
 }
 
 export async function getCurrencyExchangeRates() {
-  return await getCurrenciesLatestCache();
+  const { data, error } = await apiClient.GET(
+    "/twopi-api/currency-cache/latest",
+  );
+  if (error) {
+    throw new Error(error);
+  }
+  return data;
 }

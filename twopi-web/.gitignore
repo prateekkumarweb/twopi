@@ -1,5 +1,4 @@
 node_modules
-.output
-.vinxi
-app/**/*.gen.ts
+src/**/*.gen.ts
 *.env
+dist

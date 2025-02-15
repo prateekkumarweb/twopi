@@ -29,10 +29,8 @@ use argon2::{
 };
 use auth::{Backend, Credentials};
 use axum::{
-    body::Body,
     extract::{rejection::JsonRejection, FromRequest, FromRequestParts, Query, Request},
-    http::{StatusCode, Uri},
-    response::{IntoResponse, Response},
+    http::StatusCode,
     Json,
 };
 use axum_login::{
@@ -42,7 +40,6 @@ use axum_login::{
 };
 use cache::CacheManager;
 use error::{AppError, AppResult};
-use hyper_util::{client::legacy::connect::HttpConnector, rt::TokioExecutor};
 use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
 use migration::{Migrator, MigratorTrait};
@@ -50,6 +47,7 @@ use model::user::User;
 use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection};
 use serde::{de::DeserializeOwned, Deserialize};
 use tokio::{runtime::Handle, sync::Mutex};
+use tower_http::services::ServeDir;
 use tower_sessions_sqlx_store::SqliteStore;
 use user_migration::Migrator as UserMigrator;
 use utoipa::{IntoParams, OpenApi, ToSchema};
@@ -67,13 +65,6 @@ static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     PathBuf::from(dir)
 });
 
-static HYPER_CLIENT: LazyLock<Client> = LazyLock::new(|| {
-    let client: Client =
-        hyper_util::client::legacy::Client::<(), ()>::builder(TokioExecutor::new())
-            .build(HttpConnector::new());
-    client
-});
-
 static KEYS: LazyLock<keys::Keys> = LazyLock::new(|| {
     #[allow(clippy::unwrap_used)]
     let secret_key = std::env::var("TWOPI_SECRET_KEY")
@@ -81,8 +72,6 @@ static KEYS: LazyLock<keys::Keys> = LazyLock::new(|| {
         .unwrap();
     keys::Keys::new(secret_key.as_bytes())
 });
-
-type Client = hyper_util::client::legacy::Client<HttpConnector, Body>;
 
 #[tokio::main]
 #[tracing::instrument]
@@ -120,6 +109,8 @@ async fn main() -> anyhow::Result<()> {
 
     LazyLock::force(&KEYS);
 
+    let serve_dir = ServeDir::new("../twopi-web/dist");
+
     let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
             "/twopi-api",
@@ -149,7 +140,7 @@ async fn main() -> anyhow::Result<()> {
                 )
                 .layer(auth_layer),
         )
-        .fallback(twopi_web)
+        .fallback_service(serve_dir)
         .split_for_parts();
 
     let router = router
@@ -163,30 +154,6 @@ async fn main() -> anyhow::Result<()> {
 
     deletion_task.await??;
     Ok(())
-}
-
-#[tracing::instrument(skip(req))]
-async fn twopi_web(mut req: Request<Body>) -> Result<Response, StatusCode> {
-    let path = req.uri().path();
-    let path_query = req
-        .uri()
-        .path_and_query()
-        .map_or(path, axum::http::uri::PathAndQuery::as_str);
-
-    let uri = format!("http://localhost:3000{path_query}");
-
-    #[allow(clippy::unwrap_used)]
-    let new_uri = Uri::try_from(uri).unwrap();
-    *req.uri_mut() = new_uri;
-
-    Ok(HYPER_CLIENT
-        .request(req)
-        .await
-        .map_err(|e| {
-            tracing::info!("Error: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?
-        .into_response())
 }
 
 static DATABASE_LOCK: LazyLock<Mutex<LruCache<String, DatabaseConnection>>> = LazyLock::new(|| {

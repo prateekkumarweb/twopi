@@ -1,5 +1,7 @@
 use axum::{
-    extract::rejection::JsonRejection, http::StatusCode, response::IntoResponse, response::Response,
+    extract::rejection::JsonRejection,
+    http::StatusCode,
+    response::{IntoResponse, Response},
 };
 use sea_orm::DbErr;
 use utoipa::{openapi::ResponsesBuilder, ToResponse, ToSchema};

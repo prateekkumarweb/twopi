@@ -5,14 +5,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "vinxi dev",
-    "build": "vinxi build",
-    "start": "node --env-file=.env .output/server/index.mjs",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "lint": "oxlint && eslint .",
-    "test:ts": "tsc --noEmit",
-    "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o app/lib/openapi.gen.ts"
+    "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/openapi.gen.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.3",
@@ -43,11 +42,11 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/vite": "^4.0.6",
     "@tanstack/eslint-plugin-query": "^5.66.1",
     "@tanstack/react-query-devtools": "^5.66.0",
     "@tanstack/router-devtools": "^1.105.0",
-    "@tanstack/start": "^1.105.1",
+    "@tanstack/router-plugin": "^1.105.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
@@ -66,12 +65,7 @@
     "tailwindcss": "^4.0.6",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0",
-    "vinxi": "^0.5.3",
+    "vite": "^6.1.0",
     "vite-tsconfig-paths": "^5.1.4"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "^6.1.0"
-    }
   }
 }
