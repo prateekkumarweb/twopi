@@ -16,7 +16,9 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS rust_builder
 COPY --from=rust_planner /app/twopi-service/recipe.json /app/twopi-service/recipe.json
+WORKDIR /app/twopi-service
 RUN cargo chef cook --release --recipe-path recipe.json
+WORKDIR /app
 COPY twopi-service twopi-service
 WORKDIR /app/twopi-service
 COPY --from=node_planner /app/twopi-service/routes.gen.txt /app/twopi-service/routes.gen.txt
