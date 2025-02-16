@@ -2,6 +2,7 @@ FROM node:22 AS node_planner
 RUN npm install -g pnpm
 WORKDIR /app
 COPY twopi-web twopi-web
+WORKDIR /app/twopi-web
 RUN pnpm install
 RUN pnpm run gen:routes
 
@@ -31,7 +32,6 @@ RUN cargo run --release -- gen-api openapi.gen.json
 FROM node_planner AS node_builder
 COPY --from=rust_builder /app/twopi-service/openapi.gen.json /app/twopi-web/openapi.gen.json
 WORKDIR /app/twopi-web
-RUN pnpm install
 RUN pnpm run build
 
 FROM ubuntu:noble AS runtime
