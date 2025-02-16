@@ -5,6 +5,7 @@ WORKDIR /app
 COPY twopi-web twopi-web
 WORKDIR /app/twopi-web
 RUN pnpm install
+RUN mkdir -p ../twopi-service
 RUN pnpm run gen:routes
 
 FROM lukemathwalker/cargo-chef:latest-rust-1 AS chef
