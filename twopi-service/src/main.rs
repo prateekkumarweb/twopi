@@ -136,8 +136,8 @@ async fn main() -> anyhow::Result<()> {
     let routes: HashSet<&str> = routes
         .trim()
         .lines()
-        .map(|l| l.trim().trim_end_matches("/"))
-        .filter(|l| !l.is_empty() && l.starts_with("/"))
+        .map(|l| l.trim().trim_end_matches('/'))
+        .filter(|l| !l.is_empty() && l.starts_with('/'))
         .collect();
 
     let (mut router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
