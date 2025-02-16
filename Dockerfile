@@ -1,5 +1,6 @@
 FROM node:22 AS node_planner
 RUN npm install -g pnpm
+RUN sudo apt-get install ripgrep jq
 WORKDIR /app
 COPY twopi-web twopi-web
 WORKDIR /app/twopi-web
