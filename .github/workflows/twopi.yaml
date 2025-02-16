@@ -19,6 +19,23 @@ jobs:
           toolchain: stable,nightly
           components: rustfmt,clippy
           cache-workspaces: "twopi-service -> target"
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: twopi-web/pnpm-lock.yaml
+      - name: twopi-web - install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: twopi-web
+      - name: twopi-web - gen routes
+        run: pnpm run gen:routes
+        working-directory: twopi-web
       - name: twopi-service - fmt
         run: cargo +nightly fmt --check
         working-directory: twopi-service
@@ -35,20 +52,6 @@ jobs:
           CURRENCY_API_KEY:
           TWOPI_SECRET_KEY:
         working-directory: twopi-service
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-          cache-dependency-path: twopi-web/pnpm-lock.yaml
-      - name: twopi-web - install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: twopi-web
       - name: twopi-web - fmt
         run: pnpm run fmt
         working-directory: twopi-web

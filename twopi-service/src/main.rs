@@ -17,6 +17,7 @@ mod routes;
 mod user_entity;
 
 use std::{
+    collections::HashSet,
     num::NonZeroUsize,
     path::PathBuf,
     sync::{Arc, LazyLock},
@@ -48,7 +49,7 @@ use model::user::User;
 use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection};
 use serde::{de::DeserializeOwned, Deserialize};
 use tokio::{runtime::Handle, sync::Mutex};
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use tower_sessions_sqlx_store::SqliteStore;
 use user_migration::Migrator as UserMigrator;
 use utoipa::{IntoParams, OpenApi, ToSchema};
@@ -130,8 +131,16 @@ async fn main() -> anyhow::Result<()> {
     LazyLock::force(&KEYS);
 
     let serve_dir = ServeDir::new("../twopi-web/dist");
+    let serve_file = ServeFile::new("../twopi-web/dist/index.html");
+    let routes = include_str!("../routes.gen.txt");
+    let routes: HashSet<&str> = routes
+        .trim()
+        .lines()
+        .map(|l| l.trim().trim_end_matches("/"))
+        .filter(|l| !l.is_empty() && l.starts_with("/"))
+        .collect();
 
-    let (router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
+    let (mut router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest(
             "/twopi-api",
             OpenApiRouter::new()
@@ -160,8 +169,13 @@ async fn main() -> anyhow::Result<()> {
                 )
                 .layer(auth_layer),
         )
-        .fallback_service(serve_dir)
         .split_for_parts();
+
+    router = router.fallback_service(serve_dir);
+    for path in routes {
+        tracing::info!("TwoPi Web Route: {}", path);
+        router = router.route_service(path, serve_file.clone());
+    }
 
     if let Some(Command::GenApi { output }) = cli.command {
         let api_doc = api.to_pretty_json()?;

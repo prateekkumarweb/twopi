@@ -11,6 +11,7 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "lint": "oxlint && eslint .",
+    "gen:routes": "tsr generate && cat src/routeTree.gen.ts | rg -oUP '(?<=ROUTE_MANIFEST_START)(?s).*(?=ROUTE_MANIFEST_END)' | jq -r '.routes | keys[] | gsub(\"\\\\$(?<a>[[:alpha:]]+)\"; \"{\\(.a)}\")' > ../twopi-service/routes.gen.txt",
     "typecheck": "tsr generate && tsc -b",
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/openapi.gen.ts",
     "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
