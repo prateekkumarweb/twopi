@@ -2,6 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
+import { ArrowLeft } from "lucide-react";
 import { AccountType, type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountByIdQueryOptions,
@@ -103,12 +104,12 @@ export default function AccountEditor(props: {
   return (
     <div className="w-full">
       <div className="flex items-center gap-2">
+        <Link to="..">
+          <ArrowLeft />
+        </Link>
         <h1 className="my-2 grow text-xl font-bold">
           {props.edit ? "Edit" : "New"} Account
         </h1>
-        <Button asChild variant="outline">
-          <Link to="..">Back</Link>
-        </Button>
       </div>
       <form
         className="my-2 flex flex-col gap-4"

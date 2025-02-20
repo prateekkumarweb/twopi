@@ -2,7 +2,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
-import { Trash } from "lucide-react";
+import { ArrowLeft, Trash } from "lucide-react";
 import {
   accountQueryOptions,
   categoryQueryOptions,
@@ -125,12 +125,12 @@ export default function TransactionEditor(props: {
   return (
     <div className="w-full">
       <div className="flex items-center gap-2">
+        <Link to="..">
+          <ArrowLeft />
+        </Link>
         <h1 className="my-2 grow text-xl font-bold">
           {props.edit ? "Edit" : "New"} Transaction
         </h1>
-        <Button asChild variant="outline">
-          <Link to="..">Back</Link>
-        </Button>
       </div>
       <form
         className="my-2 flex flex-col gap-4"

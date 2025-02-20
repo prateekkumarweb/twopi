@@ -1,5 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
 import { Fragment } from "react";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import { Badge } from "~/components/ui/badge";
@@ -67,7 +68,9 @@ function RouteComponent() {
       <div className="flex items-center gap-2">
         <h1 className="my-2 grow text-xl font-bold">Account</h1>
         <Button asChild variant="outline">
-          <Link to="/app/account/new">New</Link>
+          <Link to="/app/account/new">
+            <Plus />
+          </Link>
         </Button>
       </div>
       <div className="my-2 flex flex-col gap-2">

@@ -61,12 +61,12 @@ function RouteComponent() {
       )}
       <div className="mb-2 flex items-center gap-2">
         <Link to="..">
-          <ArrowLeft size={16} />
+          <ArrowLeft />
         </Link>
         <h1 className="grow text-xl font-bold">Transaction details</h1>
         <Button asChild variant="outline">
           <Link to="/app/transaction/$id/edit" params={{ id: transaction.id }}>
-            <Edit size={16} />
+            <Edit />
           </Link>
         </Button>
         <Button
@@ -74,7 +74,7 @@ function RouteComponent() {
           onClick={deleteTransactionHandler}
           disabled={mutation.isPending}
         >
-          <Trash size={16} />
+          <Trash />
         </Button>
       </div>
       <LabelAndValue label="Id" value={transaction.id} />
