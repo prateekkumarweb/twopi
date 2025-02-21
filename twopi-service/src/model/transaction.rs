@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use migration::OnConflict;
 use sea_orm::{
-    prelude::Uuid, ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder,
-    TransactionTrait,
+    ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder,
+    TransactionTrait, prelude::Uuid,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;

@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Query, State},
     Json,
+    extract::{Query, State},
 };
 use serde::Deserialize;
 use tokio::sync::Mutex;
@@ -10,8 +10,8 @@ use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    cache::{CacheManager, CurrenciesObject, HistoricalObject},
     AppError, AppResult,
+    cache::{CacheManager, CurrenciesObject, HistoricalObject},
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {

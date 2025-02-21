@@ -4,7 +4,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use sea_orm::DbErr;
-use utoipa::{openapi::ResponsesBuilder, ToResponse, ToSchema};
+use utoipa::{ToResponse, ToSchema, openapi::ResponsesBuilder};
 use validator::ValidationErrors;
 
 #[derive(Debug, thiserror::Error)]

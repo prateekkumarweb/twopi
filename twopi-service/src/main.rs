@@ -25,19 +25,18 @@ use std::{
 
 use anyhow::Context;
 use argon2::{
-    password_hash::{rand_core::OsRng, SaltString},
     Argon2, PasswordHasher,
+    password_hash::{SaltString, rand_core::OsRng},
 };
 use auth::{Backend, Credentials};
 use axum::{
-    extract::{rejection::JsonRejection, FromRequest, FromRequestParts, Query, Request},
-    http::StatusCode,
     Json,
+    extract::{FromRequest, FromRequestParts, Query, Request, rejection::JsonRejection},
+    http::StatusCode,
 };
 use axum_login::{
-    login_required,
+    AuthManagerLayerBuilder, login_required,
     tower_sessions::{ExpiredDeletion, SessionManagerLayer},
-    AuthManagerLayerBuilder,
 };
 use cache::CacheManager;
 use clap::{Parser, Subcommand};
@@ -46,8 +45,8 @@ use keys::{generate_verify_url, verify_email};
 use lru::LruCache;
 use migration::{Migrator, MigratorTrait};
 use model::user::User;
-use sea_orm::{sqlx::SqlitePool, ConnectOptions, Database, DatabaseConnection};
-use serde::{de::DeserializeOwned, Deserialize};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection, sqlx::SqlitePool};
+use serde::{Deserialize, de::DeserializeOwned};
 use tokio::{runtime::Handle, sync::Mutex};
 use tower_http::services::{ServeDir, ServeFile};
 use tower_sessions_sqlx_store::SqliteStore;
@@ -324,14 +323,15 @@ async fn signin(
     (status = INTERNAL_SERVER_ERROR, body = String)
 ))]
 async fn signout(mut auth_session: AuthSession) -> Result<(), (StatusCode, String)> {
-    if let Err(e) = auth_session.logout().await {
-        tracing::error!("Error logging out: {:?}", e);
-        Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "Session error".to_string(),
-        ))
-    } else {
-        Ok(())
+    match auth_session.logout().await {
+        Err(e) => {
+            tracing::error!("Error logging out: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Session error".to_string(),
+            ))
+        }
+        _ => Ok(()),
     }
 }
 

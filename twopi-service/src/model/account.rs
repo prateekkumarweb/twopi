@@ -1,6 +1,6 @@
 use migration::{AccountType, OnConflict};
 use sea_orm::{
-    prelude::Uuid, ActiveValue, DbConn, DbErr, EntityTrait, Linked, QueryOrder, RelationTrait,
+    ActiveValue, DbConn, DbErr, EntityTrait, Linked, QueryOrder, RelationTrait, prelude::Uuid,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;

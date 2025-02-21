@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use jiff::{tz::TimeZone, Timestamp, ToSpan, ZonedRound};
+use jiff::{Timestamp, ToSpan, ZonedRound, tz::TimeZone};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

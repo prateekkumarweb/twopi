@@ -1,13 +1,12 @@
-use axum::{extract::Query, Json};
+use axum::{Json, extract::Query};
 use serde::Deserialize;
 use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 use uuid::Uuid;
 
 use crate::{
-    database,
+    AppError, AppResult, ValidatedJson, XUserId, database,
     model::category::{CategoryModel, NewCategoryModel},
-    AppError, AppResult, ValidatedJson, XUserId,
 };
 
 pub fn router() -> OpenApiRouter<()> {

@@ -54,18 +54,19 @@ impl AuthnBackend for Backend {
         Credentials { email, password }: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
         let user = User::find_by_email(&self.db, &email).await?;
-        if let Some(user) = user {
-            #[allow(clippy::unwrap_used)]
-            let parsed_hash = PasswordHash::new(user.password_hash.expose_secret()).unwrap();
-            let verified = Argon2::default()
-                .verify_password(password.expose_secret().as_bytes(), &parsed_hash);
-            if verified.is_ok() {
-                Ok(Some(user))
-            } else {
-                Ok(None)
+        match user {
+            Some(user) => {
+                #[allow(clippy::unwrap_used)]
+                let parsed_hash = PasswordHash::new(user.password_hash.expose_secret()).unwrap();
+                let verified = Argon2::default()
+                    .verify_password(password.expose_secret().as_bytes(), &parsed_hash);
+                if verified.is_ok() {
+                    Ok(Some(user))
+                } else {
+                    Ok(None)
+                }
             }
-        } else {
-            Ok(None)
+            _ => Ok(None),
         }
     }
 
