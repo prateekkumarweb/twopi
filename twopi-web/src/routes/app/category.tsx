@@ -1,12 +1,28 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Trash } from "lucide-react";
+import { Check, ChevronsUpDown, icons, Trash } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
+import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "~/components/ui/command";
 import { Input } from "~/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { categoryQueryOptions } from "~/lib/query-options";
 import { createCategory, deleteCategory } from "~/lib/server-fns/category";
+import { cn } from "~/lib/utils";
 
 export const Route = createFileRoute("/app/category")({
   component: RouteComponent,
@@ -89,6 +105,20 @@ function RouteComponent() {
             />
           )}
         </form.Field>
+        <form.Field name="icon">
+          {(field) => (
+            <Combobox
+              options={Object.keys(icons).map((icon) => ({
+                value: icon
+                  .replace(/[A-Z0-9]/g, (m) => "-" + m.toLowerCase())
+                  .slice(1),
+                label: icon,
+              }))}
+              value={field.state.value}
+              onChange={field.handleChange}
+            />
+          )}
+        </form.Field>
         <Button type="submit">Create</Button>
         {mutation.isError && (
           <p className="text-destructive">{mutation.error?.message}</p>
@@ -104,6 +134,10 @@ function RouteComponent() {
               {group.categories.map((category) => (
                 <div className="flex w-full" key={category.name}>
                   <div className="my-auto grow text-sm text-gray-500">
+                    <DynamicIcon
+                      name={category.icon as "loader"}
+                      className="mr-2 inline-block h-4 w-4"
+                    />
                     {category.name}
                   </div>
                   <Button
@@ -122,5 +156,77 @@ function RouteComponent() {
         ))}
       </div>
     </div>
+  );
+}
+
+function Combobox(props: {
+  options: {
+    value: string;
+    label: string;
+  }[];
+  onChange: (value: string) => void;
+  value: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="justify-between"
+        >
+          {props.value ? (
+            <span>
+              <DynamicIcon
+                name={props.value as "loader"}
+                className="mr-2 inline-block h-4 w-4 opacity-60"
+              />
+              {
+                props.options.find((option) => option.value === props.value)
+                  ?.label
+              }
+            </span>
+          ) : (
+            "Select ..."
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0">
+        <Command>
+          <CommandInput placeholder="Search ..." />
+          <CommandList>
+            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandGroup>
+              {props.options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={(currentValue) => {
+                    setOpen(false);
+                    props.onChange(
+                      currentValue === props.value ? "" : currentValue,
+                    );
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      props.value === option.value
+                        ? "opacity-100"
+                        : "opacity-0",
+                    )}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
