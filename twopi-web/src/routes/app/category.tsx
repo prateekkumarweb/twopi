@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, ChevronsUpDown, icons, Trash } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -134,10 +134,12 @@ function RouteComponent() {
               {group.categories.map((category) => (
                 <div className="flex w-full" key={category.name}>
                   <div className="my-auto grow text-sm text-gray-500">
-                    <DynamicIcon
-                      name={category.icon as "loader"}
-                      className="mr-2 inline-block h-4 w-4"
-                    />
+                    {category.icon && (
+                      <DynamicIcon
+                        name={category.icon as "loader"}
+                        className="mr-2 inline-block h-4 w-4"
+                      />
+                    )}
                     {category.name}
                   </div>
                   <Button
@@ -169,6 +171,11 @@ function Combobox(props: {
 }) {
   const [open, setOpen] = useState(false);
 
+  const selectedOption = useMemo(
+    () => props.options.find((option) => option.value === props.value),
+    [props.options, props.value],
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -178,16 +185,13 @@ function Combobox(props: {
           aria-expanded={open}
           className="justify-between"
         >
-          {props.value ? (
+          {selectedOption ? (
             <span>
               <DynamicIcon
-                name={props.value as "loader"}
+                name={selectedOption.value as "loader"}
                 className="mr-2 inline-block h-4 w-4 opacity-60"
               />
-              {
-                props.options.find((option) => option.value === props.value)
-                  ?.label
-              }
+              {selectedOption.label}
             </span>
           ) : (
             "Select ..."
