@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 import { Fragment } from "react";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import LabelAndValue from "~/components/LabelAndValue";
@@ -111,7 +112,17 @@ function RouteComponent() {
                 {transactionItem.category && (
                   <LabelAndValue
                     label="Category"
-                    value={transactionItem.category.name}
+                    value={
+                      <>
+                        {transactionItem.category.icon && (
+                          <DynamicIcon
+                            name={transactionItem.category.icon as "loader"}
+                            className="mr-2 inline-block h-4 w-4"
+                          />
+                        )}
+                        {transactionItem.category.name}
+                      </>
+                    }
                   />
                 )}
               </div>

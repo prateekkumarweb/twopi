@@ -3,6 +3,7 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Trash } from "lucide-react";
+import { DynamicIcon } from "lucide-react/dynamic";
 import {
   accountQueryOptions,
   categoryQueryOptions,
@@ -248,6 +249,12 @@ export default function TransactionEditor(props: {
                                 key={category.name}
                                 value={category.name}
                               >
+                                {category.icon && (
+                                  <DynamicIcon
+                                    name={category.icon as "loader"}
+                                    className="mr-2 inline-block h-4 w-4"
+                                  />
+                                )}
                                 {category.group ? category.group + " - " : ""}
                                 {category.name}
                               </SelectItem>

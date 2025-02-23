@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
+import { DynamicIcon } from "lucide-react/dynamic";
 import type { getTransaction } from "~/lib/server-fns/transaction";
 import CurrencyDisplay from "./CurrencyDisplay";
 import { Badge } from "./ui/badge";
@@ -43,7 +44,15 @@ export default function TransactionRow({
                 />
               </Badge>
               {item.category && (
-                <Badge variant="secondary">{item.category.name}</Badge>
+                <Badge variant="secondary">
+                  {item.category.icon && (
+                    <DynamicIcon
+                      name={item.category.icon as "loader"}
+                      className="inline-block h-4 w-4"
+                    />
+                  )}
+                  {item.category.name}
+                </Badge>
               )}
             </div>
           ))}
