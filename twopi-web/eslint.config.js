@@ -1,7 +1,7 @@
 import pluginJs from "@eslint/js";
 import pluginQuery from "@tanstack/eslint-plugin-query";
 import eslintConfigPrettier from "eslint-config-prettier";
-import oxlint from "eslint-plugin-oxlint";
+// import oxlint from "eslint-plugin-oxlint";
 import pluginReact from "eslint-plugin-react";
 import reactCompiler from "eslint-plugin-react-compiler";
 import pluginReactHooks from "eslint-plugin-react-hooks";
@@ -36,6 +36,6 @@ export default [
       "@typescript-eslint/consistent-type-imports": "error",
     },
   },
-  oxlint.configs["flat/recommended"],
+  // oxlint.configs["flat/recommended"],
   eslintConfigPrettier,
 ];
