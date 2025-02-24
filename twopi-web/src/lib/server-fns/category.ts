@@ -1,6 +1,7 @@
 import { apiClient } from "../openapi";
 
 export async function createCategory(category: {
+  id?: string;
   name: string;
   group: string;
   icon: string;

@@ -1,11 +1,13 @@
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { Check, ChevronsUpDown, icons, Trash } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft, Check, ChevronsUpDown, icons } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useMemo, useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { categoryQueryOptions } from "~/lib/query-options";
+import { createCategory } from "~/lib/server-fns/category";
+import { cn } from "~/lib/utils";
+import { Button } from "./ui/button";
 import {
   Command,
   CommandEmpty,
@@ -13,66 +15,61 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "~/components/ui/command";
-import { Input } from "~/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
-import { categoryQueryOptions } from "~/lib/query-options";
-import { createCategory, deleteCategory } from "~/lib/server-fns/category";
-import { cn } from "~/lib/utils";
+} from "./ui/command";
+import { Input } from "./ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-export const Route = createFileRoute("/app/category")({
-  component: RouteComponent,
-});
-
-function RouteComponent() {
+export default function CategoryEditor(props: {
+  edit?: {
+    id: string;
+    name: string;
+    group: string;
+    icon: string;
+  };
+}) {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { isPending, error, data, isFetching } = useQuery(
-    categoryQueryOptions(),
-  );
   const form = useForm({
     defaultValues: {
-      name: "",
-      group: "",
-      icon: "",
+      id: props.edit?.id,
+      name: props.edit?.name ?? "",
+      group: props.edit?.group ?? "",
+      icon: props.edit?.icon ?? "",
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
     },
   });
   const mutation = useMutation({
-    mutationFn: (data: { name: string; group: string; icon: string }) =>
-      createCategory(data).then(() => {
-        form.reset();
-      }),
+    mutationFn: async (data: {
+      id?: string;
+      name: string;
+      group: string;
+      icon: string;
+    }) => {
+      await createCategory(data);
+      form.reset();
+      navigate({
+        to: "/app/category",
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: categoryQueryOptions().queryKey,
       });
     },
   });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteCategory(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: categoryQueryOptions().queryKey,
-      });
-    },
-  });
-
-  if (isPending) return "Loading...";
-
-  if (isFetching) return "Fetching...";
-
-  if (error) return "An error has occurred: " + error.message;
 
   return (
     <div className="w-full">
-      <h1 className="mb-4 text-xl font-bold">Category</h1>
+      <div className="flex items-center gap-2">
+        <Link to="/app/category">
+          <ArrowLeft />
+        </Link>
+        <h1 className="my-2 grow text-xl font-bold">
+          {props.edit ? "Edit" : "New"} Category
+        </h1>
+      </div>
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {
@@ -119,44 +116,19 @@ function RouteComponent() {
             />
           )}
         </form.Field>
-        <Button type="submit">Create</Button>
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+        >
+          {([canSubmit, isSubmitting]) => (
+            <Button type="submit" disabled={!canSubmit}>
+              {isSubmitting ? "..." : props.edit ? "Update" : "Create"}
+            </Button>
+          )}
+        </form.Subscribe>
         {mutation.isError && (
           <p className="text-destructive">{mutation.error?.message}</p>
         )}
       </form>
-      <div className="mt-4 flex flex-col gap-4">
-        {data.groups.map((group) => (
-          <Card key={group.group}>
-            <CardHeader>
-              <CardTitle>{group.group || "Ungrouped"}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2">
-              {group.categories.map((category) => (
-                <div className="flex w-full" key={category.name}>
-                  <div className="my-auto grow text-sm text-gray-500">
-                    {category.icon && (
-                      <DynamicIcon
-                        name={category.icon as "loader"}
-                        className="mr-2 inline-block h-4 w-4"
-                      />
-                    )}
-                    {category.name}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      deleteMutation.mutate(category.id);
-                    }}
-                  >
-                    <Trash size={16} />
-                  </Button>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
     </div>
   );
 }

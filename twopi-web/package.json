@@ -36,7 +36,6 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "dayjs": "^1.11.13",
-    "dotenv": "^16.4.7",
     "lucide-react": "^0.475.0",
     "openapi-fetch": "^0.13.4",
     "react": "^19.0.0",
