@@ -1,12 +1,12 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Edit, Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { categoryQueryOptions } from "~/lib/query-options";
-import { createCategory, deleteCategory } from "~/lib/server-fns/category";
+import { createCategory } from "~/lib/server-fns/category";
 
 export const Route = createFileRoute("/app/category/")({
   component: RouteComponent,
@@ -32,15 +32,6 @@ function RouteComponent() {
       createCategory(data).then(() => {
         form.reset();
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: categoryQueryOptions().queryKey,
-      });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: categoryQueryOptions().queryKey,
@@ -77,33 +68,14 @@ function RouteComponent() {
                   params={{ id: category.id }}
                   key={category.id}
                 >
-                  <div className="flex w-full gap-2">
-                    <div className="my-auto grow text-sm text-gray-500">
-                      {category.icon && (
-                        <DynamicIcon
-                          name={category.icon as "loader"}
-                          className="mr-2 inline-block h-4 w-4"
-                        />
-                      )}
-                      {category.name}
-                    </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link
-                        to="/app/category/$id/edit"
-                        params={{ id: category.id }}
-                      >
-                        <Edit size={16} />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        deleteMutation.mutate(category.id);
-                      }}
-                    >
-                      <Trash size={16} />
-                    </Button>
+                  <div className="border-1 my-auto grow rounded-md p-4 text-gray-500">
+                    {category.icon && (
+                      <DynamicIcon
+                        name={category.icon as "loader"}
+                        className="mr-2 inline-block h-4 w-4"
+                      />
+                    )}
+                    {category.name}
                   </div>
                 </Link>
               ))}
