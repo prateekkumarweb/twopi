@@ -50,7 +50,7 @@ export default function CategoryEditor(props: {
       await createCategory(data);
       form.reset();
       navigate({
-        to: "/app/category",
+        to: "..",
       });
     },
     onSuccess: () => {
@@ -63,7 +63,7 @@ export default function CategoryEditor(props: {
   return (
     <div className="w-full">
       <div className="flex items-center gap-2">
-        <Link to="/app/category">
+        <Link to="..">
           <ArrowLeft />
         </Link>
         <h1 className="my-2 grow text-xl font-bold">

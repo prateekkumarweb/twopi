@@ -72,34 +72,40 @@ function RouteComponent() {
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {group.categories.map((category) => (
-                <div className="flex w-full gap-2" key={category.name}>
-                  <div className="my-auto grow text-sm text-gray-500">
-                    {category.icon && (
-                      <DynamicIcon
-                        name={category.icon as "loader"}
-                        className="mr-2 inline-block h-4 w-4"
-                      />
-                    )}
-                    {category.name}
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      to="/app/category/$id/edit"
-                      params={{ id: category.id }}
+                <Link
+                  to="/app/category/$id"
+                  params={{ id: category.id }}
+                  key={category.id}
+                >
+                  <div className="flex w-full gap-2">
+                    <div className="my-auto grow text-sm text-gray-500">
+                      {category.icon && (
+                        <DynamicIcon
+                          name={category.icon as "loader"}
+                          className="mr-2 inline-block h-4 w-4"
+                        />
+                      )}
+                      {category.name}
+                    </div>
+                    <Button asChild variant="outline" size="sm">
+                      <Link
+                        to="/app/category/$id/edit"
+                        params={{ id: category.id }}
+                      >
+                        <Edit size={16} />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        deleteMutation.mutate(category.id);
+                      }}
                     >
-                      <Edit size={16} />
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => {
-                      deleteMutation.mutate(category.id);
-                    }}
-                  >
-                    <Trash size={16} />
-                  </Button>
-                </div>
+                      <Trash size={16} />
+                    </Button>
+                  </div>
+                </Link>
               ))}
             </CardContent>
           </Card>
