@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { DynamicIcon } from "lucide-react/dynamic";
+import type { HTMLProps } from "react";
 import type { getTransaction } from "~/lib/server-fns/transaction";
 import CurrencyDisplay from "./CurrencyDisplay";
 import { Badge } from "./ui/badge";
@@ -9,11 +10,13 @@ type Transaction = Awaited<ReturnType<typeof getTransaction>>;
 
 export default function TransactionRow({
   transaction,
+  className,
 }: {
   transaction: Transaction;
+  className?: HTMLProps<HTMLElement>["className"];
 }) {
   return (
-    <div>
+    <div className={className}>
       <Link
         to="/app/transaction/$id"
         params={{ id: transaction.id }}
@@ -36,7 +39,15 @@ export default function TransactionRow({
                 {item.notes}
               </div>
               <Badge variant="outline">{item.account.name}</Badge>
-              <Badge>
+              <Badge
+                className={
+                  item.amount < 0
+                    ? "bg-red-900"
+                    : item.amount > 0
+                      ? "bg-green-900"
+                      : ""
+                }
+              >
                 <CurrencyDisplay
                   value={item.amount}
                   currencyCode={item.account.currency.code}

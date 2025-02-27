@@ -2,13 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-react";
-import { Fragment } from "react";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import LabelAndValue from "~/components/LabelAndValue";
-import TransactionRow from "~/components/TransactionRow";
+import TransactionList from "~/components/TransactionList";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import {
   accountByIdQueryOptions,
   accountQueryOptions,
@@ -88,7 +86,15 @@ function RouteComponent() {
       <LabelAndValue
         label="Starting balance"
         value={
-          <Badge>
+          <Badge
+            className={
+              account.starting_balance < 0
+                ? "bg-red-900"
+                : account.starting_balance > 0
+                  ? "bg-green-900"
+                  : ""
+            }
+          >
             <CurrencyDisplay
               value={account.starting_balance}
               currencyCode={account.currency.code}
@@ -99,14 +105,7 @@ function RouteComponent() {
       />
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
-        <div className="my-2 flex flex-col gap-2">
-          {account.transactions?.map((transaction, i) => (
-            <Fragment key={transaction.id}>
-              <TransactionRow transaction={transaction} />
-              {account.transactions.length !== i + 1 && <Separator />}
-            </Fragment>
-          ))}
-        </div>
+        <TransactionList transactions={account.transactions ?? []} />
       </div>
     </div>
   );

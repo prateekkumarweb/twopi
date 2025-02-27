@@ -110,7 +110,15 @@ function AccountItem({
             <Badge variant="outline">{account.currency.code}</Badge>
           </div>
           <div>
-            <Badge>
+            <Badge
+              className={
+                currentBalance < 0
+                  ? "bg-red-900"
+                  : currentBalance > 0
+                    ? "bg-green-900"
+                    : ""
+              }
+            >
               <CurrencyDisplay
                 value={currentBalance}
                 currencyCode={account.currency.code}

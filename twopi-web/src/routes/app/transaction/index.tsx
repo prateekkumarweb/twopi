@@ -1,10 +1,8 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { Fragment } from "react";
-import TransactionRow from "~/components/TransactionRow";
+import TransactionList from "~/components/TransactionList";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import { transactionQueryOptions } from "~/lib/query-options";
 import { isDefined } from "~/lib/utils";
 
@@ -48,15 +46,7 @@ function RouteComponent() {
           </Link>
         </Button>
       </div>
-      <div className="my-2 flex flex-col gap-2">
-        {data.transactions?.length === 0 && <div>No transactions found</div>}
-        {data.transactions?.map((transaction, i) => (
-          <Fragment key={transaction.id}>
-            <TransactionRow transaction={transaction} />
-            {data.transactions?.length !== i + 1 && <Separator />}
-          </Fragment>
-        ))}
-      </div>
+      <TransactionList transactions={data.transactions ?? []} />
     </div>
   );
 }
