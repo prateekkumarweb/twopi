@@ -22,7 +22,7 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/twopi:dev
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/twopi:dev-amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
   docker-arm:
@@ -42,6 +42,6 @@ jobs:
         with:
           platforms: linux/arm64
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/twopi:dev
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/twopi:dev-arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
