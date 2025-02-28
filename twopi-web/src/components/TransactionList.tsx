@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import { Fragment } from "react";
 import type { getTransaction } from "~/lib/server-fns/transaction";
 import TransactionRow from "./TransactionRow";
 
@@ -15,22 +14,17 @@ export default function TransactionList(props: {
   );
 
   return (
-    <div className="my-2 flex flex-col gap-2">
+    <div className="my-2 flex flex-col gap-3">
       {transactions.length === 0 && <div>No transactions found</div>}
       {transactions.map(([date, txs]) => (
-        <Fragment key={date}>
-          <div className="font-extralight">
+        <div key={date} className="flex flex-col gap-1">
+          <div className="font-light text-zinc-700">
             {dayjs(date).format("MMM D, YYYY")}
           </div>
           {txs?.map((transaction) => (
-            <Fragment key={transaction.id}>
-              <TransactionRow
-                transaction={transaction}
-                className="rounded-2xl border-2 p-3"
-              />
-            </Fragment>
+            <TransactionRow transaction={transaction} key={transaction.id} />
           ))}
-        </Fragment>
+        </div>
       ))}
     </div>
   );

@@ -10,13 +10,12 @@ type Transaction = Awaited<ReturnType<typeof getTransaction>>;
 
 export default function TransactionRow({
   transaction,
-  className,
 }: {
   transaction: Transaction;
   className?: HTMLProps<HTMLElement>["className"];
 }) {
   return (
-    <div className={className}>
+    <div className="border-1 rounded-2xl p-3">
       <Link
         to="/app/transaction/$id"
         params={{ id: transaction.id }}
@@ -26,16 +25,25 @@ export default function TransactionRow({
           <h2 className="grow overflow-hidden text-ellipsis text-nowrap">
             {transaction.title}
           </h2>
-          <div className="flex gap-2">
-            <Badge variant="outline">
-              {dayjs(transaction.timestamp).format("MMM D, YYYY h:mm A")}
-            </Badge>
+          <div className="flex gap-2 text-sm text-zinc-700">
+            {dayjs(transaction.timestamp).format("h:mm A")}
           </div>
         </div>
         <div className="flex flex-col gap-2">
           {transaction.transaction_items?.map((item) => (
             <div key={item.id} className="flex items-center gap-2">
               <div className="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
+                {item.category && (
+                  <Badge variant="secondary" className="mr-2">
+                    {item.category.icon && (
+                      <DynamicIcon
+                        name={item.category.icon as "loader"}
+                        className="inline-block h-4 w-4"
+                      />
+                    )}
+                    {item.category.name}
+                  </Badge>
+                )}
                 {item.notes}
               </div>
               <Badge variant="outline">{item.account.name}</Badge>
@@ -54,17 +62,6 @@ export default function TransactionRow({
                   decimalDigits={item.account.currency.decimal_digits}
                 />
               </Badge>
-              {item.category && (
-                <Badge variant="secondary">
-                  {item.category.icon && (
-                    <DynamicIcon
-                      name={item.category.icon as "loader"}
-                      className="inline-block h-4 w-4"
-                    />
-                  )}
-                  {item.category.name}
-                </Badge>
-              )}
             </div>
           ))}
         </div>
