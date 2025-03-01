@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { isCashFlow } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   currencyQueryOptions,
@@ -105,6 +106,7 @@ function RouteComponent() {
     }
 
     let cumulative = 0;
+    let cashFlowCumulative = 0;
     const categories: { [key: string]: number } = {};
     data.accounts
       ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
@@ -113,6 +115,12 @@ function RouteComponent() {
           account.starting_balance /
           Math.pow(10, account.currency.decimal_digits) /
           (data.currencyRates?.[account.currency.code]?.value ?? 1);
+        if (isCashFlow(account.account_type)) {
+          cashFlowCumulative +=
+            account.starting_balance /
+            Math.pow(10, account.currency.decimal_digits) /
+            (data.currencyRates?.[account.currency.code]?.value ?? 1);
+        }
       });
     data.transactions
       ?.filter(
@@ -124,6 +132,12 @@ function RouteComponent() {
             t.amount /
             Math.pow(10, t.account.currency.decimal_digits) /
             (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+          if (isCashFlow(t.account.account_type)) {
+            cashFlowCumulative +=
+              t.amount /
+              Math.pow(10, t.account.currency.decimal_digits) /
+              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+          }
         });
       });
 
@@ -131,6 +145,7 @@ function RouteComponent() {
       const dateStart = d.getTime();
       const dateEnd = dateStart + 24 * 60 * 60 * 1000;
       let wealth = 0;
+      let cashFlow = 0;
       data.accounts
         ?.filter(
           (account) =>
@@ -142,6 +157,12 @@ function RouteComponent() {
             account.starting_balance /
             Math.pow(10, account.currency.decimal_digits) /
             (data.currencyRates?.[account.currency.code]?.value ?? 1);
+          if (isCashFlow(account.account_type)) {
+            cashFlow +=
+              account.starting_balance /
+              Math.pow(10, account.currency.decimal_digits) /
+              (data.currencyRates?.[account.currency.code]?.value ?? 1);
+          }
         });
       data.transactions
         ?.filter(
@@ -160,13 +181,18 @@ function RouteComponent() {
                 (categories[t.category.name] ?? 0) + amount;
             }
             wealth += amount;
+            if (isCashFlow(t.account.account_type)) {
+              cashFlow += amount;
+            }
           });
         });
 
       cumulative += wealth;
+      cashFlowCumulative += cashFlow;
       return {
         date: `${d.getUTCDate()}`,
         wealth: cumulative,
+        cashFlow: cashFlowCumulative,
       };
     });
 
@@ -268,7 +294,7 @@ function RouteComponent() {
         <div className="flex w-full flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Wealth</CardTitle>
+              <CardTitle>Wealth & Cash Flow</CardTitle>
               <CardDescription>
                 {Intl.DateTimeFormat("en", {
                   month: "long",
@@ -287,12 +313,17 @@ function RouteComponent() {
               >
                 <LineChart
                   accessibilityLayer
-                  data={chartData.wealthData.map(({ date, wealth }) => ({
-                    date,
-                    wealth:
-                      wealth *
-                      (data.currencyRates?.[currentCurrency]?.value ?? 1),
-                  }))}
+                  data={chartData.wealthData.map(
+                    ({ date, wealth, cashFlow }) => ({
+                      date,
+                      wealth:
+                        wealth *
+                        (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                      cashFlow:
+                        cashFlow *
+                        (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                    }),
+                  )}
                   margin={{
                     left: 12,
                     right: 12,
@@ -332,6 +363,13 @@ function RouteComponent() {
                     dataKey="wealth"
                     type="natural"
                     stroke="var(--color-desktop)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    dataKey="cashFlow"
+                    type="natural"
+                    stroke="var(--color-green-900)"
                     strokeWidth={2}
                     dot={false}
                   />
