@@ -23,6 +23,8 @@ pub struct AccountModel {
     account_type: AccountType,
     currency_code: String,
     starting_balance: i64,
+    is_cash_flow: bool,
+    is_active: bool,
     created_at: chrono::DateTime<chrono::Utc>,
     #[schema(ignore)]
     account_extra: Option<serde_json::Value>,
@@ -37,6 +39,8 @@ pub struct NewAccountModel {
     #[validate(length(min = 3, max = 3))]
     currency_code: String,
     starting_balance: i64,
+    is_cash_flow: bool,
+    is_active: bool,
     created_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -49,6 +53,8 @@ impl AccountModel {
             account_type: serde_json::from_str(&model.account_type).unwrap(),
             currency_code: model.currency_code,
             starting_balance: model.starting_balance,
+            is_cash_flow: model.is_cash_flow,
+            is_active: model.is_active,
             created_at: model.created_at,
             account_extra: model.account_extra,
         }
@@ -61,6 +67,8 @@ impl AccountModel {
             account_type: self.account_type,
             currency,
             starting_balance: self.starting_balance,
+            is_cash_flow: self.is_cash_flow,
+            is_active: self.is_active,
             created_at: self.created_at,
             account_extra: self.account_extra,
         }
@@ -85,6 +93,8 @@ impl AccountModel {
             account_type: ActiveValue::Set(serde_json::to_string(&account.account_type).unwrap()),
             currency_code: ActiveValue::Set(account.currency_code),
             starting_balance: ActiveValue::Set(account.starting_balance),
+            is_cash_flow: ActiveValue::Set(account.is_cash_flow),
+            is_active: ActiveValue::Set(account.is_active),
             created_at: ActiveValue::Set(account.created_at),
             account_extra: ActiveValue::NotSet,
         })
@@ -119,6 +129,8 @@ impl AccountModel {
             account_type: ActiveValue::Set(serde_json::to_string(&a.account_type).unwrap()),
             currency_code: ActiveValue::Set(a.currency_code),
             starting_balance: ActiveValue::Set(a.starting_balance),
+            is_cash_flow: ActiveValue::Set(a.is_cash_flow),
+            is_active: ActiveValue::Set(a.is_active),
             created_at: ActiveValue::Set(a.created_at),
             account_extra: ActiveValue::NotSet,
         }))
@@ -147,6 +159,8 @@ pub struct AccountWithCurrency {
     account_type: AccountType,
     currency: CurrencyModel,
     starting_balance: i64,
+    is_cash_flow: bool,
+    is_active: bool,
     created_at: chrono::DateTime<chrono::Utc>,
     #[schema(ignore)]
     account_extra: Option<serde_json::Value>,
@@ -163,6 +177,8 @@ impl AccountWithCurrency {
             account_type: self.account_type,
             currency: self.currency,
             starting_balance: self.starting_balance,
+            is_cash_flow: self.is_cash_flow,
+            is_active: self.is_active,
             created_at: self.created_at,
             account_extra: self.account_extra,
             transactions,
@@ -197,6 +213,8 @@ pub struct AccountWithTransactions {
     account_type: AccountType,
     currency: CurrencyModel,
     starting_balance: i64,
+    is_cash_flow: bool,
+    is_active: bool,
     created_at: chrono::DateTime<chrono::Utc>,
     #[schema(ignore)]
     account_extra: Option<serde_json::Value>,

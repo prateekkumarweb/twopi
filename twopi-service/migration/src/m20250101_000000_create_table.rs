@@ -35,6 +35,8 @@ impl MigrationTrait for Migration {
                     .col(string(Account::CurrencyCode))
                     .col(big_integer(Account::StartingBalance).default("0"))
                     .col(timestamp(Account::CreatedAt).default("CURRENT_TIMESTAMP"))
+                    .col(boolean(Account::IsCashFlow))
+                    .col(boolean(Account::IsActive).default(false))
                     .col(json_null(Account::AccountExtra))
                     .foreign_key(
                         ForeignKey::create()
@@ -163,6 +165,8 @@ enum Account {
     CurrencyCode,
     StartingBalance,
     CreatedAt,
+    IsCashFlow,
+    IsActive,
     AccountExtra,
 }
 

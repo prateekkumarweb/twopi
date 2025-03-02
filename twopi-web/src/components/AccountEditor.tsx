@@ -13,6 +13,7 @@ import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Switch } from "./ui/switch";
 
 export default function AccountEditor(props: {
   edit?: {
@@ -29,6 +31,8 @@ export default function AccountEditor(props: {
     createdAt: Date;
     currencyCode: string;
     startingBalance: number;
+    isCashFlow: boolean;
+    isActive: boolean;
   };
 }) {
   const navigate = useNavigate();
@@ -53,11 +57,13 @@ export default function AccountEditor(props: {
     defaultValues: {
       id: props.edit?.id,
       name: props.edit?.name || "",
-      accountType: (props.edit?.accountType ||
+      accountType: (props.edit?.accountType ??
         "Bank") satisfies AccountTypeOrigin,
-      createdAt: props.edit?.createdAt || createdAt,
-      currencyCode: props.edit?.currencyCode || "",
-      startingBalance: props.edit?.startingBalance || 0,
+      createdAt: props.edit?.createdAt ?? createdAt,
+      currencyCode: props.edit?.currencyCode ?? "",
+      startingBalance: props.edit?.startingBalance ?? 0,
+      isCashFlow: props.edit?.isCashFlow ?? false,
+      isActive: props.edit?.isActive ?? true,
     },
     onSubmit: ({ value }) => {
       mutation.mutate(value);
@@ -71,6 +77,8 @@ export default function AccountEditor(props: {
       createdAt: Date;
       currencyCode: string;
       startingBalance: number;
+      isCashFlow: boolean;
+      isActive: boolean;
     }) => {
       createAccount(data);
       form.reset();
@@ -193,6 +201,34 @@ export default function AccountEditor(props: {
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(Number(e.target.value))}
             />
+          )}
+        </form.Field>
+        <form.Field name="isCashFlow">
+          {(field) => (
+            <div className="flex items-center justify-between">
+              <Label htmlFor="is-cash-flow">Cash flow</Label>
+              <Switch
+                id="is-cash-flow"
+                name={field.name}
+                checked={field.state.value}
+                onBlur={field.handleBlur}
+                onCheckedChange={(checked) => field.handleChange(checked)}
+              />
+            </div>
+          )}
+        </form.Field>
+        <form.Field name="isActive">
+          {(field) => (
+            <div className="flex items-center justify-between">
+              <Label htmlFor="is-active">Active</Label>
+              <Switch
+                id="is-active"
+                name={field.name}
+                checked={field.state.value}
+                onBlur={field.handleBlur}
+                onCheckedChange={(checked) => field.handleChange(checked)}
+              />
+            </div>
           )}
         </form.Field>
         <Button type="submit" disabled={mutation.isPending}>

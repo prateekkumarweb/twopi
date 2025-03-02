@@ -32,7 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { isCashFlow } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   currencyQueryOptions,
@@ -115,7 +114,7 @@ function RouteComponent() {
           account.starting_balance /
           Math.pow(10, account.currency.decimal_digits) /
           (data.currencyRates?.[account.currency.code]?.value ?? 1);
-        if (isCashFlow(account.account_type)) {
+        if (account.is_cash_flow) {
           cashFlowCumulative +=
             account.starting_balance /
             Math.pow(10, account.currency.decimal_digits) /
@@ -132,7 +131,7 @@ function RouteComponent() {
             t.amount /
             Math.pow(10, t.account.currency.decimal_digits) /
             (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-          if (isCashFlow(t.account.account_type)) {
+          if (t.account.is_cash_flow) {
             cashFlowCumulative +=
               t.amount /
               Math.pow(10, t.account.currency.decimal_digits) /
@@ -157,7 +156,7 @@ function RouteComponent() {
             account.starting_balance /
             Math.pow(10, account.currency.decimal_digits) /
             (data.currencyRates?.[account.currency.code]?.value ?? 1);
-          if (isCashFlow(account.account_type)) {
+          if (account.is_cash_flow) {
             cashFlow +=
               account.starting_balance /
               Math.pow(10, account.currency.decimal_digits) /
@@ -181,7 +180,7 @@ function RouteComponent() {
                 (categories[t.category.name] ?? 0) + amount;
             }
             wealth += amount;
-            if (isCashFlow(t.account.account_type)) {
+            if (t.account.is_cash_flow) {
               cashFlow += amount;
             }
           });

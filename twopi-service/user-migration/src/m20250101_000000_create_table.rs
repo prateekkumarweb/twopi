@@ -17,6 +17,7 @@ impl MigrationTrait for Migration {
                     .col(string(User::PasswordHash))
                     .col(boolean(User::EmailVerified).default("false"))
                     .col(timestamp(User::CreatedAt).default("CURRENT_TIMESTAMP"))
+                    .col(json_binary_null(User::Settings))
                     .to_owned(),
             )
             .await
@@ -38,4 +39,5 @@ enum User {
     PasswordHash,
     EmailVerified,
     CreatedAt,
+    Settings,
 }

@@ -70,6 +70,7 @@ impl User {
             password_hash: ActiveValue::Set(model.password_hash.expose_secret().to_owned()),
             email_verified: ActiveValue::Set(model.email_verified),
             created_at: ActiveValue::Set(model.created_at),
+            settings: ActiveValue::NotSet,
         })
         .exec(db)
         .await?;
@@ -88,6 +89,7 @@ impl User {
             password_hash: ActiveValue::NotSet,
             email_verified: ActiveValue::Set(email_verified),
             created_at: ActiveValue::NotSet,
+            settings: ActiveValue::NotSet,
         })
         .exec(db)
         .await?;

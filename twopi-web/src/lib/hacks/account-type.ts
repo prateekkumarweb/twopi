@@ -11,9 +11,3 @@ export const AccountType: { [k in AccountTypeOrigin]: k } = {
 } as const;
 
 export type AccountTypeOrigin = components["schemas"]["AccountType"];
-
-export function isCashFlow(accountType: AccountTypeOrigin): boolean {
-  return (
-    accountType === "Cash" || accountType === "Wallet" || accountType === "Bank"
-  );
-}

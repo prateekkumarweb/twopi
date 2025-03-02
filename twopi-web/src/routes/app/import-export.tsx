@@ -3,7 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
-import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
+import { type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -78,6 +78,8 @@ function RouteComponent() {
         accountType,
         startingBalance,
         currencyCode,
+        isCashFlow: isCashFlow(accountType),
+        isActive: true,
         createdAt,
       });
     }
@@ -198,5 +200,11 @@ function RouteComponent() {
         />
       </details>
     </div>
+  );
+}
+
+function isCashFlow(accountType: AccountTypeOrigin): boolean {
+  return (
+    accountType === "Cash" || accountType === "Wallet" || accountType === "Bank"
   );
 }

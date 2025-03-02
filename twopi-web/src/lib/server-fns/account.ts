@@ -8,6 +8,8 @@ export async function createAccount(account: {
   accountType: AccountTypeOrigin;
   currencyCode: string;
   startingBalance: number;
+  isCashFlow: boolean;
+  isActive: boolean;
   createdAt: Date;
 }) {
   const currency = await apiClient.GET("/twopi-api/currency/{code}", {
@@ -26,6 +28,8 @@ export async function createAccount(account: {
       name: account.name,
       account_type: account.accountType,
       currency_code: account.currencyCode,
+      is_cash_flow: account.isCashFlow,
+      is_active: account.isActive,
       starting_balance: account.startingBalance,
       created_at: account.createdAt.toISOString(),
     },
@@ -42,6 +46,8 @@ export async function createAccounts(
     accountType: AccountTypeOrigin;
     currencyCode: string;
     startingBalance: number;
+    isCashFlow: boolean;
+    isActive: boolean;
     createdAt?: Date;
   }[],
 ) {
@@ -63,6 +69,8 @@ export async function createAccounts(
       account_type: item.accountType,
       currency_code: item.currencyCode,
       starting_balance: item.startingBalance,
+      is_cash_flow: item.isCashFlow,
+      is_active: item.isActive,
       created_at: (item.createdAt ?? new Date())?.toISOString(),
     })),
   });

@@ -42,6 +42,8 @@ function RouteComponent() {
         createdAt: new Date(data.created_at),
         currencyCode: data.currency.code,
         startingBalance: data.starting_balance,
+        isCashFlow: data.is_cash_flow,
+        isActive: data.is_active,
       }}
     />
   );
