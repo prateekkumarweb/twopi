@@ -32,7 +32,7 @@ function RouteComponent() {
     "Account	Account Type	Starting Balance	Currency	Created At",
   );
   const [transactionCsv, setTransactionCsv] = useState(
-    "Date	Account	Amount	Currency	Notes	Category",
+    "Date	Account	Amount	Currency	Transaction	Notes	Category",
   );
   const [error, setError] = useState("");
   const router = useRouter();
@@ -105,6 +105,7 @@ function RouteComponent() {
     const accountIndex = headerNames.indexOf("Account");
     const amountIndex = headerNames.indexOf("Amount");
     const currencyIndex = headerNames.indexOf("Currency");
+    const transactionIndex = headerNames.indexOf("Transaction");
     const notesIndex = headerNames.indexOf("Notes");
     const categoryIndex = headerNames.indexOf("Category");
     const items = [];
@@ -115,17 +116,21 @@ function RouteComponent() {
       const account = values[accountIndex];
       const amount = Number(values[amountIndex]?.replaceAll(",", ""));
       const currency = values[currencyIndex];
+      const title = values[transactionIndex] ?? "";
       const notes = values[notesIndex];
       const category = values[categoryIndex];
-      items.push({ date, account, amount, currency, notes, category });
+      items.push({ date, account, amount, currency, title, notes, category });
     }
-    const itemsByDate = Object.groupBy(items, (d) => d.date.valueOf());
+    const itemsByDate = Object.groupBy(
+      items,
+      (d) => d.date.valueOf() + d.title,
+    );
     const data = [];
     for (const key in itemsByDate) {
       const items = itemsByDate[key];
       if (!items || !items.length) continue;
       data.push({
-        title: items.find((item) => item.notes)?.notes ?? "",
+        title: items.find((item) => item.title)?.title ?? "",
         transactions: items.map((item) => ({
           amount: item.amount,
           accountName: item.account?.trim() ?? "",
