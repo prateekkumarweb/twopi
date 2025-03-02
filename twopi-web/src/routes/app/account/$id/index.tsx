@@ -103,6 +103,11 @@ function RouteComponent() {
           </Badge>
         }
       />
+      <LabelAndValue
+        label="Cash flow"
+        value={account.is_cash_flow ? "Yes" : "No"}
+      />
+      <LabelAndValue label="Active" value={account.is_active ? "Yes" : "No"} />
       <div className="mt-2">
         <h2 className="text-lg font-bold">Transactions</h2>
         <TransactionList transactions={account.transactions ?? []} />
