@@ -1,12 +1,11 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Check, ChevronsUpDown, icons } from "lucide-react";
+import { ArrowLeft, ChevronsUpDown, icons } from "lucide-react";
 import { DynamicIcon } from "lucide-react/dynamic";
 import { useMemo, useState } from "react";
 import { categoryQueryOptions } from "~/lib/query-options";
 import { createCategory } from "~/lib/server-fns/category";
-import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
 import {
   Command,
@@ -187,15 +186,8 @@ function Combobox(props: {
                       currentValue === props.value ? "" : currentValue,
                     );
                   }}
+                  className={props.value === option.value ? "bg-zinc-200" : ""}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      props.value === option.value
-                        ? "opacity-100"
-                        : "opacity-0",
-                    )}
-                  />
                   {option.label}
                 </CommandItem>
               ))}
