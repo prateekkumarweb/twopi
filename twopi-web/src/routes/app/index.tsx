@@ -241,7 +241,9 @@ function RouteComponent() {
         <div className="bg-accent shadow-xs p-2 text-2xl">
           <CurrencyDisplay
             value={
-              wealth * Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+              wealth *
+              (data.currencyRates?.[currentCurrency]?.value ?? 1) *
+              Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
             }
             currencyCode={currentCurrency}
             decimalDigits={currentCurrencyData?.decimal_digits ?? 0}
