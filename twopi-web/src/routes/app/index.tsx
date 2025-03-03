@@ -1,15 +1,7 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import {
   Card,
@@ -25,6 +17,7 @@ import {
   ChartTooltipContent,
 } from "~/components/ui/chart";
 import { Input } from "~/components/ui/input";
+import { Progress } from "~/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -33,7 +26,16 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import {
   accountQueryOptions,
+  categoryQueryOptions,
   currencyQueryOptions,
   currencyRatesQueryOptions,
   transactionQueryOptions,
@@ -51,6 +53,7 @@ function RouteComponent() {
       transactionQueryOptions(),
       currencyRatesQueryOptions(),
       currencyQueryOptions(),
+      categoryQueryOptions(),
     ],
     combine: (results) => {
       return {
@@ -59,6 +62,7 @@ function RouteComponent() {
           transactions: results[1].data?.transactions,
           currencyRates: results[2].data?.data,
           currencies: results[3].data?.data,
+          categories: results[4].data?.categories,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
@@ -195,6 +199,25 @@ function RouteComponent() {
       };
     });
 
+    const allCategories =
+      data.categories?.map(
+        (category) =>
+          [
+            category.name,
+            category.group,
+            categories[category.name] ?? 0,
+          ] as const,
+      ) ?? [];
+    allCategories.sort((a, b) => {
+      if (a[2] < b[2]) return -1;
+      if (a[2] > b[2]) return 1;
+      return 0;
+    });
+
+    const maxCategoryValue = Math.max(
+      ...Object.values(categories).map(Math.abs),
+    );
+
     return {
       wealthData,
       categories: Object.entries(categories).sort((a, b) => {
@@ -202,6 +225,8 @@ function RouteComponent() {
         if (a[0] > b[0]) return 1;
         return 0;
       }),
+      allCategories,
+      maxCategoryValue,
     };
   }, [monthAndYear, data]);
 
@@ -295,7 +320,7 @@ function RouteComponent() {
         <div className="flex w-full flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Wealth & Cash Flow</CardTitle>
+              <CardTitle>Wealth</CardTitle>
               <CardDescription>
                 {Intl.DateTimeFormat("en", {
                   month: "long",
@@ -367,13 +392,6 @@ function RouteComponent() {
                     strokeWidth={2}
                     dot={false}
                   />
-                  <Line
-                    dataKey="cashFlow"
-                    type="natural"
-                    stroke="var(--color-green-900)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
                 </LineChart>
               </ChartContainer>
             </CardContent>
@@ -381,7 +399,7 @@ function RouteComponent() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Categories</CardTitle>
+              <CardTitle>Cash Flow</CardTitle>
               <CardDescription>
                 {Intl.DateTimeFormat("en", {
                   month: "long",
@@ -393,31 +411,52 @@ function RouteComponent() {
               <ChartContainer
                 config={{
                   desktop: {
-                    label: "Category",
+                    label: "Wealth",
                     color: "var(--color-primary)",
                   },
                 }}
               >
-                <BarChart
+                <LineChart
                   accessibilityLayer
-                  layout="vertical"
-                  data={chartData.categories.map(([name, value]) => ({
-                    name,
-                    value:
-                      value *
-                      (data.currencyRates?.[currentCurrency]?.value ?? 1),
-                  }))}
+                  data={chartData.wealthData.map(
+                    ({ date, wealth, cashFlow }) => ({
+                      date,
+                      wealth:
+                        wealth *
+                        (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                      cashFlow:
+                        cashFlow *
+                        (data.currencyRates?.[currentCurrency]?.value ?? 1),
+                    }),
+                  )}
+                  margin={{
+                    left: 12,
+                    right: 12,
+                  }}
                 >
-                  <XAxis type="number" dataKey="value" />
-                  <YAxis
-                    dataKey="name"
-                    type="category"
-                    tickMargin={5}
-                    tickFormatter={(value) => value.slice(0, 5)}
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
                   />
                   <ChartTooltip
                     cursor={false}
                     content={<ChartTooltipContent />}
+                    labelFormatter={(value) => {
+                      return Intl.DateTimeFormat("en", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      }).format(
+                        new Date(
+                          monthAndYear.year,
+                          monthAndYear.month,
+                          Number(value),
+                        ),
+                      );
+                    }}
                     formatter={(value) => {
                       return Intl.NumberFormat("en", {
                         currency: currentCurrency,
@@ -425,14 +464,71 @@ function RouteComponent() {
                       }).format(Number(value));
                     }}
                   />
-                  <Bar
-                    dataKey="value"
-                    layout="vertical"
-                    fill="var(--color-desktop)"
-                    radius={5}
+                  <Line
+                    dataKey="cashFlow"
+                    type="natural"
+                    stroke="var(--color-green-900)"
+                    strokeWidth={2}
+                    dot={false}
                   />
-                </BarChart>
+                </LineChart>
               </ChartContainer>
+            </CardContent>
+            <CardFooter>Cumulative cash flow over the month</CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Categories Table</CardTitle>
+              <CardDescription>
+                {Intl.DateTimeFormat("en", {
+                  month: "long",
+                  year: "numeric",
+                }).format(new Date(monthAndYear.year, monthAndYear.month))}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {chartData.allCategories.map(([name, group, value]) => (
+                    <TableRow key={name}>
+                      <TableCell>
+                        {name} {group && `(${group})`}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <CurrencyDisplay
+                          value={
+                            value *
+                            (data.currencyRates?.[currentCurrency]?.value ??
+                              1) *
+                            Math.pow(
+                              10,
+                              currentCurrencyData?.decimal_digits ?? 0,
+                            )
+                          }
+                          currencyCode={currentCurrency}
+                          decimalDigits={
+                            currentCurrencyData?.decimal_digits ?? 0
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="w-1/6">
+                        <Progress
+                          value={
+                            Math.abs(value * 100) / chartData.maxCategoryValue
+                          }
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
             <CardFooter>Income/Expense in each category</CardFooter>
           </Card>
