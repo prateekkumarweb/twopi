@@ -210,6 +210,9 @@ function RouteComponent() {
 
 function isCashFlow(accountType: AccountTypeOrigin): boolean {
   return (
-    accountType === "Cash" || accountType === "Wallet" || accountType === "Bank"
+    accountType === "Cash" ||
+    accountType === "Wallet" ||
+    accountType === "Bank" ||
+    accountType === "CreditCard"
   );
 }

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use migration::{AccountType, OnConflict};
 use sea_orm::{
     ActiveValue, DbConn, DbErr, EntityTrait, Linked, QueryOrder, RelationTrait, prelude::Uuid,
@@ -105,6 +107,8 @@ impl AccountModel {
                     Column::AccountType,
                     Column::CurrencyCode,
                     Column::StartingBalance,
+                    Column::IsCashFlow,
+                    Column::IsActive,
                     Column::CreatedAt,
                     Column::AccountExtra,
                 ])
@@ -141,6 +145,8 @@ impl AccountModel {
                     Column::AccountType,
                     Column::CurrencyCode,
                     Column::StartingBalance,
+                    Column::IsCashFlow,
+                    Column::IsActive,
                     Column::CreatedAt,
                     Column::AccountExtra,
                 ])
@@ -255,7 +261,7 @@ impl AccountWithTransactions {
         let account = AccountModel::from_model(account).with_currency(currency);
         let categories = CategoryModel::find_all(db).await?;
 
-        let mut tx = vec![];
+        let mut tx = HashMap::new();
         for t in transactions {
             let Some((transaction, items)) = Transaction::find_by_id(t.id)
                 .find_with_related(TransactionItem)
@@ -284,7 +290,8 @@ impl AccountWithTransactions {
                     )
                 })
                 .collect();
-            tx.push(
+            tx.insert(
+                transaction.id,
                 TransactionWithAccount::new(
                     transaction.id,
                     transaction.title,
@@ -294,6 +301,6 @@ impl AccountWithTransactions {
             );
         }
 
-        Ok(Some(account.with_transactions(tx)))
+        Ok(Some(account.with_transactions(tx.into_values().collect())))
     }
 }

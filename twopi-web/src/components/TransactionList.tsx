@@ -11,7 +11,7 @@ export default function TransactionList(props: {
     Object.groupBy(props.transactions, (transaction) =>
       dayjs(transaction.timestamp).format("YYYY-MM-DD"),
     ),
-  );
+  ).sort((a, b) => b[0].localeCompare(a[0]));
 
   return (
     <div className="my-2 flex flex-col gap-3">
