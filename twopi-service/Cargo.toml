@@ -8,9 +8,9 @@ publish = false
 members = [".", "migration", "user-migration"]
 
 [dependencies]
-anyhow = "1.0.96"
+anyhow = "1.0.97"
 argon2 = { version = "0.5.3", features = ["std"] }
-async-trait = "0.1.86"
+async-trait = "0.1.87"
 axum = { version = "0.8.1", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.40", features = ["serde"] }
@@ -20,15 +20,15 @@ jsonwebtoken = "9.3.1"
 lru = "0.13.0"
 migration = { path = "migration" }
 reqwest = { version = "0.12.12", features = ["json"] }
-sea-orm = { version = "1.1.6", features = [
+sea-orm = { version = "1.1.7", features = [
     "sqlx-sqlite",
     "runtime-tokio-rustls",
     "macros",
 ] }
 secrecy = { version = "0.10.3", features = ["serde"] }
 serde = { version = "1.0.218", features = ["derive"] }
-serde_json = "1.0.139"
-thiserror = "2.0.11"
+serde_json = "1.0.140"
+thiserror = "2.0.12"
 tokio = { version = "1.43.0", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["full"] }
 tower-sessions-sqlx-store = { version = "0.15.0", features = ["sqlite"] }
