@@ -36,6 +36,6 @@ export default [
       "@typescript-eslint/consistent-type-imports": "error",
     },
   },
-  oxlint.configs["flat/recommended"],
+  ...oxlint.configs["flat/recommended"],
   eslintConfigPrettier,
 ];
