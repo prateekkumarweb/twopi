@@ -74,6 +74,10 @@ function RouteComponent() {
     month: today.getUTCMonth(),
     year: today.getUTCFullYear(),
   });
+  const previousMonthAndYear = {
+    month: monthAndYear.month > 0 ? monthAndYear.month - 1 : 11,
+    year: monthAndYear.month > 0 ? monthAndYear.year : monthAndYear.year - 1,
+  };
   const [currentCurrency, setCurrency] = useState("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
   const currencies =
@@ -208,11 +212,6 @@ function RouteComponent() {
             categories[category.name] ?? 0,
           ] as const,
       ) ?? [];
-    allCategories.sort((a, b) => {
-      if (a[2] < b[2]) return -1;
-      if (a[2] > b[2]) return 1;
-      return 0;
-    });
 
     const maxCategoryValue = Math.max(
       ...Object.values(categories).map(Math.abs),
@@ -229,6 +228,135 @@ function RouteComponent() {
       maxCategoryValue,
     };
   }, [monthAndYear, data]);
+
+  const previousMonthChartData = useMemo(() => {
+    const daysInMonth = [];
+    daysInMonth.push();
+    const date = new Date(
+      Date.UTC(previousMonthAndYear.year, previousMonthAndYear.month, 1),
+    );
+    const firstDay = date.getTime();
+    while (date.getUTCMonth() === previousMonthAndYear.month) {
+      daysInMonth.push(new Date(date));
+      date.setDate(date.getUTCDate() + 1);
+    }
+
+    let cumulative = 0;
+    let cashFlowCumulative = 0;
+    const categories: { [key: string]: number } = {};
+    data.accounts
+      ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
+      .forEach((account) => {
+        cumulative +=
+          account.starting_balance /
+          Math.pow(10, account.currency.decimal_digits) /
+          (data.currencyRates?.[account.currency.code]?.value ?? 1);
+        if (account.is_cash_flow) {
+          cashFlowCumulative +=
+            account.starting_balance /
+            Math.pow(10, account.currency.decimal_digits) /
+            (data.currencyRates?.[account.currency.code]?.value ?? 1);
+        }
+      });
+    data.transactions
+      ?.filter(
+        (transaction) => new Date(transaction.timestamp).getTime() < firstDay,
+      )
+      .forEach((transaction) => {
+        transaction.transaction_items.forEach((t) => {
+          cumulative +=
+            t.amount /
+            Math.pow(10, t.account.currency.decimal_digits) /
+            (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+          if (t.account.is_cash_flow) {
+            cashFlowCumulative +=
+              t.amount /
+              Math.pow(10, t.account.currency.decimal_digits) /
+              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+          }
+        });
+      });
+
+    const wealthData = daysInMonth.map((d) => {
+      const dateStart = d.getTime();
+      const dateEnd = dateStart + 24 * 60 * 60 * 1000;
+      let wealth = 0;
+      let cashFlow = 0;
+      data.accounts
+        ?.filter(
+          (account) =>
+            dateStart <= new Date(account.created_at).getTime() &&
+            new Date(account.created_at).getTime() < dateEnd,
+        )
+        .forEach((account) => {
+          wealth +=
+            account.starting_balance /
+            Math.pow(10, account.currency.decimal_digits) /
+            (data.currencyRates?.[account.currency.code]?.value ?? 1);
+          if (account.is_cash_flow) {
+            cashFlow +=
+              account.starting_balance /
+              Math.pow(10, account.currency.decimal_digits) /
+              (data.currencyRates?.[account.currency.code]?.value ?? 1);
+          }
+        });
+      data.transactions
+        ?.filter(
+          (transaction) =>
+            dateStart <= new Date(transaction.timestamp).getTime() &&
+            new Date(transaction.timestamp).getTime() < dateEnd,
+        )
+        .forEach((transaction) => {
+          transaction.transaction_items.forEach((t) => {
+            const amount =
+              t.amount /
+              Math.pow(10, t.account.currency.decimal_digits) /
+              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+            if (t.category) {
+              categories[t.category.name] =
+                (categories[t.category.name] ?? 0) + amount;
+            }
+            wealth += amount;
+            if (t.account.is_cash_flow) {
+              cashFlow += amount;
+            }
+          });
+        });
+
+      cumulative += wealth;
+      cashFlowCumulative += cashFlow;
+      return {
+        date: `${d.getUTCDate()}`,
+        wealth: cumulative,
+        cashFlow: cashFlowCumulative,
+      };
+    });
+
+    const allCategories =
+      data.categories?.map(
+        (category) =>
+          [
+            category.name,
+            category.group,
+            categories[category.name] ?? 0,
+          ] as const,
+      ) ?? [];
+
+    const maxCategoryValue = Math.max(
+      ...Object.values(categories).map(Math.abs),
+    );
+
+    return {
+      wealthData,
+      categories: Object.entries(categories).sort((a, b) => {
+        if (a[0] < b[0]) return -1;
+        if (a[0] > b[0]) return 1;
+        return 0;
+      }),
+      allCategories,
+      maxCategoryValue,
+    };
+  }, [previousMonthAndYear, data]);
 
   if (isPending) return "Loading...";
 
@@ -491,42 +619,100 @@ function RouteComponent() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Category</TableHead>
+                    <TableHead className="text-right">
+                      Amount (Previous month)
+                    </TableHead>
                     <TableHead className="text-right">Amount</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {chartData.allCategories.map(([name, group, value]) => (
-                    <TableRow key={name}>
-                      <TableCell>
-                        {name} {group && `(${group})`}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <CurrencyDisplay
-                          value={
-                            value *
-                            (data.currencyRates?.[currentCurrency]?.value ??
-                              1) *
-                            Math.pow(
-                              10,
-                              currentCurrencyData?.decimal_digits ?? 0,
-                            )
-                          }
-                          currencyCode={currentCurrency}
-                          decimalDigits={
-                            currentCurrencyData?.decimal_digits ?? 0
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="w-1/6">
-                        <Progress
-                          value={
-                            Math.abs(value * 100) / chartData.maxCategoryValue
-                          }
-                        />
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {chartData.allCategories.map(
+                    ([name, group, value], index) => (
+                      <TableRow key={name}>
+                        <TableCell>
+                          {name} {group && `(${group})`}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {previousMonthChartData.allCategories[index]?.[0] !==
+                            name && "Error"}
+                          <CurrencyDisplay
+                            value={
+                              (previousMonthChartData.allCategories[
+                                index
+                              ]?.[2] ?? 0) *
+                              (data.currencyRates?.[currentCurrency]?.value ??
+                                1) *
+                              Math.pow(
+                                10,
+                                currentCurrencyData?.decimal_digits ?? 0,
+                              )
+                            }
+                            currencyCode={currentCurrency}
+                            decimalDigits={
+                              currentCurrencyData?.decimal_digits ?? 0
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <CurrencyDisplay
+                            value={
+                              value *
+                              (data.currencyRates?.[currentCurrency]?.value ??
+                                1) *
+                              Math.pow(
+                                10,
+                                currentCurrencyData?.decimal_digits ?? 0,
+                              )
+                            }
+                            currencyCode={currentCurrency}
+                            decimalDigits={
+                              currentCurrencyData?.decimal_digits ?? 0
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="w-1/6">
+                          <Progress
+                            value={
+                              Math.abs(value * 100) / chartData.maxCategoryValue
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
+                  <TableRow>
+                    <TableCell className="font-semibold">Total</TableCell>
+                    <TableCell className="text-right font-semibold">
+                      <CurrencyDisplay
+                        value={
+                          previousMonthChartData.allCategories.reduce(
+                            (acc, [, , value]) => acc + value,
+                            0,
+                          ) *
+                          (data.currencyRates?.[currentCurrency]?.value ?? 1) *
+                          Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                        }
+                        currencyCode={currentCurrency}
+                        decimalDigits={currentCurrencyData?.decimal_digits ?? 0}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      <CurrencyDisplay
+                        value={
+                          chartData.allCategories.reduce(
+                            (acc, [, , value]) => acc + value,
+                            0,
+                          ) *
+                          (data.currencyRates?.[currentCurrency]?.value ?? 1) *
+                          Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                        }
+                        currencyCode={currentCurrency}
+                        decimalDigits={currentCurrencyData?.decimal_digits ?? 0}
+                      />
+                    </TableCell>
+                    <TableCell />
+                  </TableRow>
                 </TableBody>
               </Table>
             </CardContent>
