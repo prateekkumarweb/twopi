@@ -1,6 +1,6 @@
 import { useQueries } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import {
@@ -74,10 +74,13 @@ function RouteComponent() {
     month: today.getUTCMonth(),
     year: today.getUTCFullYear(),
   });
-  const previousMonthAndYear = {
-    month: monthAndYear.month > 0 ? monthAndYear.month - 1 : 11,
-    year: monthAndYear.month > 0 ? monthAndYear.year : monthAndYear.year - 1,
-  };
+  const previousMonthAndYear = useMemo(
+    () => ({
+      month: monthAndYear.month > 0 ? monthAndYear.month - 1 : 11,
+      year: monthAndYear.month > 0 ? monthAndYear.year : monthAndYear.year - 1,
+    }),
+    [monthAndYear],
+  );
   const [currentCurrency, setCurrency] = useState("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
   const currencies =
@@ -102,70 +105,29 @@ function RouteComponent() {
     });
   });
 
-  const chartData = useMemo(() => {
-    const daysInMonth = [];
-    daysInMonth.push();
-    const date = new Date(Date.UTC(monthAndYear.year, monthAndYear.month, 1));
-    const firstDay = date.getTime();
-    while (date.getUTCMonth() === monthAndYear.month) {
-      daysInMonth.push(new Date(date));
-      date.setDate(date.getUTCDate() + 1);
-    }
+  const getChartData = useCallback(
+    (monthAndYear: { month: number; year: number }) => {
+      const daysInMonth = [];
+      daysInMonth.push();
+      const date = new Date(Date.UTC(monthAndYear.year, monthAndYear.month, 1));
+      const firstDay = date.getTime();
+      while (date.getUTCMonth() === monthAndYear.month) {
+        daysInMonth.push(new Date(date));
+        date.setDate(date.getUTCDate() + 1);
+      }
 
-    let cumulative = 0;
-    let cashFlowCumulative = 0;
-    const categories: { [key: string]: number } = {};
-    data.accounts
-      ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
-      .forEach((account) => {
-        cumulative +=
-          account.starting_balance /
-          Math.pow(10, account.currency.decimal_digits) /
-          (data.currencyRates?.[account.currency.code]?.value ?? 1);
-        if (account.is_cash_flow) {
-          cashFlowCumulative +=
-            account.starting_balance /
-            Math.pow(10, account.currency.decimal_digits) /
-            (data.currencyRates?.[account.currency.code]?.value ?? 1);
-        }
-      });
-    data.transactions
-      ?.filter(
-        (transaction) => new Date(transaction.timestamp).getTime() < firstDay,
-      )
-      .forEach((transaction) => {
-        transaction.transaction_items.forEach((t) => {
-          cumulative +=
-            t.amount /
-            Math.pow(10, t.account.currency.decimal_digits) /
-            (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-          if (t.account.is_cash_flow) {
-            cashFlowCumulative +=
-              t.amount /
-              Math.pow(10, t.account.currency.decimal_digits) /
-              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-          }
-        });
-      });
-
-    const wealthData = daysInMonth.map((d) => {
-      const dateStart = d.getTime();
-      const dateEnd = dateStart + 24 * 60 * 60 * 1000;
-      let wealth = 0;
-      let cashFlow = 0;
+      let cumulative = 0;
+      let cashFlowCumulative = 0;
+      const categories: { [key: string]: number } = {};
       data.accounts
-        ?.filter(
-          (account) =>
-            dateStart <= new Date(account.created_at).getTime() &&
-            new Date(account.created_at).getTime() < dateEnd,
-        )
+        ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
         .forEach((account) => {
-          wealth +=
+          cumulative +=
             account.starting_balance /
             Math.pow(10, account.currency.decimal_digits) /
             (data.currencyRates?.[account.currency.code]?.value ?? 1);
           if (account.is_cash_flow) {
-            cashFlow +=
+            cashFlowCumulative +=
               account.starting_balance /
               Math.pow(10, account.currency.decimal_digits) /
               (data.currencyRates?.[account.currency.code]?.value ?? 1);
@@ -173,190 +135,113 @@ function RouteComponent() {
         });
       data.transactions
         ?.filter(
-          (transaction) =>
-            dateStart <= new Date(transaction.timestamp).getTime() &&
-            new Date(transaction.timestamp).getTime() < dateEnd,
+          (transaction) => new Date(transaction.timestamp).getTime() < firstDay,
         )
         .forEach((transaction) => {
           transaction.transaction_items.forEach((t) => {
-            const amount =
+            cumulative +=
               t.amount /
               Math.pow(10, t.account.currency.decimal_digits) /
               (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-            if (t.category) {
-              categories[t.category.name] =
-                (categories[t.category.name] ?? 0) + amount;
-            }
-            wealth += amount;
             if (t.account.is_cash_flow) {
-              cashFlow += amount;
+              cashFlowCumulative +=
+                t.amount /
+                Math.pow(10, t.account.currency.decimal_digits) /
+                (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
             }
           });
         });
 
-      cumulative += wealth;
-      cashFlowCumulative += cashFlow;
+      const wealthData = daysInMonth.map((d) => {
+        const dateStart = d.getTime();
+        const dateEnd = dateStart + 24 * 60 * 60 * 1000;
+        let wealth = 0;
+        let cashFlow = 0;
+        data.accounts
+          ?.filter(
+            (account) =>
+              dateStart <= new Date(account.created_at).getTime() &&
+              new Date(account.created_at).getTime() < dateEnd,
+          )
+          .forEach((account) => {
+            wealth +=
+              account.starting_balance /
+              Math.pow(10, account.currency.decimal_digits) /
+              (data.currencyRates?.[account.currency.code]?.value ?? 1);
+            if (account.is_cash_flow) {
+              cashFlow +=
+                account.starting_balance /
+                Math.pow(10, account.currency.decimal_digits) /
+                (data.currencyRates?.[account.currency.code]?.value ?? 1);
+            }
+          });
+        data.transactions
+          ?.filter(
+            (transaction) =>
+              dateStart <= new Date(transaction.timestamp).getTime() &&
+              new Date(transaction.timestamp).getTime() < dateEnd,
+          )
+          .forEach((transaction) => {
+            transaction.transaction_items.forEach((t) => {
+              const amount =
+                t.amount /
+                Math.pow(10, t.account.currency.decimal_digits) /
+                (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
+              if (t.category) {
+                categories[t.category.name] =
+                  (categories[t.category.name] ?? 0) + amount;
+              }
+              wealth += amount;
+              if (t.account.is_cash_flow) {
+                cashFlow += amount;
+              }
+            });
+          });
+
+        cumulative += wealth;
+        cashFlowCumulative += cashFlow;
+        return {
+          date: `${d.getUTCDate()}`,
+          wealth: cumulative,
+          cashFlow: cashFlowCumulative,
+        };
+      });
+
+      const allCategories =
+        data.categories?.map(
+          (category) =>
+            [
+              category.name,
+              category.group,
+              categories[category.name] ?? 0,
+            ] as const,
+        ) ?? [];
+
+      const maxCategoryValue = Math.max(
+        ...Object.values(categories).map(Math.abs),
+      );
+
       return {
-        date: `${d.getUTCDate()}`,
-        wealth: cumulative,
-        cashFlow: cashFlowCumulative,
+        wealthData,
+        categories: Object.entries(categories).sort((a, b) => {
+          if (a[0] < b[0]) return -1;
+          if (a[0] > b[0]) return 1;
+          return 0;
+        }),
+        allCategories,
+        maxCategoryValue,
       };
-    });
+    },
+    [data],
+  );
 
-    const allCategories =
-      data.categories?.map(
-        (category) =>
-          [
-            category.name,
-            category.group,
-            categories[category.name] ?? 0,
-          ] as const,
-      ) ?? [];
-
-    const maxCategoryValue = Math.max(
-      ...Object.values(categories).map(Math.abs),
-    );
-
-    return {
-      wealthData,
-      categories: Object.entries(categories).sort((a, b) => {
-        if (a[0] < b[0]) return -1;
-        if (a[0] > b[0]) return 1;
-        return 0;
-      }),
-      allCategories,
-      maxCategoryValue,
-    };
-  }, [monthAndYear, data]);
+  const chartData = useMemo(() => {
+    return getChartData(monthAndYear);
+  }, [monthAndYear, getChartData]);
 
   const previousMonthChartData = useMemo(() => {
-    const daysInMonth = [];
-    daysInMonth.push();
-    const date = new Date(
-      Date.UTC(previousMonthAndYear.year, previousMonthAndYear.month, 1),
-    );
-    const firstDay = date.getTime();
-    while (date.getUTCMonth() === previousMonthAndYear.month) {
-      daysInMonth.push(new Date(date));
-      date.setDate(date.getUTCDate() + 1);
-    }
-
-    let cumulative = 0;
-    let cashFlowCumulative = 0;
-    const categories: { [key: string]: number } = {};
-    data.accounts
-      ?.filter((account) => new Date(account.created_at).getTime() < firstDay)
-      .forEach((account) => {
-        cumulative +=
-          account.starting_balance /
-          Math.pow(10, account.currency.decimal_digits) /
-          (data.currencyRates?.[account.currency.code]?.value ?? 1);
-        if (account.is_cash_flow) {
-          cashFlowCumulative +=
-            account.starting_balance /
-            Math.pow(10, account.currency.decimal_digits) /
-            (data.currencyRates?.[account.currency.code]?.value ?? 1);
-        }
-      });
-    data.transactions
-      ?.filter(
-        (transaction) => new Date(transaction.timestamp).getTime() < firstDay,
-      )
-      .forEach((transaction) => {
-        transaction.transaction_items.forEach((t) => {
-          cumulative +=
-            t.amount /
-            Math.pow(10, t.account.currency.decimal_digits) /
-            (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-          if (t.account.is_cash_flow) {
-            cashFlowCumulative +=
-              t.amount /
-              Math.pow(10, t.account.currency.decimal_digits) /
-              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-          }
-        });
-      });
-
-    const wealthData = daysInMonth.map((d) => {
-      const dateStart = d.getTime();
-      const dateEnd = dateStart + 24 * 60 * 60 * 1000;
-      let wealth = 0;
-      let cashFlow = 0;
-      data.accounts
-        ?.filter(
-          (account) =>
-            dateStart <= new Date(account.created_at).getTime() &&
-            new Date(account.created_at).getTime() < dateEnd,
-        )
-        .forEach((account) => {
-          wealth +=
-            account.starting_balance /
-            Math.pow(10, account.currency.decimal_digits) /
-            (data.currencyRates?.[account.currency.code]?.value ?? 1);
-          if (account.is_cash_flow) {
-            cashFlow +=
-              account.starting_balance /
-              Math.pow(10, account.currency.decimal_digits) /
-              (data.currencyRates?.[account.currency.code]?.value ?? 1);
-          }
-        });
-      data.transactions
-        ?.filter(
-          (transaction) =>
-            dateStart <= new Date(transaction.timestamp).getTime() &&
-            new Date(transaction.timestamp).getTime() < dateEnd,
-        )
-        .forEach((transaction) => {
-          transaction.transaction_items.forEach((t) => {
-            const amount =
-              t.amount /
-              Math.pow(10, t.account.currency.decimal_digits) /
-              (data.currencyRates?.[t.account.currency.code]?.value ?? 1);
-            if (t.category) {
-              categories[t.category.name] =
-                (categories[t.category.name] ?? 0) + amount;
-            }
-            wealth += amount;
-            if (t.account.is_cash_flow) {
-              cashFlow += amount;
-            }
-          });
-        });
-
-      cumulative += wealth;
-      cashFlowCumulative += cashFlow;
-      return {
-        date: `${d.getUTCDate()}`,
-        wealth: cumulative,
-        cashFlow: cashFlowCumulative,
-      };
-    });
-
-    const allCategories =
-      data.categories?.map(
-        (category) =>
-          [
-            category.name,
-            category.group,
-            categories[category.name] ?? 0,
-          ] as const,
-      ) ?? [];
-
-    const maxCategoryValue = Math.max(
-      ...Object.values(categories).map(Math.abs),
-    );
-
-    return {
-      wealthData,
-      categories: Object.entries(categories).sort((a, b) => {
-        if (a[0] < b[0]) return -1;
-        if (a[0] > b[0]) return 1;
-        return 0;
-      }),
-      allCategories,
-      maxCategoryValue,
-    };
-  }, [previousMonthAndYear, data]);
+    return getChartData(previousMonthAndYear);
+  }, [previousMonthAndYear, getChartData]);
 
   if (isPending) return "Loading...";
 
