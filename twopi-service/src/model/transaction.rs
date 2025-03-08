@@ -191,6 +191,80 @@ impl TransactionModel {
         }))
     }
 
+    pub async fn find_by_month(
+        db: &DbConn,
+        start_timestamp: chrono::DateTime<chrono::Utc>,
+        // End time is exclusive
+        end_timestamp: chrono::DateTime<chrono::Utc>,
+    ) -> Result<Vec<TransactionWithAccount>, DbErr> {
+        let transactions = Transaction::find()
+            .filter(
+                transaction::Column::Timestamp
+                    .gte(start_timestamp)
+                    .and(transaction::Column::Timestamp.lt(end_timestamp)),
+            )
+            .order_by_desc(transaction::Column::Timestamp)
+            .find_with_related(TransactionItem)
+            .all(db)
+            .await?;
+
+        let accounts = Account::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| (m.id, m))
+            .collect::<HashMap<_, _>>();
+
+        let currencies = Currency::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|c| (c.code.clone(), c))
+            .collect::<HashMap<_, _>>();
+
+        let categories = Category::find()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|c| (c.id, c))
+            .collect::<HashMap<_, _>>();
+
+        Ok(transactions
+            .into_iter()
+            .map(|(t, items)| {
+                Some(TransactionWithAccount {
+                    id: t.id,
+                    title: t.title,
+                    timestamp: t.timestamp,
+                    transaction_items: items
+                        .into_iter()
+                        .map(|item| {
+                            Some(TransactionItemWithAccount {
+                                id: item.id,
+                                notes: item.notes,
+                                transaction_id: item.transaction_id,
+                                amount: item.amount,
+                                account: accounts.get(&item.account_id).cloned().and_then(|a| {
+                                    let c = a.currency_code.clone();
+                                    Some(AccountModel::from_model(a).with_currency(
+                                        CurrencyModel::from_model(currencies.get(&c).cloned()?),
+                                    ))
+                                })?,
+                                category: item.category_id.and_then(|cid| {
+                                    categories
+                                        .get(&cid)
+                                        .cloned()
+                                        .map(|c| CategoryModel::new(c.id, c.name, c.group, c.icon))
+                                }),
+                            })
+                        })
+                        .collect::<Option<_>>()?,
+                })
+            })
+            .collect::<Option<_>>()
+            .unwrap_or_default())
+    }
+
     pub async fn upsert(transaction: NewTransactionModel, db: &DbConn) -> Result<Uuid, DbErr> {
         let transaction = db
             .transaction::<_, _, DbErr>(|txn| {
@@ -514,5 +588,19 @@ impl TransactionWithAccount {
             transaction_items,
             ..self
         }
+    }
+
+    pub const fn items(&self) -> &Vec<TransactionItemWithAccount> {
+        &self.transaction_items
+    }
+}
+
+impl TransactionItemWithAccount {
+    pub const fn category(&self) -> Option<&CategoryModel> {
+        self.category.as_ref()
+    }
+
+    pub const fn amount(&self) -> (i64, &CurrencyModel) {
+        (self.amount, self.account.currency())
     }
 }

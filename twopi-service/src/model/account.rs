@@ -173,6 +173,10 @@ pub struct AccountWithCurrency {
 }
 
 impl AccountWithCurrency {
+    pub const fn currency(&self) -> &CurrencyModel {
+        &self.currency
+    }
+
     pub fn with_transactions(
         self,
         transactions: Vec<TransactionWithAccount>,

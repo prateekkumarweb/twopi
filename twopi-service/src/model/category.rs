@@ -43,6 +43,10 @@ impl CategoryModel {
         self.id
     }
 
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
     pub async fn find_all(db: &DbConn) -> Result<Vec<Self>, DbErr> {
         Category::find()
             .order_by_asc(category::Column::Name)

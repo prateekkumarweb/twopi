@@ -154,6 +154,7 @@ async fn main() -> anyhow::Result<()> {
                 .nest("/account", routes::account::router())
                 .nest("/category", routes::category::router())
                 .nest("/transaction", routes::transaction::router())
+                .nest("/dashboard", routes::dashboard::router())
                 .nest(
                     "/api",
                     OpenApiRouter::new()

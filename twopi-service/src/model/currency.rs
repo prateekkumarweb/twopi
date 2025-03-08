@@ -28,6 +28,14 @@ impl CurrencyModel {
         }
     }
 
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+
+    pub const fn decimal_digits(&self) -> i32 {
+        self.decimal_digits
+    }
+
     pub fn from_model(model: Model) -> Self {
         Self {
             code: model.code,

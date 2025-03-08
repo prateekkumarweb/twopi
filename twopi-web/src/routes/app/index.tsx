@@ -38,6 +38,7 @@ import {
   categoryQueryOptions,
   currencyQueryOptions,
   currencyRatesQueryOptions,
+  dashboardQueryOptions,
   transactionQueryOptions,
 } from "~/lib/query-options";
 import { isDefined } from "~/lib/utils";
@@ -54,6 +55,7 @@ function RouteComponent() {
       currencyRatesQueryOptions(),
       currencyQueryOptions(),
       categoryQueryOptions(),
+      dashboardQueryOptions(),
     ],
     combine: (results) => {
       return {
@@ -63,6 +65,7 @@ function RouteComponent() {
           currencyRates: results[2].data?.data,
           currencies: results[3].data?.data,
           categories: results[4].data?.categories,
+          dashboard: results[5].data,
         },
         isPending: results.some((result) => result.isPending),
         errors: results.map((result) => result.error).filter(isDefined),
@@ -74,13 +77,7 @@ function RouteComponent() {
     month: today.getUTCMonth(),
     year: today.getUTCFullYear(),
   });
-  const previousMonthAndYear = useMemo(
-    () => ({
-      month: monthAndYear.month > 0 ? monthAndYear.month - 1 : 11,
-      year: monthAndYear.month > 0 ? monthAndYear.year : monthAndYear.year - 1,
-    }),
-    [monthAndYear],
-  );
+
   const [currentCurrency, setCurrency] = useState("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
   const currencies =
@@ -207,29 +204,8 @@ function RouteComponent() {
         };
       });
 
-      const allCategories =
-        data.categories?.map(
-          (category) =>
-            [
-              category.name,
-              category.group,
-              categories[category.name] ?? 0,
-            ] as const,
-        ) ?? [];
-
-      const maxCategoryValue = Math.max(
-        ...Object.values(categories).map(Math.abs),
-      );
-
       return {
         wealthData,
-        categories: Object.entries(categories).sort((a, b) => {
-          if (a[0] < b[0]) return -1;
-          if (a[0] > b[0]) return 1;
-          return 0;
-        }),
-        allCategories,
-        maxCategoryValue,
       };
     },
     [data],
@@ -239,9 +215,35 @@ function RouteComponent() {
     return getChartData(monthAndYear);
   }, [monthAndYear, getChartData]);
 
-  const previousMonthChartData = useMemo(() => {
-    return getChartData(previousMonthAndYear);
-  }, [previousMonthAndYear, getChartData]);
+  const current_month = data.dashboard?.last_3m?.[2];
+  const prev_month = data.dashboard?.last_3m?.[1];
+  const prev_prev_month = data.dashboard?.last_3m?.[0];
+
+  const categories = Object.entries(
+    data.dashboard?.categoies_last_3m ?? {},
+  ).map(([name, value]) => {
+    const current_value = Object.entries(value[2] ?? {}).reduce(
+      (acc, [currency, value]) =>
+        acc + value / (data.currencyRates?.[currency]?.value ?? 1),
+      0,
+    );
+    const prev_value = Object.entries(value[1] ?? {}).reduce(
+      (acc, [currency, value]) =>
+        acc + value / (data.currencyRates?.[currency]?.value ?? 1),
+      0,
+    );
+    const prev_prev_value = Object.entries(value[0] ?? {}).reduce(
+      (acc, [currency, value]) =>
+        acc + value / (data.currencyRates?.[currency]?.value ?? 1),
+      0,
+    );
+    return {
+      name,
+      current_value,
+      prev_value,
+      prev_prev_value,
+    };
+  });
 
   if (isPending) return "Loading...";
 
@@ -505,27 +507,48 @@ function RouteComponent() {
                   <TableRow>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">
-                      Amount (Previous month)
+                      Amount (
+                      {prev_prev_month &&
+                        Intl.DateTimeFormat("en", {
+                          month: "long",
+                          year: "numeric",
+                        }).format(
+                          new Date(prev_prev_month[1], prev_prev_month[0] - 1),
+                        )}
+                      )
                     </TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">
+                      Amount (
+                      {prev_month &&
+                        Intl.DateTimeFormat("en", {
+                          month: "long",
+                          year: "numeric",
+                        }).format(new Date(prev_month[1], prev_month[0] - 1))}
+                      )
+                    </TableHead>
+                    <TableHead className="text-right">
+                      Amount (
+                      {current_month &&
+                        Intl.DateTimeFormat("en", {
+                          month: "long",
+                          year: "numeric",
+                        }).format(
+                          new Date(current_month[1], current_month[0] - 1),
+                        )}
+                      )
+                    </TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {chartData.allCategories.map(
-                    ([name, group, value], index) => (
+                  {categories.map(
+                    ({ name, current_value, prev_value, prev_prev_value }) => (
                       <TableRow key={name}>
-                        <TableCell>
-                          {name} {group && `(${group})`}
-                        </TableCell>
+                        <TableCell>{name}</TableCell>
                         <TableCell className="text-right">
-                          {previousMonthChartData.allCategories[index]?.[0] !==
-                            name && "Error"}
                           <CurrencyDisplay
                             value={
-                              (previousMonthChartData.allCategories[
-                                index
-                              ]?.[2] ?? 0) *
+                              prev_prev_value *
                               (data.currencyRates?.[currentCurrency]?.value ??
                                 1) *
                               Math.pow(
@@ -542,7 +565,24 @@ function RouteComponent() {
                         <TableCell className="text-right">
                           <CurrencyDisplay
                             value={
-                              value *
+                              prev_value *
+                              (data.currencyRates?.[currentCurrency]?.value ??
+                                1) *
+                              Math.pow(
+                                10,
+                                currentCurrencyData?.decimal_digits ?? 0,
+                              )
+                            }
+                            currencyCode={currentCurrency}
+                            decimalDigits={
+                              currentCurrencyData?.decimal_digits ?? 0
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <CurrencyDisplay
+                            value={
+                              current_value *
                               (data.currencyRates?.[currentCurrency]?.value ??
                                 1) *
                               Math.pow(
@@ -559,7 +599,12 @@ function RouteComponent() {
                         <TableCell className="w-1/6">
                           <Progress
                             value={
-                              Math.abs(value * 100) / chartData.maxCategoryValue
+                              Math.abs(current_value * 100) /
+                              Math.max(
+                                ...categories.map((c) =>
+                                  Math.abs(c.current_value),
+                                ),
+                              )
                             }
                           />
                         </TableCell>
@@ -571,8 +616,8 @@ function RouteComponent() {
                     <TableCell className="text-right font-semibold">
                       <CurrencyDisplay
                         value={
-                          previousMonthChartData.allCategories.reduce(
-                            (acc, [, , value]) => acc + value,
+                          categories.reduce(
+                            (acc, c) => acc + c.prev_prev_value,
                             0,
                           ) *
                           (data.currencyRates?.[currentCurrency]?.value ?? 1) *
@@ -585,8 +630,19 @@ function RouteComponent() {
                     <TableCell className="text-right font-semibold">
                       <CurrencyDisplay
                         value={
-                          chartData.allCategories.reduce(
-                            (acc, [, , value]) => acc + value,
+                          categories.reduce((acc, c) => acc + c.prev_value, 0) *
+                          (data.currencyRates?.[currentCurrency]?.value ?? 1) *
+                          Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                        }
+                        currencyCode={currentCurrency}
+                        decimalDigits={currentCurrencyData?.decimal_digits ?? 0}
+                      />
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      <CurrencyDisplay
+                        value={
+                          categories.reduce(
+                            (acc, c) => acc + c.current_value,
                             0,
                           ) *
                           (data.currencyRates?.[currentCurrency]?.value ?? 1) *
