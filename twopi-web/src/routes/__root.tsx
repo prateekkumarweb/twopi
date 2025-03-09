@@ -1,19 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import React, { Suspense } from "react";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { apiClient } from "~/lib/openapi";
 import "~/styles/app.css";
 
 const queryClient = new QueryClient();
-
-const TanStackRouterDevtools = import.meta.env.DEV
-  ? React.lazy(() =>
-      import("@tanstack/router-devtools").then((res) => ({
-        default: res.TanStackRouterDevtools,
-      })),
-    )
-  : () => null;
 
 async function fetchAuth() {
   const { data, error, response } = await apiClient.GET("/twopi-api/api/user");
@@ -48,9 +40,7 @@ function RootComponent() {
         <Outlet />
         <ReactQueryDevtools />
       </QueryClientProvider>
-      <Suspense>
-        <TanStackRouterDevtools />
-      </Suspense>
+      <TanStackRouterDevtools />
     </>
   );
 }
