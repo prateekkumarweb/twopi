@@ -3,7 +3,7 @@ import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    return { session: context.session };
+    return { session: context.session, unauthorized: context.unauthorized };
   },
   component: Home,
 });

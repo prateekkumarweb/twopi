@@ -3,7 +3,7 @@ import Layout from "~/components/AppLayout";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: ({ location, context }) => {
-    if (!context.session?.user) {
+    if (!context.session?.user && context.unauthorized) {
       throw redirect({
         to: "/signin",
         search: {

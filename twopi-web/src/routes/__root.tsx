@@ -16,20 +16,26 @@ const TanStackRouterDevtools = import.meta.env.DEV
   : () => null;
 
 async function fetchAuth() {
-  const { data, error } = await apiClient.GET("/twopi-api/api/user");
+  const { data, error, response } = await apiClient.GET("/twopi-api/api/user");
+  if (response.status === 500) {
+    console.error(response.statusText, response);
+    throw new Error("Internal Server Error");
+  }
   if (error) {
     console.error("Auth Error", error);
   }
   return {
     session: data ? { user: data } : undefined,
+    unauthorized: response.status === 401,
   };
 }
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    const { session } = await fetchAuth();
+    const { session, unauthorized } = await fetchAuth();
     return {
       session,
+      unauthorized,
     };
   },
   component: RootComponent,
