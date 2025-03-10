@@ -245,6 +245,8 @@ function RouteComponent() {
     };
   });
 
+  categories.sort((a, b) => (a.name < b.name ? -1 : 1));
+
   if (isPending) return "Loading...";
 
   if (errors.length)
