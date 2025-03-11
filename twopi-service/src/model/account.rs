@@ -258,6 +258,8 @@ impl AccountWithTransactions {
         else {
             return Ok(None);
         };
+        let all_accounts = Account::find().all(db).await?;
+        let all_currencies = Currency::find().all(db).await?;
 
         let Some(currency) = CurrencyModel::find_by_code(db, &account.currency_code).await? else {
             return Ok(None);
@@ -279,6 +281,18 @@ impl AccountWithTransactions {
             let items = items
                 .into_iter()
                 .map(|i| {
+                    #[allow(clippy::unwrap_used)]
+                    let account = all_accounts
+                        .iter()
+                        .find(|a| a.id == i.account_id)
+                        .cloned()
+                        .unwrap();
+                    #[allow(clippy::unwrap_used)]
+                    let currency = all_currencies
+                        .iter()
+                        .find(|c| c.code == account.currency_code)
+                        .cloned()
+                        .unwrap();
                     TransactionItemModel::new(
                         i.id,
                         i.notes,
@@ -290,7 +304,8 @@ impl AccountWithTransactions {
                     .with_category_and_account(
                         i.category_id
                             .and_then(|cid| categories.iter().find(|&c| c.id() == cid).cloned()),
-                        account.clone(),
+                        AccountModel::from_model(account)
+                            .with_currency(CurrencyModel::from_model(currency)),
                     )
                 })
                 .collect();
