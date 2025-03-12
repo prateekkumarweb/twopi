@@ -33,6 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { useLocalStorage } from "~/hooks/use-local-storage";
 import {
   accountQueryOptions,
   categoryQueryOptions,
@@ -78,7 +79,7 @@ function RouteComponent() {
     year: today.getUTCFullYear(),
   });
 
-  const [currentCurrency, setCurrency] = useState("USD");
+  const [currentCurrency, setCurrency] = useLocalStorage("currency", "USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
   const currencies =
     data.currencies?.filter((c) => currenciesToShow.includes(c.code)) ?? [];
