@@ -11,6 +11,7 @@ import {
 } from "~/lib/query-options";
 import { createAccount } from "~/lib/server-fns/account";
 import { isDefined } from "~/lib/utils";
+import CurrencyInput from "./CurrencyInput";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -175,6 +176,7 @@ export default function AccountEditor(props: {
         <form.Field name="currencyCode">
           {(field) => (
             <Select
+              name={field.name}
               value={field.state.value}
               onValueChange={(e) => field.handleChange(e)}
             >
@@ -193,13 +195,22 @@ export default function AccountEditor(props: {
         </form.Field>
         <form.Field name="startingBalance">
           {(field) => (
-            <Input
-              type="text"
-              placeholder="Starting Balance"
+            <CurrencyInput
               name={field.name}
               value={field.state.value}
+              placeholder="Starting Balance"
               onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(Number(e.target.value))}
+              onChange={field.handleChange}
+              currencyCode={
+                data.currencies?.find(
+                  (c) => c.code === field.form.state.values.currencyCode,
+                )?.code ?? ""
+              }
+              decimalDigits={
+                data.currencies?.find(
+                  (c) => c.code === field.form.state.values.currencyCode,
+                )?.decimal_digits ?? 0
+              }
             />
           )}
         </form.Field>

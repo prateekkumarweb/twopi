@@ -2,7 +2,9 @@ import { Input } from "./ui/input";
 import { Toggle } from "./ui/toggle";
 
 export default function CurrencyInput(props: {
+  name: string;
   value: number;
+  placeholder: string;
   onChange: (value: number) => void;
   onBlur?: () => void;
   currencyCode: string;
@@ -34,7 +36,9 @@ export default function CurrencyInput(props: {
       </Toggle>
       <Input
         type="number"
+        name={props.name}
         value={amount}
+        placeholder={props.placeholder}
         onChange={(e) => {
           handleOnChange(isNegative, parseFloat(e.target.value) || 0);
         }}

@@ -211,7 +211,9 @@ export default function TransactionEditor(props: {
                     <form.Field name={`transactions[${i}].amount`}>
                       {(subField) => (
                         <CurrencyInput
+                          name={subField.name}
                           value={subField.state.value}
+                          placeholder="Amount"
                           onBlur={subField.handleBlur}
                           onChange={subField.handleChange}
                           currencyCode={
