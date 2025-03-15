@@ -1,5 +1,5 @@
 use migration::OnConflict;
-use sea_orm::{ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder};
+use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -31,14 +31,6 @@ impl CategoryReq {
             .all(db)
             .await
             .map(|v| v.into_iter().map(CategoryModel).collect())
-    }
-
-    pub async fn _find_one(db: &DbConn, id: Uuid) -> Result<Option<CategoryModel>, DbErr> {
-        CategoryEntity::find()
-            .filter(CategoryColumn::Id.eq(id))
-            .one(db)
-            .await
-            .map(|c| c.map(CategoryModel))
     }
 
     pub async fn upsert(db: &DbConn, category: Self) -> Result<Uuid, DbErr> {

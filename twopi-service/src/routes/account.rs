@@ -9,7 +9,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppError, AppResult, ValidatedJson, XUserId, database,
-    model::account::{AccountModel, AccountWithCurrency, AccountWithTransactions, NewAccountModel},
+    model::account::{AccountExpandedModel, AccountReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -21,26 +21,26 @@ pub fn router() -> OpenApiRouter<()> {
 
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
-    (status = OK, body = Vec<AccountWithCurrency>),
+    (status = OK, body = Vec<AccountExpandedModel>),
     AppError
 ))]
-async fn account(id: XUserId) -> AppResult<Json<Vec<AccountWithCurrency>>> {
+async fn account(id: XUserId) -> AppResult<Json<Vec<AccountExpandedModel>>> {
     let db = database(&id.0).await?;
-    Ok(Json(AccountWithCurrency::find_all(&db).await?))
+    Ok(Json(AccountReq::find_all_with_currency(&db).await?))
 }
 
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{account_id}", params(("account_id" = Uuid, Path)), responses(
-    (status = OK, body = Option<AccountWithTransactions>),
+    (status = OK, body = Option<AccountExpandedModel>),
     AppError
 ))]
 async fn account_by_id(
     id: XUserId,
     Path(account_id): Path<Uuid>,
-) -> AppResult<Json<Option<AccountWithTransactions>>> {
+) -> AppResult<Json<Option<AccountExpandedModel>>> {
     let db = database(&id.0).await?;
     Ok(Json(
-        AccountWithTransactions::find_by_id(&db, account_id).await?,
+        AccountReq::find_one_with_currency(&db, account_id).await?,
     ))
 }
 
@@ -60,36 +60,36 @@ async fn delete_account(
     Query(DeleteAccountParams { id: account_id }): Query<DeleteAccountParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    AccountModel::delete(&db, account_id).await?;
+    AccountReq::delete(&db, account_id).await?;
     Ok(())
 }
 
 #[tracing::instrument(skip(account))]
 #[utoipa::path(put, path = "/",
-    request_body = NewAccountModel, responses(
+    request_body = AccountReq, responses(
     (status = OK, body = Uuid),
     AppError
 ))]
 async fn put_account(
     id: XUserId,
-    ValidatedJson(account): ValidatedJson<NewAccountModel>,
+    ValidatedJson(account): ValidatedJson<AccountReq>,
 ) -> AppResult<Json<Uuid>> {
     let db = database(&id.0).await?;
-    let id = AccountModel::upsert(account, &db).await?;
+    let id = AccountReq::upsert(&db, account).await?;
     Ok(Json(id))
 }
 
 #[tracing::instrument(skip(accounts))]
 #[utoipa::path(put, path = "/import",
-    request_body = Vec<NewAccountModel>, responses(
+    request_body = Vec<AccountReq>, responses(
     (status = OK, body = ()),
     AppError
 ))]
 async fn put_accounts(
     id: XUserId,
-    ValidatedJson(accounts): ValidatedJson<Vec<NewAccountModel>>,
+    ValidatedJson(accounts): ValidatedJson<Vec<AccountReq>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    AccountModel::upsert_many(accounts, &db).await?;
+    AccountReq::upsert_many(&db, accounts).await?;
     Ok(())
 }

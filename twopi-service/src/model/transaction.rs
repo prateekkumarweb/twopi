@@ -1,57 +1,42 @@
-use std::collections::HashMap;
-
 use migration::OnConflict;
 use sea_orm::{
-    ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder,
-    TransactionTrait, prelude::Uuid,
+    ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 use validator::Validate;
 
+use crate::entity::{transaction, transaction_item};
+
 use super::{
-    account::{AccountModel, AccountWithCurrency},
-    v2::{
-        category::{CategoryModel, CategoryReq},
-        currency::{CurrencyModel, CurrencyReq},
-    },
-};
-use crate::entity::{
-    account, category,
-    prelude::*,
-    transaction::{self, ActiveModel, Column},
-    transaction_item,
+    account::{AccountColumn, AccountEntity},
+    category::{CategoryActiveModel, CategoryColumn, CategoryEntity},
 };
 
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct TransactionModel {
-    id: Uuid,
-    title: String,
-    timestamp: chrono::DateTime<chrono::Utc>,
-    transaction_items: Vec<TransactionItemModel>,
-}
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
+pub struct TransactionModel(#[schema(inline)] pub transaction::Model);
+pub type TransactionEntity = transaction::Entity;
+pub type TransactionActiveModel = transaction::ActiveModel;
+pub type TransactionColumn = transaction::Column;
 
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct TransactionItemModel {
-    pub id: Uuid,
-    pub notes: String,
-    pub transaction_id: Uuid,
-    pub account_id: Uuid,
-    pub category_id: Option<Uuid>,
-    pub amount: i64,
-}
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
+pub struct TransactionItemModel(#[schema(inline)] pub transaction_item::Model);
+pub type TransactionItemEntity = transaction_item::Entity;
+pub type TransactionItemActiveModel = transaction_item::ActiveModel;
+pub type TransactionItemColumn = transaction_item::Column;
 
-#[derive(ToSchema, Serialize, Deserialize, Validate)]
-pub struct NewTransactionModel {
-    id: Option<Uuid>,
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize, Validate)]
+pub struct TransactionReq {
+    pub id: Option<Uuid>,
     #[validate(length(min = 1, max = 100))]
-    title: String,
-    timestamp: chrono::DateTime<chrono::Utc>,
-    transaction_items: Vec<NewTransactionItemModel>,
+    pub title: String,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub items: Vec<TransactionItemReq>,
 }
 
-#[derive(ToSchema, Serialize, Deserialize, Validate)]
-pub struct NewTransactionItemModel {
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize, Validate)]
+pub struct TransactionItemReq {
     id: Option<Uuid>,
     #[validate(length(min = 0, max = 100))]
     notes: String,
@@ -62,125 +47,47 @@ pub struct NewTransactionItemModel {
     amount: i64,
 }
 
-impl TransactionModel {
-    pub async fn find_all(db: &DbConn) -> Result<Vec<TransactionWithAccount>, DbErr> {
-        let transactions = Transaction::find()
-            .order_by_desc(transaction::Column::Timestamp)
-            .find_with_related(TransactionItem)
-            .all(db)
-            .await?;
-        let accounts = Account::find()
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|m| (m.id, m))
-            .collect::<HashMap<_, _>>();
-        let currencies = CurrencyReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.code.clone(), c))
-            .collect::<HashMap<_, _>>();
-        let categories = CategoryReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.id, c))
-            .collect::<HashMap<_, _>>();
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
+pub struct TransactionExpandedModel {
+    pub transaction: TransactionModel,
+    pub items: Vec<TransactionItemModel>,
+}
 
-        Ok(transactions
-            .into_iter()
-            .map(|(t, items)| {
-                Some(TransactionWithAccount {
-                    id: t.id,
-                    title: t.title,
-                    timestamp: t.timestamp,
-                    transaction_items: items
-                        .into_iter()
-                        .map(|item| {
-                            Some(TransactionItemWithAccount {
-                                id: item.id,
-                                notes: item.notes,
-                                transaction_id: item.transaction_id,
-                                amount: item.amount,
-                                account: accounts.get(&item.account_id).cloned().and_then(|a| {
-                                    let c = a.currency_code.clone();
-                                    Some(
-                                        AccountModel::from_model(a)
-                                            .with_currency(currencies.get(&c).cloned()?),
-                                    )
-                                })?,
-                                category: item
-                                    .category_id
-                                    .and_then(|cid| categories.get(&cid).cloned()),
-                            })
+impl TransactionReq {
+    pub async fn find_all_with_items(db: &DbConn) -> Result<Vec<TransactionExpandedModel>, DbErr> {
+        TransactionEntity::find()
+            .order_by_asc(TransactionColumn::Timestamp)
+            .find_also_related(TransactionItemEntity::default())
+            .all(db)
+            .await
+            .map(|transactions| {
+                transactions
+                    .into_iter()
+                    .map(|(t, items)| {
+                        Some(TransactionExpandedModel {
+                            transaction: TransactionModel(t),
+                            items: items.into_iter().map(TransactionItemModel).collect(),
                         })
-                        .collect::<Option<_>>()?,
-                })
+                    })
+                    .collect::<Option<_>>()
+                    .unwrap_or_default()
             })
-            .collect::<Option<_>>()
-            .unwrap_or_default())
     }
 
-    pub async fn find_by_id(
+    pub async fn find_one_with_items(
         db: &DbConn,
         id: Uuid,
-    ) -> Result<Option<TransactionWithAccount>, DbErr> {
-        let Some((transaction, items)) = Transaction::find_by_id(id)
-            .find_with_related(TransactionItem)
-            .all(db)
-            .await?
-            .into_iter()
-            .next()
-        else {
-            return Ok(None);
-        };
-
-        let accounts = Account::find()
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|m| (m.id, m))
-            .collect::<HashMap<_, _>>();
-        let currencies = CurrencyReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.code.clone(), c))
-            .collect::<HashMap<_, _>>();
-        let categories = CategoryReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.id, c))
-            .collect::<HashMap<_, _>>();
-
-        let Some(transaction_items) = items
-            .into_iter()
-            .map(|item| {
-                Some(TransactionItemWithAccount {
-                    id: item.id,
-                    notes: item.notes,
-                    transaction_id: item.transaction_id,
-                    amount: item.amount,
-                    account: accounts.get(&item.account_id).cloned().and_then(|a| {
-                        let c = a.currency_code.clone();
-                        Some(
-                            AccountModel::from_model(a).with_currency(currencies.get(&c).cloned()?),
-                        )
-                    })?,
-                    category: item
-                        .category_id
-                        .and_then(|cid| categories.get(&cid).cloned()),
+    ) -> Result<Option<TransactionExpandedModel>, DbErr> {
+        TransactionEntity::find_by_id(id)
+            .find_also_related(TransactionItemEntity::default())
+            .one(db)
+            .await
+            .map(|t| {
+                t.map(|(t, items)| TransactionExpandedModel {
+                    transaction: TransactionModel(t),
+                    items: items.into_iter().map(TransactionItemModel).collect(),
                 })
             })
-            .collect::<Option<_>>()
-        else {
-            return Ok(None);
-        };
-
-        Ok(Some(TransactionWithAccount {
-            id: transaction.id,
-            title: transaction.title,
-            timestamp: transaction.timestamp,
-            transaction_items,
-        }))
     }
 
     pub async fn find_by_month(
@@ -188,195 +95,42 @@ impl TransactionModel {
         start_timestamp: chrono::DateTime<chrono::Utc>,
         // End time is exclusive
         end_timestamp: chrono::DateTime<chrono::Utc>,
-    ) -> Result<Vec<TransactionWithAccount>, DbErr> {
-        let transactions = Transaction::find()
+    ) -> Result<Vec<TransactionExpandedModel>, DbErr> {
+        let transactions = TransactionEntity::find()
             .filter(
                 transaction::Column::Timestamp
                     .gte(start_timestamp)
                     .and(transaction::Column::Timestamp.lt(end_timestamp)),
             )
             .order_by_desc(transaction::Column::Timestamp)
-            .find_with_related(TransactionItem)
+            .find_with_related(TransactionItemEntity::default())
             .all(db)
             .await?;
-
-        let accounts = Account::find()
-            .all(db)
-            .await?
-            .into_iter()
-            .map(|m| (m.id, m))
-            .collect::<HashMap<_, _>>();
-
-        let currencies = CurrencyReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.code.clone(), c))
-            .collect::<HashMap<_, _>>();
-
-        let categories = CategoryReq::find_all(db)
-            .await?
-            .into_iter()
-            .map(|c| (c.0.id, c))
-            .collect::<HashMap<_, _>>();
 
         Ok(transactions
             .into_iter()
             .map(|(t, items)| {
-                Some(TransactionWithAccount {
-                    id: t.id,
-                    title: t.title,
-                    timestamp: t.timestamp,
-                    transaction_items: items
-                        .into_iter()
-                        .map(|item| {
-                            Some(TransactionItemWithAccount {
-                                id: item.id,
-                                notes: item.notes,
-                                transaction_id: item.transaction_id,
-                                amount: item.amount,
-                                account: accounts.get(&item.account_id).cloned().and_then(|a| {
-                                    let c = a.currency_code.clone();
-                                    Some(
-                                        AccountModel::from_model(a)
-                                            .with_currency(currencies.get(&c).cloned()?),
-                                    )
-                                })?,
-                                category: item
-                                    .category_id
-                                    .and_then(|cid| categories.get(&cid).cloned()),
-                            })
-                        })
-                        .collect::<Option<_>>()?,
+                Some(TransactionExpandedModel {
+                    transaction: TransactionModel(t),
+                    items: items.into_iter().map(TransactionItemModel).collect(),
                 })
             })
             .collect::<Option<_>>()
             .unwrap_or_default())
     }
 
-    pub async fn upsert(transaction: NewTransactionModel, db: &DbConn) -> Result<Uuid, DbErr> {
-        let transaction = db
-            .transaction::<_, _, DbErr>(|txn| {
-                Box::pin(async move {
-                    let tx_id = transaction.id.unwrap_or_else(|| {
-                        Uuid::new_v7(uuid::Timestamp::from_unix(
-                            uuid::timestamp::context::NoContext,
-                            transaction.timestamp.timestamp() as u64,
-                            0,
-                        ))
-                    });
-                    let transaction_model = Transaction::insert(ActiveModel {
-                        id: ActiveValue::Set(tx_id),
-                        title: ActiveValue::Set(transaction.title.trim().to_owned()),
-                        timestamp: ActiveValue::Set(transaction.timestamp),
-                    })
-                    .on_conflict(
-                        OnConflict::column(Column::Id)
-                            .update_columns([Column::Title, Column::Timestamp])
-                            .to_owned(),
-                    )
-                    .exec(txn)
-                    .await?;
-
-                    let old_items = TransactionItem::find()
-                        .filter(transaction_item::Column::TransactionId.eq(tx_id))
-                        .all(txn)
-                        .await?;
-
-                    for item in old_items {
-                        TransactionItem::delete_by_id(item.id).exec(txn).await?;
-                    }
-
-                    for item in &transaction.transaction_items {
-                        let account = Account::find()
-                            .filter(account::Column::Name.eq(item.account_name.to_string()))
-                            .one(txn)
-                            .await?
-                            .ok_or_else(|| {
-                                DbErr::RecordNotFound(format!(
-                                    "account_name: {}",
-                                    item.account_name
-                                ))
-                            })?;
-                        let cat_id = if let Some(cat) = &item.category_name {
-                            let found = Category::find()
-                                .filter(category::Column::Name.eq(item.category_name.clone()))
-                                .one(txn)
-                                .await?;
-                            if let Some(found) = found {
-                                Some(found.id)
-                            } else {
-                                Some(
-                                    Category::insert(category::ActiveModel {
-                                        id: ActiveValue::Set(Uuid::new_v7(
-                                            uuid::Timestamp::from_unix(
-                                                uuid::timestamp::context::NoContext,
-                                                transaction.timestamp.timestamp() as u64,
-                                                0,
-                                            ),
-                                        )),
-                                        name: ActiveValue::Set(cat.clone()),
-                                        group: ActiveValue::Set(String::new()),
-                                        icon: ActiveValue::Set(String::new()),
-                                    })
-                                    .on_conflict(
-                                        OnConflict::column(category::Column::Name)
-                                            .do_nothing()
-                                            .to_owned(),
-                                    )
-                                    .exec(txn)
-                                    .await?
-                                    .last_insert_id,
-                                )
-                            }
-                        } else {
-                            None
-                        };
-
-                        TransactionItem::insert(transaction_item::ActiveModel {
-                            id: ActiveValue::Set(item.id.unwrap_or_else(|| {
-                                Uuid::new_v7(uuid::Timestamp::from_unix(
-                                    uuid::timestamp::context::NoContext,
-                                    transaction.timestamp.timestamp() as u64,
-                                    0,
-                                ))
-                            })),
-                            notes: ActiveValue::Set(item.notes.trim().to_owned()),
-                            transaction_id: ActiveValue::Set(tx_id),
-                            account_id: ActiveValue::Set(account.id),
-                            category_id: ActiveValue::Set(cat_id),
-                            amount: ActiveValue::Set(item.amount),
-                        })
-                        .on_conflict(
-                            OnConflict::column(transaction_item::Column::Id)
-                                .update_columns([
-                                    transaction_item::Column::Notes,
-                                    transaction_item::Column::TransactionId,
-                                    transaction_item::Column::AccountId,
-                                    transaction_item::Column::CategoryId,
-                                    transaction_item::Column::Amount,
-                                ])
-                                .to_owned(),
-                        )
-                        .exec(txn)
-                        .await?;
-                    }
-
-                    Ok(transaction_model.last_insert_id)
-                })
-            })
-            .await
-            .map_err(|e| match e {
-                sea_orm::TransactionError::Connection(e)
-                | sea_orm::TransactionError::Transaction(e) => e,
-            })?;
-
-        Ok(transaction)
+    pub async fn upsert(db: &DbConn, transaction: Self) -> Result<Uuid, DbErr> {
+        TransactionEntity::insert(TransactionActiveModel {
+            id: ActiveValue::Set(transaction.id.unwrap_or_else(Uuid::now_v7)),
+            title: ActiveValue::Set(transaction.title),
+            timestamp: ActiveValue::Set(transaction.timestamp),
+        })
+        .exec(db)
+        .await
+        .map(|t| t.last_insert_id)
     }
 
-    pub async fn upsert_many(
-        transactions: Vec<NewTransactionModel>,
-        db: &DbConn,
-    ) -> Result<(), DbErr> {
+    pub async fn upsert_many(db: &DbConn, transactions: Vec<Self>) -> Result<(), DbErr> {
         db.transaction::<_, _, DbErr>(|txn| {
             Box::pin(async move {
                 for tx in transactions {
@@ -387,31 +141,36 @@ impl TransactionModel {
                             0,
                         ))
                     });
-                    Transaction::insert(ActiveModel {
+                    TransactionEntity::insert(TransactionActiveModel {
                         id: ActiveValue::Set(tx_id),
                         title: ActiveValue::Set(tx.title.trim().to_owned()),
                         timestamp: ActiveValue::Set(tx.timestamp),
                     })
                     .on_conflict(
-                        OnConflict::column(Column::Id)
-                            .update_columns([Column::Title, Column::Timestamp])
+                        OnConflict::column(TransactionColumn::Id)
+                            .update_columns([
+                                TransactionColumn::Title,
+                                TransactionColumn::Timestamp,
+                            ])
                             .to_owned(),
                     )
                     .exec(txn)
                     .await?;
 
-                    let old_items = TransactionItem::find()
+                    let old_items = TransactionItemEntity::find()
                         .filter(transaction_item::Column::TransactionId.eq(tx_id))
                         .all(txn)
                         .await?;
 
                     for item in old_items {
-                        TransactionItem::delete_by_id(item.id).exec(txn).await?;
+                        TransactionItemEntity::delete_by_id(item.id)
+                            .exec(txn)
+                            .await?;
                     }
 
-                    for item in &tx.transaction_items {
-                        let account = Account::find()
-                            .filter(account::Column::Name.eq(item.account_name.to_string()))
+                    for item in &tx.items {
+                        let account = AccountEntity::find()
+                            .filter(AccountColumn::Name.eq(item.account_name.to_string()))
                             .one(txn)
                             .await?
                             .ok_or_else(|| {
@@ -421,15 +180,15 @@ impl TransactionModel {
                                 ))
                             })?;
                         let cat_id = if let Some(cat) = &item.category_name {
-                            let found = Category::find()
-                                .filter(category::Column::Name.eq(item.category_name.clone()))
+                            let found = CategoryEntity::find()
+                                .filter(CategoryColumn::Name.eq(item.category_name.clone()))
                                 .one(txn)
                                 .await?;
                             if let Some(found) = found {
                                 Some(found.id)
                             } else {
                                 Some(
-                                    Category::insert(category::ActiveModel {
+                                    CategoryEntity::insert(CategoryActiveModel {
                                         id: ActiveValue::Set(Uuid::new_v7(
                                             uuid::Timestamp::from_unix(
                                                 uuid::timestamp::context::NoContext,
@@ -442,7 +201,7 @@ impl TransactionModel {
                                         icon: ActiveValue::Set(String::new()),
                                     })
                                     .on_conflict(
-                                        OnConflict::column(category::Column::Name)
+                                        OnConflict::column(CategoryColumn::Name)
                                             .do_nothing()
                                             .to_owned(),
                                     )
@@ -455,7 +214,7 @@ impl TransactionModel {
                             None
                         };
 
-                        TransactionItem::insert(transaction_item::ActiveModel {
+                        TransactionItemEntity::insert(TransactionItemActiveModel {
                             id: ActiveValue::Set(item.id.unwrap_or_else(|| {
                                 Uuid::new_v7(uuid::Timestamp::from_unix(
                                     uuid::timestamp::context::NoContext,
@@ -470,13 +229,13 @@ impl TransactionModel {
                             amount: ActiveValue::Set(item.amount),
                         })
                         .on_conflict(
-                            OnConflict::column(transaction_item::Column::Id)
+                            OnConflict::column(TransactionItemColumn::Id)
                                 .update_columns([
-                                    transaction_item::Column::Notes,
-                                    transaction_item::Column::TransactionId,
-                                    transaction_item::Column::AccountId,
-                                    transaction_item::Column::CategoryId,
-                                    transaction_item::Column::Amount,
+                                    TransactionItemColumn::Notes,
+                                    TransactionItemColumn::TransactionId,
+                                    TransactionItemColumn::AccountId,
+                                    TransactionItemColumn::CategoryId,
+                                    TransactionItemColumn::Amount,
                                 ])
                                 .to_owned(),
                         )
@@ -498,97 +257,12 @@ impl TransactionModel {
     }
 
     pub async fn delete(db: &DbConn, id: Uuid) -> Result<(), DbErr> {
-        Transaction::delete_by_id(id).exec(db).await?;
+        TransactionEntity::delete_by_id(id).exec(db).await?;
         Ok(())
     }
-}
 
-impl TransactionItemModel {
-    pub const fn new(
-        id: Uuid,
-        notes: String,
-        transaction_id: Uuid,
-        account_id: Uuid,
-        category_id: Option<Uuid>,
-        amount: i64,
-    ) -> Self {
-        Self {
-            id,
-            notes,
-            transaction_id,
-            account_id,
-            category_id,
-            amount,
-        }
-    }
-
-    pub fn with_category_and_account(
-        self,
-        category: Option<CategoryModel>,
-        account: AccountWithCurrency,
-    ) -> TransactionItemWithAccount {
-        TransactionItemWithAccount {
-            category,
-            account,
-            id: self.id,
-            notes: self.notes,
-            transaction_id: self.transaction_id,
-            amount: self.amount,
-        }
-    }
-
-    pub async fn delete(db: &DbConn, id: Uuid) -> Result<(), DbErr> {
-        TransactionItem::delete_by_id(id).exec(db).await?;
+    pub async fn delete_item(db: &DbConn, id: Uuid) -> Result<(), DbErr> {
+        TransactionItemEntity::delete_by_id(id).exec(db).await?;
         Ok(())
-    }
-}
-
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct TransactionWithAccount {
-    id: Uuid,
-    title: String,
-    timestamp: chrono::DateTime<chrono::Utc>,
-    transaction_items: Vec<TransactionItemWithAccount>,
-}
-
-#[derive(ToSchema, Serialize, Deserialize)]
-pub struct TransactionItemWithAccount {
-    id: Uuid,
-    notes: String,
-    transaction_id: Uuid,
-    account: AccountWithCurrency,
-    category: Option<CategoryModel>,
-    amount: i64,
-}
-
-impl TransactionWithAccount {
-    pub const fn new(id: Uuid, title: String, timestamp: chrono::DateTime<chrono::Utc>) -> Self {
-        Self {
-            id,
-            title,
-            timestamp,
-            transaction_items: vec![],
-        }
-    }
-
-    pub fn with_items(self, transaction_items: Vec<TransactionItemWithAccount>) -> Self {
-        Self {
-            transaction_items,
-            ..self
-        }
-    }
-
-    pub const fn items(&self) -> &Vec<TransactionItemWithAccount> {
-        &self.transaction_items
-    }
-}
-
-impl TransactionItemWithAccount {
-    pub const fn category(&self) -> Option<&CategoryModel> {
-        self.category.as_ref()
-    }
-
-    pub const fn amount(&self) -> (i64, &CurrencyModel) {
-        (self.amount, self.account.currency())
     }
 }

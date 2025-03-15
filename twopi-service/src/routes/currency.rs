@@ -13,7 +13,7 @@ use crate::{
     AppError, AppResult, ValidatedJson, XUserId,
     cache::CacheManager,
     database,
-    model::v2::currency::{CurrencyModel, CurrencyReq},
+    model::currency::{CurrencyModel, CurrencyReq},
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {

@@ -9,9 +9,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
     AppError, AppResult, ValidatedJson, XUserId, database,
-    model::transaction::{
-        NewTransactionModel, TransactionItemModel, TransactionModel, TransactionWithAccount,
-    },
+    model::transaction::{TransactionExpandedModel, TransactionReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -24,26 +22,26 @@ pub fn router() -> OpenApiRouter<()> {
 
 #[tracing::instrument]
 #[utoipa::path(get, path = "/", responses(
-    (status = OK, body = Vec<TransactionWithAccount>),
+    (status = OK, body = Vec<TransactionExpandedModel>),
     AppError
 ))]
-async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionWithAccount>>> {
+async fn transaction(id: XUserId) -> AppResult<Json<Vec<TransactionExpandedModel>>> {
     let db = database(&id.0).await?;
-    Ok(Json(TransactionModel::find_all(&db).await?))
+    Ok(Json(TransactionReq::find_all_with_items(&db).await?))
 }
 
 #[tracing::instrument]
 #[utoipa::path(get, path = "/{transaction_id}", params(("transaction_id" = Uuid, Path)), responses(
-    (status = OK, body = Option<TransactionWithAccount>),
+    (status = OK, body = Option<TransactionExpandedModel>),
     AppError
 ))]
 async fn transaction_by_id(
     id: XUserId,
     Path(transaction_id): Path<Uuid>,
-) -> AppResult<Json<Option<TransactionWithAccount>>> {
+) -> AppResult<Json<Option<TransactionExpandedModel>>> {
     let db = database(&id.0).await?;
     Ok(Json(
-        TransactionModel::find_by_id(&db, transaction_id).await?,
+        TransactionReq::find_one_with_items(&db, transaction_id).await?,
     ))
 }
 
@@ -63,7 +61,7 @@ async fn delete_transaction(
     Query(DeleteTransactionParams { id: transaction_id }): Query<DeleteTransactionParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    TransactionModel::delete(&db, transaction_id).await?;
+    TransactionReq::delete(&db, transaction_id).await?;
     Ok(())
 }
 
@@ -77,36 +75,36 @@ async fn delete_transaction_item(
     Query(DeleteTransactionParams { id: transaction_id }): Query<DeleteTransactionParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    TransactionItemModel::delete(&db, transaction_id).await?;
+    TransactionReq::delete_item(&db, transaction_id).await?;
     Ok(())
 }
 
 #[tracing::instrument(skip(transaction))]
 #[utoipa::path(put, path = "/",
-    request_body = NewTransactionModel, responses(
+    request_body = TransactionReq, responses(
     (status = OK, body = ()),
     AppError
 ))]
 async fn put_transaction(
     id: XUserId,
-    ValidatedJson(transaction): ValidatedJson<NewTransactionModel>,
+    ValidatedJson(transaction): ValidatedJson<TransactionReq>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    TransactionModel::upsert(transaction, &db).await?;
+    TransactionReq::upsert(&db, transaction).await?;
     Ok(())
 }
 
 #[tracing::instrument(skip(transactions))]
 #[utoipa::path(put, path = "/import",
-    request_body = Vec<NewTransactionModel>, responses(
+    request_body = Vec<TransactionReq>, responses(
     (status = OK, body = ()),
     AppError
 ))]
 async fn put_transactions(
     id: XUserId,
-    ValidatedJson(transactions): ValidatedJson<Vec<NewTransactionModel>>,
+    ValidatedJson(transactions): ValidatedJson<Vec<TransactionReq>>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    TransactionModel::upsert_many(transactions, &db).await?;
+    TransactionReq::upsert_many(&db, transactions).await?;
     Ok(())
 }

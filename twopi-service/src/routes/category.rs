@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     AppError, AppResult, ValidatedJson, XUserId, database,
-    model::v2::category::{CategoryModel, CategoryReq},
+    model::category::{CategoryModel, CategoryReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {

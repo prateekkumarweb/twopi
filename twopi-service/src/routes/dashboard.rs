@@ -5,11 +5,12 @@ use chrono::Datelike;
 use serde::Serialize;
 use utoipa::ToSchema;
 use utoipa_axum::{router::OpenApiRouter, routes};
+use uuid::Uuid;
 
 use crate::{
     XUserId,
     error::{AppError, AppResult},
-    model::{transaction::TransactionModel, v2::category::CategoryReq},
+    model::{account::AccountReq, category::CategoryReq, transaction::TransactionReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -19,7 +20,7 @@ pub fn router() -> OpenApiRouter<()> {
 #[derive(Serialize, ToSchema)]
 struct DashboardResponse {
     last_3m: [(u32, i32); 3],
-    categoies_last_3m: HashMap<String, [HashMap<String, f64>; 3]>,
+    categoies_last_3m: HashMap<Uuid, [HashMap<String, f64>; 3]>,
 }
 
 #[tracing::instrument]
@@ -30,15 +31,15 @@ struct DashboardResponse {
 #[axum::debug_handler]
 async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
     let db = crate::database(&id.0).await?;
+    let accounts = AccountReq::find_all_with_currency(&db)
+        .await?
+        .into_iter()
+        .map(|a| (a.account.0.id, a))
+        .collect::<HashMap<_, _>>();
     let all_categories = CategoryReq::find_all(&db).await?;
     let mut categories = all_categories
         .into_iter()
-        .map(|c| {
-            (
-                c.0.name,
-                [HashMap::new(), HashMap::new(), HashMap::new()],
-            )
-        })
+        .map(|c| (c.0.id, [HashMap::new(), HashMap::new(), HashMap::new()]))
         .collect::<HashMap<_, _>>();
     let now = chrono::Utc::now();
     let current_month_year = (now.month(), now.year());
@@ -84,20 +85,23 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
             .unwrap()
             .and_utc();
     let current_transactions =
-        TransactionModel::find_by_month(&db, current_timestamp, next_timestamp).await?;
+        TransactionReq::find_by_month(&db, current_timestamp, next_timestamp).await?;
     let prev_transactions =
-        TransactionModel::find_by_month(&db, prev_timestamp, current_timestamp).await?;
+        TransactionReq::find_by_month(&db, prev_timestamp, current_timestamp).await?;
     let prev_prev_transactions =
-        TransactionModel::find_by_month(&db, prev_prev_timestamp, prev_timestamp).await?;
+        TransactionReq::find_by_month(&db, prev_prev_timestamp, prev_timestamp).await?;
     for t in current_transactions {
-        let items = t.items();
+        let items = &t.items;
         for i in items {
-            let Some(category) = i.category() else {
+            let Some(category_id) = i.0.category_id else {
                 continue;
             };
-            let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(&category.0.name).unwrap();
+            let account = accounts.get(&i.0.account_id).unwrap();
+            let amount = i.0.amount;
+            let currency = &account.currency;
+            #[allow(clippy::unwrap_used)]
+            let entry = categories.get_mut(&category_id).unwrap();
             #[allow(clippy::cast_precision_loss)]
             let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
             let value = entry[2].entry(currency.0.code.to_string()).or_insert(0.0);
@@ -105,14 +109,17 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
         }
     }
     for t in prev_transactions {
-        let items = t.items();
+        let items = &t.items;
         for i in items {
-            let Some(category) = i.category() else {
+            let Some(category_id) = i.0.category_id else {
                 continue;
             };
-            let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(&category.0.name).unwrap();
+            let account = accounts.get(&i.0.account_id).unwrap();
+            let amount = i.0.amount;
+            let currency = &account.currency;
+            #[allow(clippy::unwrap_used)]
+            let entry = categories.get_mut(&category_id).unwrap();
             #[allow(clippy::cast_precision_loss)]
             let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
             let value = entry[1].entry(currency.0.code.to_string()).or_insert(0.0);
@@ -120,14 +127,17 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
         }
     }
     for t in prev_prev_transactions {
-        let items = t.items();
+        let items = &t.items;
         for i in items {
-            let Some(category) = i.category() else {
+            let Some(category_id) = i.0.category_id else {
                 continue;
             };
-            let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(&category.0.name).unwrap();
+            let account = accounts.get(&i.0.account_id).unwrap();
+            let amount = i.0.amount;
+            let currency = &account.currency;
+            #[allow(clippy::unwrap_used)]
+            let entry = categories.get_mut(&category_id).unwrap();
             #[allow(clippy::cast_precision_loss)]
             let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
             let value = entry[0].entry(currency.0.code.to_string()).or_insert(0.0);

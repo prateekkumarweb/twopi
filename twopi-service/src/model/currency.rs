@@ -1,5 +1,5 @@
 use migration::OnConflict;
-use sea_orm::{ActiveValue, ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, QueryOrder};
+use sea_orm::{ActiveValue, DbConn, DbErr, EntityTrait, QueryOrder};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use validator::Validate;
@@ -32,8 +32,7 @@ impl CurrencyReq {
     }
 
     pub async fn find_one(db: &DbConn, code: &str) -> Result<Option<CurrencyModel>, DbErr> {
-        CurrencyEntity::find()
-            .filter(CurrencyColumn::Code.eq(code))
+        CurrencyEntity::find_by_id(code)
             .one(db)
             .await
             .map(|c| c.map(CurrencyModel))
