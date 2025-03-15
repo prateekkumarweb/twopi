@@ -11,8 +11,10 @@ use validator::Validate;
 
 use super::{
     account::{AccountModel, AccountWithCurrency},
-    category::CategoryModel,
-    currency::CurrencyModel,
+    v2::{
+        category::{CategoryModel, CategoryReq},
+        currency::{CurrencyModel, CurrencyReq},
+    },
 };
 use crate::entity::{
     account, category,
@@ -73,17 +75,15 @@ impl TransactionModel {
             .into_iter()
             .map(|m| (m.id, m))
             .collect::<HashMap<_, _>>();
-        let currencies = Currency::find()
-            .all(db)
+        let currencies = CurrencyReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.code.clone(), c))
+            .map(|c| (c.0.code.clone(), c))
             .collect::<HashMap<_, _>>();
-        let categories = Category::find()
-            .all(db)
+        let categories = CategoryReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.id, c))
+            .map(|c| (c.0.id, c))
             .collect::<HashMap<_, _>>();
 
         Ok(transactions
@@ -103,16 +103,14 @@ impl TransactionModel {
                                 amount: item.amount,
                                 account: accounts.get(&item.account_id).cloned().and_then(|a| {
                                     let c = a.currency_code.clone();
-                                    Some(AccountModel::from_model(a).with_currency(
-                                        CurrencyModel::from_model(currencies.get(&c).cloned()?),
-                                    ))
+                                    Some(
+                                        AccountModel::from_model(a)
+                                            .with_currency(currencies.get(&c).cloned()?),
+                                    )
                                 })?,
-                                category: item.category_id.and_then(|cid| {
-                                    categories
-                                        .get(&cid)
-                                        .cloned()
-                                        .map(|c| CategoryModel::new(c.id, c.name, c.group, c.icon))
-                                }),
+                                category: item
+                                    .category_id
+                                    .and_then(|cid| categories.get(&cid).cloned()),
                             })
                         })
                         .collect::<Option<_>>()?,
@@ -142,43 +140,37 @@ impl TransactionModel {
             .into_iter()
             .map(|m| (m.id, m))
             .collect::<HashMap<_, _>>();
-        let currencies = Currency::find()
-            .all(db)
+        let currencies = CurrencyReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.code.clone(), c))
+            .map(|c| (c.0.code.clone(), c))
             .collect::<HashMap<_, _>>();
-        let categories = Category::find()
-            .all(db)
+        let categories = CategoryReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.id, c))
+            .map(|c| (c.0.id, c))
             .collect::<HashMap<_, _>>();
 
-        let Some(transaction_items) =
-            items
-                .into_iter()
-                .map(|item| {
-                    Some(TransactionItemWithAccount {
-                        id: item.id,
-                        notes: item.notes,
-                        transaction_id: item.transaction_id,
-                        amount: item.amount,
-                        account: accounts.get(&item.account_id).cloned().and_then(|a| {
-                            let c = a.currency_code.clone();
-                            Some(AccountModel::from_model(a).with_currency(
-                                CurrencyModel::from_model(currencies.get(&c).cloned()?),
-                            ))
-                        })?,
-                        category: item.category_id.and_then(|cid| {
-                            categories
-                                .get(&cid)
-                                .cloned()
-                                .map(|c| CategoryModel::new(c.id, c.name, c.group, c.icon))
-                        }),
-                    })
+        let Some(transaction_items) = items
+            .into_iter()
+            .map(|item| {
+                Some(TransactionItemWithAccount {
+                    id: item.id,
+                    notes: item.notes,
+                    transaction_id: item.transaction_id,
+                    amount: item.amount,
+                    account: accounts.get(&item.account_id).cloned().and_then(|a| {
+                        let c = a.currency_code.clone();
+                        Some(
+                            AccountModel::from_model(a).with_currency(currencies.get(&c).cloned()?),
+                        )
+                    })?,
+                    category: item
+                        .category_id
+                        .and_then(|cid| categories.get(&cid).cloned()),
                 })
-                .collect::<Option<_>>()
+            })
+            .collect::<Option<_>>()
         else {
             return Ok(None);
         };
@@ -215,18 +207,16 @@ impl TransactionModel {
             .map(|m| (m.id, m))
             .collect::<HashMap<_, _>>();
 
-        let currencies = Currency::find()
-            .all(db)
+        let currencies = CurrencyReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.code.clone(), c))
+            .map(|c| (c.0.code.clone(), c))
             .collect::<HashMap<_, _>>();
 
-        let categories = Category::find()
-            .all(db)
+        let categories = CategoryReq::find_all(db)
             .await?
             .into_iter()
-            .map(|c| (c.id, c))
+            .map(|c| (c.0.id, c))
             .collect::<HashMap<_, _>>();
 
         Ok(transactions
@@ -246,16 +236,14 @@ impl TransactionModel {
                                 amount: item.amount,
                                 account: accounts.get(&item.account_id).cloned().and_then(|a| {
                                     let c = a.currency_code.clone();
-                                    Some(AccountModel::from_model(a).with_currency(
-                                        CurrencyModel::from_model(currencies.get(&c).cloned()?),
-                                    ))
+                                    Some(
+                                        AccountModel::from_model(a)
+                                            .with_currency(currencies.get(&c).cloned()?),
+                                    )
                                 })?,
-                                category: item.category_id.and_then(|cid| {
-                                    categories
-                                        .get(&cid)
-                                        .cloned()
-                                        .map(|c| CategoryModel::new(c.id, c.name, c.group, c.icon))
-                                }),
+                                category: item
+                                    .category_id
+                                    .and_then(|cid| categories.get(&cid).cloned()),
                             })
                         })
                         .collect::<Option<_>>()?,

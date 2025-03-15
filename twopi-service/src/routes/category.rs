@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::{
     AppError, AppResult, ValidatedJson, XUserId, database,
-    model::category::{CategoryModel, NewCategoryModel},
+    model::v2::category::{CategoryModel, CategoryReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -18,9 +18,10 @@ pub fn router() -> OpenApiRouter<()> {
     (status = OK, body = Vec<CategoryModel>),
     AppError
 ))]
+#[axum::debug_handler]
 async fn category(id: XUserId) -> AppResult<Json<Vec<CategoryModel>>> {
     let db = database(&id.0).await?;
-    Ok(Json(CategoryModel::find_all(&db).await?))
+    Ok(Json(CategoryReq::find_all(&db).await?))
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -34,26 +35,28 @@ struct DeleteCategoryParams {
     (status = OK, body = ()),
     AppError
 ))]
+#[axum::debug_handler]
 async fn delete_category(
     id: XUserId,
     Query(DeleteCategoryParams { id: category_id }): Query<DeleteCategoryParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    CategoryModel::delete(&db, category_id).await?;
+    CategoryReq::delete(&db, category_id).await?;
     Ok(())
 }
 
 #[tracing::instrument(skip(category))]
 #[utoipa::path(post, path = "/",
-    request_body = NewCategoryModel, responses(
+    request_body = CategoryReq, responses(
     (status = OK, body = ()),
     AppError
 ))]
+#[axum::debug_handler]
 async fn post_category(
     id: XUserId,
-    ValidatedJson(category): ValidatedJson<NewCategoryModel>,
+    ValidatedJson(category): ValidatedJson<CategoryReq>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    CategoryModel::upsert(category, &db).await?;
+    CategoryReq::upsert(&db, category).await?;
     Ok(())
 }

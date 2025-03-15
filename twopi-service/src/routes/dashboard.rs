@@ -9,7 +9,7 @@ use utoipa_axum::{router::OpenApiRouter, routes};
 use crate::{
     XUserId,
     error::{AppError, AppResult},
-    model::{category::CategoryModel, transaction::TransactionModel},
+    model::{transaction::TransactionModel, v2::category::CategoryReq},
 };
 
 pub fn router() -> OpenApiRouter<()> {
@@ -30,12 +30,12 @@ struct DashboardResponse {
 #[axum::debug_handler]
 async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
     let db = crate::database(&id.0).await?;
-    let all_categories = CategoryModel::find_all(&db).await?;
+    let all_categories = CategoryReq::find_all(&db).await?;
     let mut categories = all_categories
         .into_iter()
         .map(|c| {
             (
-                c.name().to_owned(),
+                c.0.name,
                 [HashMap::new(), HashMap::new(), HashMap::new()],
             )
         })
@@ -97,10 +97,10 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
             };
             let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(category.name()).unwrap();
+            let entry = categories.get_mut(&category.0.name).unwrap();
             #[allow(clippy::cast_precision_loss)]
-            let amount = amount as f64 / 10_f64.powi(currency.decimal_digits());
-            let value = entry[2].entry(currency.code().to_string()).or_insert(0.0);
+            let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
+            let value = entry[2].entry(currency.0.code.to_string()).or_insert(0.0);
             *value += amount;
         }
     }
@@ -112,10 +112,10 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
             };
             let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(category.name()).unwrap();
+            let entry = categories.get_mut(&category.0.name).unwrap();
             #[allow(clippy::cast_precision_loss)]
-            let amount = amount as f64 / 10_f64.powi(currency.decimal_digits());
-            let value = entry[1].entry(currency.code().to_string()).or_insert(0.0);
+            let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
+            let value = entry[1].entry(currency.0.code.to_string()).or_insert(0.0);
             *value += amount;
         }
     }
@@ -127,10 +127,10 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
             };
             let (amount, currency) = i.amount();
             #[allow(clippy::unwrap_used)]
-            let entry = categories.get_mut(category.name()).unwrap();
+            let entry = categories.get_mut(&category.0.name).unwrap();
             #[allow(clippy::cast_precision_loss)]
-            let amount = amount as f64 / 10_f64.powi(currency.decimal_digits());
-            let value = entry[0].entry(currency.code().to_string()).or_insert(0.0);
+            let amount = amount as f64 / 10_f64.powi(currency.0.decimal_digits);
+            let value = entry[0].entry(currency.0.code.to_string()).or_insert(0.0);
             *value += amount;
         }
     }

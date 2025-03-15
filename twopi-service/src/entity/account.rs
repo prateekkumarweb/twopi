@@ -3,7 +3,9 @@
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize, utoipa :: ToSchema,
+)]
 #[sea_orm(table_name = "account")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
@@ -14,7 +16,7 @@ pub struct Model {
     pub account_type: String,
     pub currency_code: String,
     pub starting_balance: i64,
-    pub created_at: DateTimeUtc,
+    pub created_at: chrono::DateTime<chrono::Utc>,
     pub is_cash_flow: bool,
     pub is_active: bool,
     pub account_extra: Option<Json>,

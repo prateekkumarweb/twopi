@@ -9,9 +9,11 @@ use utoipa::ToSchema;
 use validator::Validate;
 
 use super::{
-    category::CategoryModel,
-    currency::CurrencyModel,
     transaction::{TransactionItemModel, TransactionWithAccount},
+    v2::{
+        category::CategoryReq,
+        currency::{CurrencyModel, CurrencyReq},
+    },
 };
 use crate::entity::{
     account::{self, ActiveModel, Column, Model},
@@ -205,10 +207,7 @@ impl AccountWithCurrency {
                 accounts
                     .into_iter()
                     .map(|(a, c)| {
-                        Some(
-                            AccountModel::from_model(a)
-                                .with_currency(CurrencyModel::from_model(c?)),
-                        )
+                        Some(AccountModel::from_model(a).with_currency(CurrencyModel(c?)))
                     })
                     .collect::<Option<_>>()
                     .unwrap_or_default()
@@ -259,13 +258,13 @@ impl AccountWithTransactions {
             return Ok(None);
         };
         let all_accounts = Account::find().all(db).await?;
-        let all_currencies = Currency::find().all(db).await?;
+        let all_currencies = CurrencyReq::find_all(db).await?;
 
-        let Some(currency) = CurrencyModel::find_by_code(db, &account.currency_code).await? else {
+        let Some(currency) = CurrencyReq::find_one(db, &account.currency_code).await? else {
             return Ok(None);
         };
         let account = AccountModel::from_model(account).with_currency(currency);
-        let categories = CategoryModel::find_all(db).await?;
+        let categories = CategoryReq::find_all(db).await?;
 
         let mut tx = HashMap::new();
         for t in transactions {
@@ -290,7 +289,7 @@ impl AccountWithTransactions {
                     #[allow(clippy::unwrap_used)]
                     let currency = all_currencies
                         .iter()
-                        .find(|c| c.code == account.currency_code)
+                        .find(|c| c.0.code == account.currency_code)
                         .cloned()
                         .unwrap();
                     TransactionItemModel::new(
@@ -303,9 +302,8 @@ impl AccountWithTransactions {
                     )
                     .with_category_and_account(
                         i.category_id
-                            .and_then(|cid| categories.iter().find(|&c| c.id() == cid).cloned()),
-                        AccountModel::from_model(account)
-                            .with_currency(CurrencyModel::from_model(currency)),
+                            .and_then(|cid| categories.iter().find(|&c| c.0.id == cid).cloned()),
+                        AccountModel::from_model(account).with_currency(currency),
                     )
                 })
                 .collect();

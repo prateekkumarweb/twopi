@@ -10,8 +10,10 @@ use utoipa::IntoParams;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::{
-    AppError, AppResult, ValidatedJson, XUserId, cache::CacheManager, database,
-    model::currency::CurrencyModel,
+    AppError, AppResult, ValidatedJson, XUserId,
+    cache::CacheManager,
+    database,
+    model::v2::currency::{CurrencyModel, CurrencyReq},
 };
 
 pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
@@ -32,7 +34,7 @@ pub fn router() -> OpenApiRouter<Arc<Mutex<CacheManager>>> {
 ))]
 async fn currency(id: XUserId) -> AppResult<Json<Vec<CurrencyModel>>> {
     let db = database(&id.0).await?;
-    Ok(Json(CurrencyModel::find_all(&db).await?))
+    Ok(Json(CurrencyReq::find_all(&db).await?))
 }
 
 #[tracing::instrument]
@@ -45,7 +47,7 @@ async fn currency_by_id(
     Path(code): Path<String>,
 ) -> AppResult<Json<Option<CurrencyModel>>> {
     let db = database(&id.0).await?;
-    Ok(Json(CurrencyModel::find_by_code(&db, &code).await?))
+    Ok(Json(CurrencyReq::find_one(&db, &code).await?))
 }
 
 #[derive(Deserialize, IntoParams)]
@@ -64,7 +66,7 @@ async fn delete_currency(
     Query(DeleteCurrencyParams { code }): Query<DeleteCurrencyParams>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    CurrencyModel::delete(&db, code).await?;
+    CurrencyReq::delete(&db, &code).await?;
     Ok(())
 }
 
@@ -75,10 +77,10 @@ async fn delete_currency(
 ))]
 async fn post_currency(
     id: XUserId,
-    ValidatedJson(currency): ValidatedJson<CurrencyModel>,
+    ValidatedJson(currency): ValidatedJson<CurrencyReq>,
 ) -> AppResult<()> {
     let db = database(&id.0).await?;
-    currency.insert(&db).await?;
+    CurrencyReq::upsert(&db, currency).await?;
     Ok(())
 }
 
@@ -103,9 +105,12 @@ async fn sync_currency(
         .data
         .values()
         .filter(|c| c.type_ == "fiat")
-        .cloned()
-        .map(|currency| CurrencyModel::new(currency.code, currency.name, currency.decimal_digits))
+        .map(|c| CurrencyReq {
+            code: c.code.clone(),
+            name: c.name.clone(),
+            decimal_digits: c.decimal_digits,
+        })
         .collect();
-    CurrencyModel::upsert_many(currencies, &db).await?;
+    CurrencyReq::upsert_many(&db, currencies).await?;
     Ok(())
 }
