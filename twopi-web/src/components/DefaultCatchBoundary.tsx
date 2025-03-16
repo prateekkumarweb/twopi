@@ -5,46 +5,44 @@ import {
   useMatch,
   useRouter,
   type ErrorComponentProps,
-} from "@tanstack/react-router";
+} from "@tanstack/solid-router";
+import { createEffect } from "solid-js";
 import { Button } from "./ui/button";
 
-export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
+export function DefaultCatchBoundary(props: ErrorComponentProps) {
   const router = useRouter();
   const isRoot = useMatch({
     strict: false,
     select: (state) => state.id === rootRouteId,
   });
 
-  console.error(error);
+  createEffect(() => {
+    console.error(props.error);
+  });
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 p-4">
-      <ErrorComponent error={error} />
-      <div className="flex flex-wrap items-center gap-2">
+    <div class="flex min-w-0 flex-1 flex-col items-center justify-center gap-6 p-4">
+      <ErrorComponent error={props.error} />
+      <div class="flex flex-wrap items-center gap-2">
         <Button
           onClick={() => {
             router.invalidate();
           }}
-          variant="outline"
         >
           Try Again
         </Button>
-        {isRoot ? (
-          <Button asChild variant="outline">
-            <Link to="/">Home</Link>
-          </Button>
+        {isRoot() ? (
+          <Link to="/">Home</Link>
         ) : (
-          <Button asChild variant="outline">
-            <Link
-              to="/"
-              onClick={(e) => {
-                e.preventDefault();
-                window.history.back();
-              }}
-            >
-              Go Back
-            </Link>
-          </Button>
+          <Link
+            to="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.back();
+            }}
+          >
+            Go Back
+          </Link>
         )}
       </div>
     </div>

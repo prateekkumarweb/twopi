@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/solid-router";
 import Layout from "~/components/AppLayout";
 
 export const Route = createFileRoute("/app")({
@@ -22,7 +22,7 @@ function RouteComponent() {
   const state = Route.useLoaderData();
 
   return (
-    <Layout user={state.session?.user}>
+    <Layout user={state().session?.user}>
       <Outlet />
     </Layout>
   );

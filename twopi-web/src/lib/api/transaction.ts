@@ -1,4 +1,4 @@
-import { notFound } from "@tanstack/react-router";
+import { notFound } from "@tanstack/solid-router";
 import { apiClient } from "../openapi";
 
 export async function createTransaction(transaction: {
@@ -26,7 +26,7 @@ export async function createTransaction(transaction: {
     body: {
       id: transaction.id,
       title: transaction.title,
-      transaction_items: transaction.transactions.map((transaction) => ({
+      items: transaction.transactions.map((transaction) => ({
         id: transaction.id,
         notes: transaction.notes,
         account_name: transaction.accountName,
@@ -69,7 +69,7 @@ export async function createTransactions(
       return {
         id: transaction.id,
         title: transaction.title,
-        transaction_items: transaction.transactions.map((transactionItem) => ({
+        items: transaction.transactions.map((transactionItem) => ({
           id: transactionItem.id,
           notes: transactionItem.notes,
           account_name: transactionItem.accountName,
@@ -78,7 +78,7 @@ export async function createTransactions(
               Math.pow(
                 10,
                 accounts?.data?.find(
-                  (a) => a.name === transactionItem.accountName,
+                  (a) => a.account.name === transactionItem.accountName,
                 )?.currency.decimal_digits ?? 0,
               ),
           ),

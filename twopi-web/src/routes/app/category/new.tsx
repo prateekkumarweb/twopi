@@ -1,10 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import CategoryEditor from "~/components/CategoryEditor";
+import { createFileRoute } from "@tanstack/solid-router";
 
 export const Route = createFileRoute("/app/category/new")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <CategoryEditor />;
+  return <div>Hello "/app/category/new"!</div>;
 }

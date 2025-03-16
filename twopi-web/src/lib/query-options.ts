@@ -1,9 +1,9 @@
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions } from "@tanstack/solid-query";
+import { getAccount, getAccounts } from "./api/account";
+import { getCategories } from "./api/category";
+import { getCurrencies, getCurrencyExchangeRates } from "./api/currency";
+import { getTransaction, getTransactions } from "./api/transaction";
 import { apiClient } from "./openapi";
-import { getAccount, getAccounts } from "./server-fns/account";
-import { getCategories } from "./server-fns/category";
-import { getCurrencies, getCurrencyExchangeRates } from "./server-fns/currency";
-import { getTransaction, getTransactions } from "./server-fns/transaction";
 
 export function currencyQueryOptions() {
   return queryOptions({

@@ -1,19 +1,14 @@
+import { defineConfig } from "vite";
+import solid from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     tsconfigPaths(),
-    TanStackRouterVite({ autoCodeSplitting: true }),
-    react({
-      babel: {
-        plugins: ["babel-plugin-react-compiler", {}],
-      },
-    }),
+    TanStackRouterVite({ target: "solid", autoCodeSplitting: true }),
+    solid(),
     tailwindcss(),
   ],
   server: {

@@ -1,10 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import AccountEditor from "~/components/AccountEditor";
+import { createFileRoute } from "@tanstack/solid-router";
 
 export const Route = createFileRoute("/app/account/new")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <AccountEditor />;
+  return <div>Hello "/app/account/new"!</div>;
 }

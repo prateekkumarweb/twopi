@@ -1,4 +1,4 @@
-import { notFound } from "@tanstack/react-router";
+import { notFound } from "@tanstack/solid-router";
 import { type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { apiClient } from "../openapi";
 

@@ -1,10 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import TransactionEditor from "~/components/TransactionEditor";
+import { createFileRoute } from "@tanstack/solid-router";
 
 export const Route = createFileRoute("/app/transaction/new")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <TransactionEditor />;
+  return <div>Hello "/app/transaction/new"!</div>;
 }

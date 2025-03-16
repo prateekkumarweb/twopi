@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { SolidQueryDevtools } from "@tanstack/solid-query-devtools";
+import { createRootRoute, Outlet } from "@tanstack/solid-router";
+import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
+import "~/app.css";
 import { apiClient } from "~/lib/openapi";
-import "~/styles/app.css";
 
 const queryClient = new QueryClient();
 
@@ -30,17 +30,13 @@ export const Route = createRootRoute({
       unauthorized,
     };
   },
-  component: RootComponent,
-});
-
-function RootComponent() {
-  return (
+  component: () => (
     <>
       <QueryClientProvider client={queryClient}>
         <Outlet />
-        <ReactQueryDevtools />
+        <SolidQueryDevtools />
       </QueryClientProvider>
       <TanStackRouterDevtools />
     </>
-  );
-}
+  ),
+});

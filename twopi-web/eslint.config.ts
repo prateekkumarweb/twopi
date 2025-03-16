@@ -1,10 +1,9 @@
 import pluginJs from "@eslint/js";
 import pluginQuery from "@tanstack/eslint-plugin-query";
+import * as tsParser from "@typescript-eslint/parser";
 import eslintConfigPrettier from "eslint-config-prettier";
 import oxlint from "eslint-plugin-oxlint";
-import pluginReact from "eslint-plugin-react";
-import reactCompiler from "eslint-plugin-react-compiler";
-import pluginReactHooks from "eslint-plugin-react-hooks";
+import solid from "eslint-plugin-solid/configs/typescript";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -15,18 +14,14 @@ export default [
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
-  pluginReact.configs.flat["jsx-runtime"],
-  { settings: { react: { version: "detect" } } },
   {
-    plugins: {
-      "react-compiler": reactCompiler,
-      "react-hooks": pluginReactHooks,
-    },
-    rules: {
-      "react-compiler/react-compiler": "error",
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
+    files: ["src/**/*.{ts,tsx}"],
+    ...solid,
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: "tsconfig.app.json",
+      },
     },
   },
   ...pluginQuery.configs["flat/recommended"],
