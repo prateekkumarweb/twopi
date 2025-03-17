@@ -64,13 +64,12 @@ impl AccountReq {
             .one(db)
             .await
             .map(|account| {
-                account
-                    .and_then(|(a, c)| {
-                        Some(AccountExpandedModel {
-                            account: AccountModel(a),
-                            currency: CurrencyModel(c?),
-                        })
+                account.and_then(|(a, c)| {
+                    Some(AccountExpandedModel {
+                        account: AccountModel(a),
+                        currency: CurrencyModel(c?),
                     })
+                })
             })
     }
 

@@ -7,12 +7,11 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::entity::{transaction, transaction_item};
-
 use super::{
     account::{AccountColumn, AccountEntity},
     category::{CategoryActiveModel, CategoryColumn, CategoryEntity},
 };
+use crate::entity::{transaction, transaction_item};
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
 pub struct TransactionModel(#[schema(inline)] pub transaction::Model);
