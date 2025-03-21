@@ -2,7 +2,7 @@ import { RouterProvider, createRouter } from "@tanstack/solid-router";
 import { render } from "solid-js/web";
 
 import { DefaultCatchBoundary } from "./components/DefaultCatchBoundary";
-import NotFound from "./components/NotFound";
+import { NotFound } from "./components/NotFound";
 import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
