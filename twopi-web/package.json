@@ -16,6 +16,7 @@
     "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
   },
   "dependencies": {
+    "@kobalte/core": "^0.13.9",
     "@tanstack/solid-form": "^1.1.2",
     "@tanstack/solid-query": "^5.69.0",
     "@tanstack/solid-router": "^1.114.26",

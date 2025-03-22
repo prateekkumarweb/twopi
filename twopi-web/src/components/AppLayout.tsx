@@ -1,8 +1,12 @@
-import { useRouter } from "@tanstack/solid-router";
+import { Link, useRouter } from "@tanstack/solid-router";
 import { User } from "lucide-solid";
 import type { JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
-import { AppSidebar, AppSidebarToggleExternal } from "./AppSidebar";
+import {
+  AppSidebar,
+  AppSidebarInset,
+  AppSidebarToggleExternal,
+} from "./AppSidebar";
 
 export function AppLayout(props: {
   user?: {
@@ -24,8 +28,17 @@ export function AppLayout(props: {
 
   return (
     <div class="flex h-screen w-full">
-      <AppSidebar />
-      <div class="w-full">
+      <AppSidebar
+        header={
+          <Link to="/app" class="flex items-center gap-2">
+            <img src="/2pi.svg" alt="TwoPi" class="h-8 w-8" />
+            <h1 class="text-xl font-semibold">TwoPi</h1>
+          </Link>
+        }
+      >
+        Nav
+      </AppSidebar>
+      <AppSidebarInset>
         <nav class="border-b-1 flex h-16 items-center justify-between border-gray-200 p-4">
           <div class="flex items-center gap-2">
             <AppSidebarToggleExternal />
@@ -45,7 +58,7 @@ export function AppLayout(props: {
           )}
         </nav>
         <div class="p-4">{props.children}</div>
-      </div>
+      </AppSidebarInset>
     </div>
   );
 }
