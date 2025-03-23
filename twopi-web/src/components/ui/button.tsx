@@ -1,4 +1,9 @@
-import type { JSX, JSXElement } from "solid-js";
+import clsx from "clsx";
+import { type JSX, type JSXElement } from "solid-js";
+
+const btnStyles = clsx(
+  "cursor-pointer rounded-md border border-gray-400 px-3 py-1 hover:bg-gray-800 hover:text-gray-200",
+);
 
 export function Button(props: {
   children?: JSXElement;
@@ -9,9 +14,7 @@ export function Button(props: {
     <button
       type={props.type}
       onClick={(e) => props.onClick?.(e)}
-      class={
-        "rounded-md border border-gray-400 px-3 py-1 hover:bg-gray-800 hover:text-gray-200"
-      }
+      class={btnStyles}
     >
       {props.children}
     </button>

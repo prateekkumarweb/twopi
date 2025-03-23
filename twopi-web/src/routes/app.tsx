@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/solid-router";
+import { Show } from "solid-js";
 import { AppLayout } from "~/components/AppLayout";
 
 export const Route = createFileRoute("/app")({
@@ -20,10 +21,15 @@ export const Route = createFileRoute("/app")({
 
 function RouteComponent() {
   const state = Route.useLoaderData();
+  const user = () => state().session?.user;
 
   return (
-    <AppLayout user={state().session?.user}>
-      <Outlet />
-    </AppLayout>
+    <Show when={user()}>
+      {(user) => (
+        <AppLayout user={user()}>
+          <Outlet />
+        </AppLayout>
+      )}
+    </Show>
   );
 }

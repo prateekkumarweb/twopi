@@ -1,6 +1,8 @@
+import { useLocation } from "@tanstack/solid-router";
 import { Sidebar } from "lucide-solid";
-import type { JSX } from "solid-js";
-import { createSignal, Show } from "solid-js";
+import type { Accessor, JSX } from "solid-js";
+import { createEffect, createMemo, createSignal, Show } from "solid-js";
+import { useIsMobile } from "~/lib/utils";
 
 const [sidebarOpen, setSidebarOpen] = createSignal(false);
 
@@ -8,35 +10,39 @@ export function AppSidebar(props: {
   children?: JSX.Element;
   header?: JSX.Element;
 }) {
+  const location = useLocation();
+  const pathname = createMemo(() => location().pathname);
+  const isMobile = useIsMobile();
+  createEffect(() => {
+    if (pathname() && isMobile()) {
+      setSidebarOpen(false);
+    }
+  });
+
   return (
     <Show when={sidebarOpen()}>
-      <aside class="border-l-1 w-full border-gray-200 bg-gray-100 md:w-64">
-        <div class="flex h-16 items-center gap-4 p-4">
-          <AppSidebarToggle />
-          <div>{props.header}</div>
-        </div>
-        <div class="p-4">{props.children}</div>
+      <aside class="border-l-1 w-full border-gray-200 bg-gray-100 p-4 md:w-64">
+        {props.children}
       </aside>
     </Show>
   );
 }
 
-export function AppSidebarInset(props: { children?: JSX.Element }) {
+export function AppSidebarInset(props: {
+  children: JSX.Element | ((open: Accessor<Boolean>) => JSX.Element);
+}) {
+  const children = () =>
+    typeof props.children === "function"
+      ? props.children(sidebarOpen)
+      : props.children;
+
   return (
     <div
-      class="w-full"
+      class="w-full p-4"
       classList={{ hidden: sidebarOpen(), "md:block": sidebarOpen() }}
     >
-      {props.children}
+      {children()}
     </div>
-  );
-}
-
-export function AppSidebarToggleExternal() {
-  return (
-    <Show when={!sidebarOpen()}>
-      <AppSidebarToggle />
-    </Show>
   );
 }
 
