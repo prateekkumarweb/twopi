@@ -29,7 +29,7 @@ export function AppSidebar(props: {
 }
 
 export function AppSidebarInset(props: {
-  children: JSX.Element | ((open: Accessor<Boolean>) => JSX.Element);
+  children: JSX.Element | ((open: Accessor<boolean>) => JSX.Element);
 }) {
   const children = () =>
     typeof props.children === "function"

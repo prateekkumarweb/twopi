@@ -1,9 +1,14 @@
 import { createFileRoute } from "@tanstack/solid-router";
+import { PageLayout } from "~/components/PageLayout";
 
 export const Route = createFileRoute("/app/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <div>Hello "/app/"!</div>;
+  return (
+    <PageLayout title="Dashboard">
+      <div>Hello "/app/"!</div>
+    </PageLayout>
+  );
 }
