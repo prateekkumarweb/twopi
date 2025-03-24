@@ -5,6 +5,8 @@ import { DefaultCatchBoundary } from "./components/DefaultCatchBoundary";
 import { NotFound } from "./components/NotFound";
 import { routeTree } from "./routeTree.gen";
 
+import "solid-devtools";
+
 const router = createRouter({
   routeTree,
   scrollRestoration: true,
