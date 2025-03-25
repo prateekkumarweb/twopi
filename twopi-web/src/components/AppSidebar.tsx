@@ -1,10 +1,12 @@
+import { makePersisted } from "@solid-primitives/storage";
 import { useLocation } from "@tanstack/solid-router";
 import { Sidebar } from "lucide-solid";
 import type { Accessor, JSX } from "solid-js";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { useIsMobile } from "~/lib/utils";
 
-const [sidebarOpen, setSidebarOpen] = createSignal(false);
+// eslint-disable-next-line solid/reactivity
+const [sidebarOpen, setSidebarOpen] = makePersisted(createSignal(false));
 
 export function AppSidebar(props: {
   children?: JSX.Element;
