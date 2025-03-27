@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/solid-router";
-import { User } from "lucide-solid";
+import { Settings, User } from "lucide-solid";
 import { type JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
 import { AppSidebar, AppSidebarInset, AppSidebarToggle } from "./AppSidebar";
@@ -24,7 +24,7 @@ export function AppLayout(props: {
       </nav>
       <div class="grow-1 flex">
         <AppSidebar>
-          <nav>
+          <nav class="flex-grow">
             <div class="my-2 font-semibold">Personal Finance</div>
             <ul class="flex flex-col gap-1 text-gray-800 *:hover:underline">
               <li>
@@ -47,6 +47,17 @@ export function AppLayout(props: {
               </li>
             </ul>
           </nav>
+          <div>
+            <div class="flex items-center gap-2">
+              <User class="inline-block" />
+              {props.user.name}
+            </div>
+            <div>
+              <Link to="/app/settings" class="flex items-center gap-2">
+                <Settings /> Settings
+              </Link>
+            </div>
+          </div>
         </AppSidebar>
         <AppSidebarInset>{props.children}</AppSidebarInset>
       </div>

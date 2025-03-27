@@ -23,7 +23,7 @@ export function AppSidebar(props: {
 
   return (
     <Show when={sidebarOpen()}>
-      <aside class="border-l-1 w-full border-gray-200 bg-gray-100 p-4 md:w-64">
+      <aside class="border-l-1 flex w-full flex-col border-gray-200 bg-gray-100 p-4 md:w-64">
         {props.children}
       </aside>
     </Show>
