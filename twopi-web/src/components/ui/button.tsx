@@ -1,3 +1,4 @@
+import { Root } from "@kobalte/core/button";
 import clsx from "clsx";
 import { type JSX, type JSXElement } from "solid-js";
 
@@ -11,12 +12,12 @@ export function Button(props: {
   onClick?: JSX.EventHandler<HTMLButtonElement, MouseEvent>;
 }) {
   return (
-    <button
+    <Root
       type={props.type}
       onClick={(e) => props.onClick?.(e)}
       class={btnStyles}
     >
       {props.children}
-    </button>
+    </Root>
   );
 }
