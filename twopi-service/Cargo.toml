@@ -11,7 +11,7 @@ members = [".", "migration", "user-migration"]
 anyhow = "1.0.97"
 argon2 = { version = "0.5.3", features = ["std"] }
 async-trait = "0.1.88"
-axum = { version = "0.8.1", features = ["macros", "http2"] }
+axum = { version = "0.8.3", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.40", features = ["serde"] }
 clap = { version = "4.5.34", features = ["derive"] }

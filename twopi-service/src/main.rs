@@ -188,7 +188,11 @@ async fn main() -> anyhow::Result<()> {
         .merge(RapiDoc::new("/openapi.json").path("/rapidoc"))
         .merge(Scalar::with_url("/scalar", api));
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:8000").await?;
+    let port = std::env::var("PORT")
+        .unwrap_or_else(|_| "8000".to_string())
+        .parse::<u16>()?;
+    let addr = ("127.0.0.1", port);
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
     tracing::info!("Starting server on {}", listener.local_addr()?);
     axum::serve(listener, router).await?;
 
