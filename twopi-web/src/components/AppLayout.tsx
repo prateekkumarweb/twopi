@@ -1,5 +1,14 @@
 import { Link, useRouter } from "@tanstack/solid-router";
-import { Settings, User } from "lucide-solid";
+import {
+  Banknote,
+  DollarSign,
+  Layers,
+  LayoutDashboard,
+  List,
+  Settings,
+  Upload,
+  User,
+} from "lucide-solid";
 import { type JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
 import { AppSidebar, AppSidebarInset, AppSidebarToggle } from "./AppSidebar";
@@ -26,28 +35,40 @@ export function AppLayout(props: {
         <AppSidebar>
           <nav class="flex-grow">
             <div class="my-2 font-semibold">Personal Finance</div>
-            <ul class="flex flex-col gap-1 text-gray-800 *:hover:underline">
+            <ul class="flex flex-col gap-2 text-gray-800 *:hover:underline">
               <li>
-                <Link to="/app">Dashboard</Link>
+                <Link to="/app" class="flex items-center gap-2">
+                  <LayoutDashboard /> Dashboard
+                </Link>
               </li>
               <li>
-                <Link to="/app/currency">Currency</Link>
+                <Link to="/app/currency" class="flex items-center gap-2">
+                  <DollarSign /> Currency
+                </Link>
               </li>
               <li>
-                <Link to="/app/category">Category</Link>
+                <Link to="/app/category" class="flex items-center gap-2">
+                  <List /> Category
+                </Link>
               </li>
               <li>
-                <Link to="/app/account">Account</Link>
+                <Link to="/app/account" class="flex items-center gap-2">
+                  <Banknote /> Account
+                </Link>
               </li>
               <li>
-                <Link to="/app/transaction">Transaction</Link>
+                <Link to="/app/transaction" class="flex items-center gap-2">
+                  <Layers /> Transaction
+                </Link>
               </li>
               <li>
-                <Link to="/app/import-export">Import/Export</Link>
+                <Link to="/app/import-export" class="flex items-center gap-2">
+                  <Upload /> Import/Export
+                </Link>
               </li>
             </ul>
           </nav>
-          <div>
+          <div class="flex flex-col gap-4">
             <div class="flex items-center gap-2">
               <User class="inline-block" />
               {props.user.name}
