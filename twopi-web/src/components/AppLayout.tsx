@@ -1,13 +1,13 @@
 import { Link, useRouter } from "@tanstack/solid-router";
 import {
+  BadgeDollarSign,
   Banknote,
-  DollarSign,
-  Layers,
   LayoutDashboard,
   List,
   Settings,
   Upload,
   User,
+  WalletCards,
 } from "lucide-solid";
 import { type JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
@@ -43,7 +43,7 @@ export function AppLayout(props: {
               </li>
               <li>
                 <Link to="/app/currency" class="flex items-center gap-2">
-                  <DollarSign /> Currency
+                  <BadgeDollarSign /> Currency
                 </Link>
               </li>
               <li>
@@ -58,7 +58,7 @@ export function AppLayout(props: {
               </li>
               <li>
                 <Link to="/app/transaction" class="flex items-center gap-2">
-                  <Layers /> Transaction
+                  <WalletCards /> Transaction
                 </Link>
               </li>
               <li>
