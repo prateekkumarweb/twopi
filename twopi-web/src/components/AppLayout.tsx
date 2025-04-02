@@ -31,7 +31,7 @@ export function AppLayout(props: {
         </div>
         <UserNav user={props.user} />
       </nav>
-      <div class="grow-1 flex">
+      <div class="grow-1 flex overflow-hidden">
         <AppSidebar>
           <nav class="flex-grow">
             <div class="my-2 font-semibold">Personal Finance</div>

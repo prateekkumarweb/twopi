@@ -40,7 +40,7 @@ export function AppSidebarInset(props: {
 
   return (
     <div
-      class="w-full p-4"
+      class="w-full overflow-auto p-4"
       classList={{ hidden: sidebarOpen(), "md:block": sidebarOpen() }}
     >
       {children()}
