@@ -1,9 +1,10 @@
 import { createQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute } from "@tanstack/solid-router";
+import { Trash } from "lucide-solid";
 import { For, Match, Switch } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import { Button } from "~/components/ui/button";
-import { syncCurrencies } from "~/lib/api/currency";
+import { deleteCurrency, syncCurrencies } from "~/lib/api/currency";
 import { currencyQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/currency")({
@@ -16,6 +17,11 @@ function RouteComponent() {
 
   const syncAction = async () => {
     await syncCurrencies();
+    await queryClient.invalidateQueries(currencyQueryOptions());
+  };
+
+  const deleteAction = async (code: string) => {
+    await deleteCurrency(code);
     await queryClient.invalidateQueries(currencyQueryOptions());
   };
 
@@ -40,6 +46,7 @@ function RouteComponent() {
                 <th class="border border-slate-300 px-2 py-1">
                   Decimal Digits
                 </th>
+                <th class="border border-slate-300 px-2 py-1">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -61,6 +68,14 @@ function RouteComponent() {
                     </td>
                     <td class="border border-slate-300 px-2 py-1">
                       {currency.decimal_digits}
+                    </td>
+                    <td class="border border-slate-300 px-2 py-1">
+                      <Button
+                        variant="danger"
+                        onClick={() => deleteAction(currency.code)}
+                      >
+                        <Trash />
+                      </Button>
                     </td>
                   </tr>
                 )}
