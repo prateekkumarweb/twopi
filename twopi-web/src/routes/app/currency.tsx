@@ -71,7 +71,7 @@ function RouteComponent() {
                     </td>
                     <td class="border border-slate-300 px-2 py-1">
                       <Button
-                        variant="danger"
+                        variant="destructive"
                         onClick={() => deleteAction(currency.code)}
                       >
                         <Trash />
