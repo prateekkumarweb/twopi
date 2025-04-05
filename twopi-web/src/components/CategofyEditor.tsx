@@ -2,11 +2,19 @@ import { createForm } from "@tanstack/solid-form";
 import { useMutation, useQueryClient } from "@tanstack/solid-query";
 import { useNavigate } from "@tanstack/solid-router";
 import { icons } from "lucide-solid";
-import { For } from "solid-js";
 import { createCategory } from "~/lib/api/category";
 import { categoryQueryOptions } from "~/lib/query-options";
-import { cn } from "~/lib/utils";
 import { Button } from "./ui/button";
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxControl,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxItemIndicator,
+  ComboboxItemLabel,
+  ComboboxTrigger,
+} from "./ui/combobox";
 import { Input } from "./ui/input";
 
 export default function CategoryEditor(
@@ -85,24 +93,24 @@ export default function CategoryEditor(
         </form.Field>
         <form.Field name="icon">
           {(field) => (
-            <select
-              class={cn(
-                "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input shadow-xs flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base outline-none transition-[color,box-shadow] file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-                "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-              )}
+            <Combobox
+              options={Object.keys(icons)}
               value={field().state.value}
-              onChange={(e) => field().handleChange(e.target.value)}
+              onChange={(e) => field().handleChange(e ?? "")}
+              placeholder="Search icon..."
+              itemComponent={(props) => (
+                <ComboboxItem item={props.item}>
+                  <ComboboxItemLabel>{props.item.rawValue}</ComboboxItemLabel>
+                  <ComboboxItemIndicator />
+                </ComboboxItem>
+              )}
             >
-              <option value="">Select an icon</option>
-              <For each={Object.keys(icons)}>
-                {(icon) => (
-                  <option value={icon} selected={field().state.value === icon}>
-                    {icon}
-                  </option>
-                )}
-              </For>
-            </select>
+              <ComboboxControl aria-label="Icon">
+                <ComboboxInput />
+                <ComboboxTrigger />
+              </ComboboxControl>
+              <ComboboxContent />
+            </Combobox>
           )}
         </form.Field>
         <form.Subscribe
