@@ -9,7 +9,7 @@ import {
 import { createEffect } from "solid-js";
 import { Button } from "./ui/button";
 
-export function DefaultCatchBoundary(props: ErrorComponentProps) {
+export function DefaultCatchBoundary(props: Readonly<ErrorComponentProps>) {
   const router = useRouter();
   const isRoot = useMatch({
     strict: false,

@@ -14,14 +14,16 @@ import { apiClient } from "~/lib/openapi";
 import { AppSidebar, AppSidebarInset, AppSidebarToggle } from "./AppSidebar";
 import { Button } from "./ui/button";
 
-export function AppLayout(props: {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  children: JSXElement;
-}) {
+export function AppLayout(
+  props: Readonly<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    children: JSXElement;
+  }>,
+) {
   return (
     <div class="flex h-screen w-full flex-col">
       <nav class="border-b-1 flex h-16 items-center justify-between border-gray-200 p-4">
@@ -95,13 +97,15 @@ function AppLogo() {
   );
 }
 
-function UserNav(props: {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-}) {
+function UserNav(
+  props: Readonly<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>,
+) {
   const router = useRouter();
 
   const signOut = async () => {
@@ -120,7 +124,9 @@ function UserNav(props: {
         {props.user.name}
       </div>
       <div>
-        <Button onClick={signOut}>Sign out</Button>
+        <Button variant="outline" onClick={signOut}>
+          Sign out
+        </Button>
       </div>
     </div>
   );

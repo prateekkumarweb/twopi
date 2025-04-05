@@ -8,10 +8,12 @@ import { useIsMobile } from "~/lib/utils";
 // eslint-disable-next-line solid/reactivity
 const [sidebarOpen, setSidebarOpen] = makePersisted(createSignal(false));
 
-export function AppSidebar(props: {
-  children?: JSX.Element;
-  header?: JSX.Element;
-}) {
+export function AppSidebar(
+  props: Readonly<{
+    children?: JSX.Element;
+    header?: JSX.Element;
+  }>,
+) {
   const location = useLocation();
   const pathname = createMemo(() => location().pathname);
   const isMobile = useIsMobile();
@@ -30,9 +32,11 @@ export function AppSidebar(props: {
   );
 }
 
-export function AppSidebarInset(props: {
-  children: JSX.Element | ((open: Accessor<boolean>) => JSX.Element);
-}) {
+export function AppSidebarInset(
+  props: Readonly<{
+    children: JSX.Element | ((open: Accessor<boolean>) => JSX.Element);
+  }>,
+) {
   const children = () =>
     typeof props.children === "function"
       ? props.children(sidebarOpen)

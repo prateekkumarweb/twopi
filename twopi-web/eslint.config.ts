@@ -4,6 +4,7 @@ import * as tsParser from "@typescript-eslint/parser";
 import eslintConfigPrettier from "eslint-config-prettier";
 import oxlint from "eslint-plugin-oxlint";
 import solid from "eslint-plugin-solid/configs/typescript";
+import sonarjs from "eslint-plugin-sonarjs";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
@@ -29,6 +30,13 @@ export default [
     rules: {
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/consistent-type-imports": "error",
+    },
+  },
+  sonarjs.configs.recommended,
+  {
+    rules: {
+      "sonarjs/function-return-type": "off",
+      "sonarjs/class-name": "off",
     },
   },
   ...oxlint.configs["flat/recommended"],

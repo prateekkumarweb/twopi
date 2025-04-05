@@ -1,10 +1,12 @@
 import type { JSX } from "solid-js";
 
-export function PageLayout(props: {
-  children?: JSX.Element;
-  title: string;
-  actions?: JSX.Element;
-}) {
+export function PageLayout(
+  props: Readonly<{
+    children?: JSX.Element;
+    title: string;
+    actions?: JSX.Element;
+  }>,
+) {
   return (
     <div class="w-full">
       <div class="mb-4 flex items-center gap-4">

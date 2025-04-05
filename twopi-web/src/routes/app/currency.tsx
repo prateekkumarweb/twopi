@@ -1,4 +1,4 @@
-import { createQuery, useQueryClient } from "@tanstack/solid-query";
+import { useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute } from "@tanstack/solid-router";
 import { Trash } from "lucide-solid";
 import { For, Match, Switch } from "solid-js";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/app/currency")({
 
 function RouteComponent() {
   const queryClient = useQueryClient();
-  const currenciesQuery = createQuery(currencyQueryOptions);
+  const currenciesQuery = useQuery(currencyQueryOptions);
 
   const syncAction = async () => {
     await syncCurrencies();
