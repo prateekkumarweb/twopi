@@ -4,6 +4,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { createSignal, Show } from "solid-js";
 import z from "zod";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import { apiClient } from "~/lib/openapi";
 
 const signinSearchParamsSchema = z.object({
@@ -99,7 +100,7 @@ function RouteComponent() {
           >
             <signInForm.Field name="email">
               {(field) => (
-                <input
+                <Input
                   type="email"
                   placeholder="Email"
                   name={field().name}
@@ -112,7 +113,7 @@ function RouteComponent() {
             </signInForm.Field>
             <signInForm.Field name="password">
               {(field) => (
-                <input
+                <Input
                   type="password"
                   placeholder="Password"
                   name={field().name}
@@ -139,7 +140,7 @@ function RouteComponent() {
           >
             <signUpForm.Field name="name">
               {(field) => (
-                <input
+                <Input
                   type="text"
                   placeholder="Name"
                   name={field().name}
@@ -151,7 +152,7 @@ function RouteComponent() {
             </signUpForm.Field>
             <signUpForm.Field name="email">
               {(field) => (
-                <input
+                <Input
                   type="email"
                   placeholder="Email"
                   name={field().name}
@@ -164,7 +165,7 @@ function RouteComponent() {
             </signUpForm.Field>
             <signUpForm.Field name="password">
               {(field) => (
-                <input
+                <Input
                   type="password"
                   placeholder="Password"
                   name={field().name}
