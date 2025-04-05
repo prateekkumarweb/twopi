@@ -1,4 +1,6 @@
-import { createFileRoute } from "@tanstack/solid-router";
+import { createFileRoute, Link } from "@tanstack/solid-router";
+import { ArrowLeft } from "lucide-solid";
+import CategoryEditor from "~/components/CategofyEditor";
 import { PageLayout } from "~/components/PageLayout";
 
 export const Route = createFileRoute("/app/category/new")({
@@ -7,8 +9,15 @@ export const Route = createFileRoute("/app/category/new")({
 
 function RouteComponent() {
   return (
-    <PageLayout title="Category">
-      <div>Hello "/app/category/new"!</div>
+    <PageLayout
+      title="New Category"
+      actions={
+        <Link to="..">
+          <ArrowLeft />
+        </Link>
+      }
+    >
+      <CategoryEditor />
     </PageLayout>
   );
 }

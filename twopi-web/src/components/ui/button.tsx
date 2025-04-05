@@ -39,6 +39,7 @@ function Button(
 ) {
   return (
     <Root
+      data-slot="button"
       class={cn(
         buttonVariants({
           variant: props.variant,
