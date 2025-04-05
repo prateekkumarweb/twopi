@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { Plus } from "lucide-solid";
-import { For } from "solid-js";
+import { createMemo, For } from "solid-js";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
@@ -24,7 +24,7 @@ function RouteComponent() {
   const accountsQuery = useQuery(accountQueryOptions);
   const transactionsQuery = useQuery(transactionQueryOptions);
 
-  const filteredTransactions = () => {
+  const filteredTransactions = createMemo(() => {
     if (!transactionsQuery.data || !accountsQuery.data) {
       return [];
     }
@@ -37,7 +37,7 @@ function RouteComponent() {
         ) ?? false
       );
     });
-  };
+  });
 
   function calculateBalance(account: Account) {
     return (
