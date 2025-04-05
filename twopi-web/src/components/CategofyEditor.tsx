@@ -45,8 +45,8 @@ export default function CategoryEditor(
         to: "..",
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(categoryQueryOptions());
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(categoryQueryOptions());
     },
   }));
   return (

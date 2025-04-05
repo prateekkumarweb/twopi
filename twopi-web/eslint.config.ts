@@ -37,6 +37,7 @@ export default [
     rules: {
       "sonarjs/function-return-type": "off",
       "sonarjs/class-name": "off",
+      "sonarjs/todo-tag": "off",
     },
   },
   ...oxlint.configs["flat/recommended"],
