@@ -9,10 +9,37 @@ use super::currency::{CurrencyEntity, CurrencyModel};
 use crate::entity::account;
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
-pub struct AccountModel(#[schema(inline)] pub account::Model);
+pub struct AccountModel {
+    pub id: Uuid,
+    pub name: String,
+    pub account_type: AccountType,
+    pub currency_code: String,
+    pub starting_balance: i64,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub is_cash_flow: bool,
+    pub is_active: bool,
+    pub account_extra: Option<serde_json::Value>,
+}
 pub type AccountEntity = account::Entity;
 pub type AccountActiveModel = account::ActiveModel;
 pub type AccountColumn = account::Column;
+
+impl AccountModel {
+    pub fn from_entity(model: account::Model) -> Result<Self, serde_json::Error> {
+        let account_type: AccountType = serde_json::from_str(&model.account_type)?;
+        Ok(Self {
+            id: model.id,
+            name: model.name,
+            account_type,
+            currency_code: model.currency_code,
+            starting_balance: model.starting_balance,
+            created_at: model.created_at,
+            is_cash_flow: model.is_cash_flow,
+            is_active: model.is_active,
+            account_extra: model.account_extra,
+        })
+    }
+}
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize, Validate)]
 pub struct AccountReq {
@@ -46,7 +73,7 @@ impl AccountReq {
                     .into_iter()
                     .map(|(a, c)| {
                         Some(AccountExpandedModel {
-                            account: AccountModel(a),
+                            account: AccountModel::from_entity(a).ok()?,
                             currency: CurrencyModel(c?),
                         })
                     })
@@ -66,7 +93,7 @@ impl AccountReq {
             .map(|account| {
                 account.and_then(|(a, c)| {
                     Some(AccountExpandedModel {
-                        account: AccountModel(a),
+                        account: AccountModel::from_entity(a).ok()?,
                         currency: CurrencyModel(c?),
                     })
                 })

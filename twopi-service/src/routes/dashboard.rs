@@ -34,7 +34,7 @@ async fn dashboard(id: XUserId) -> AppResult<Json<DashboardResponse>> {
     let accounts = AccountReq::find_all_with_currency(&db)
         .await?
         .into_iter()
-        .map(|a| (a.account.0.id, a))
+        .map(|a| (a.account.id, a))
         .collect::<HashMap<_, _>>();
     let all_categories = CategoryReq::find_all(&db).await?;
     let mut categories = all_categories
