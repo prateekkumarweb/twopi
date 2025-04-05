@@ -40,7 +40,7 @@ function RouteComponent() {
         {(data) => (
           <For each={data.groups}>
             {(group) => (
-              <Card>
+              <Card class="mb-4 last:mb-0">
                 <CardHeader>
                   <CardTitle>{group.group || "Ungrouped"}</CardTitle>
                 </CardHeader>
