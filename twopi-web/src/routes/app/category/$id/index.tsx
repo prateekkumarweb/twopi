@@ -6,6 +6,7 @@ import DynamicIcon from "~/components/DynamicIcon";
 import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
+import { buttonVariants } from "~/components/ui/button";
 import { categoryQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/category/$id/")({
@@ -21,10 +22,23 @@ function RouteComponent() {
       title="Category details"
       actions={
         <>
-          <Link to="..">
+          <Link
+            to=".."
+            class={buttonVariants({
+              variant: "outline",
+              size: "icon",
+            })}
+          >
             <ArrowLeft />
           </Link>
-          <Link to="/app/category/$id/edit" params={{ id: params().id }}>
+          <Link
+            to="/app/category/$id/edit"
+            params={{ id: params().id }}
+            class={buttonVariants({
+              variant: "outline",
+              size: "icon",
+            })}
+          >
             <Edit />
           </Link>
         </>

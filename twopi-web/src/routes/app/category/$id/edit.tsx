@@ -5,6 +5,7 @@ import { Show } from "solid-js";
 import CategoryEditor from "~/components/CategofyEditor";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
+import { buttonVariants } from "~/components/ui/button";
 import { categoryQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/category/$id/edit")({
@@ -19,7 +20,13 @@ function RouteComponent() {
     <PageLayout
       title="Edit Category"
       actions={
-        <Link to="..">
+        <Link
+          to=".."
+          class={buttonVariants({
+            variant: "outline",
+            size: "icon",
+          })}
+        >
           <ArrowLeft />
         </Link>
       }

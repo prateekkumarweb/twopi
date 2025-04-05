@@ -42,6 +42,8 @@ export default [
       "sonarjs/no-unused-vars": "warn",
       "sonarjs/no-dead-store": "warn",
       "sonarjs/no-commented-code": "warn",
+      "sonarjs/no-nested-functions": "off",
+      "sonarjs/no-nested-conditional": "off",
     },
   },
   ...oxlint.configs["flat/recommended"],

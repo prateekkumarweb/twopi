@@ -110,7 +110,6 @@ export default function CategoryEditor(
         >
           {(val) => (
             <Button type="submit" disabled={!val()[0]}>
-              {/* eslint-disable-next-line sonarjs/no-nested-conditional */}
               {val()[1] ? "..." : props.edit ? "Update" : "Create"}
             </Button>
           )}
