@@ -7,8 +7,9 @@ import {
   getCoreRowModel,
 } from "@tanstack/solid-table";
 import { Save, Trash } from "lucide-solid";
-import { For, Match, Switch } from "solid-js";
+import { For } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
+import QueryWrapper from "~/components/QueryWrapper";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import {
@@ -120,14 +121,11 @@ function RouteComponent() {
       title="Currency"
       actions={<Button onClick={syncAction}>Sync</Button>}
     >
-      <Switch>
-        <Match when={currenciesQuery.isLoading}>
-          <div>Loading...</div>
-        </Match>
-        <Match when={currenciesQuery.isError}>
-          <div>Error: {currenciesQuery.error?.message}</div>
-        </Match>
-        <Match when={currenciesQuery.isSuccess}>
+      <QueryWrapper
+        queryResult={currenciesQuery}
+        errorRender={(e) => <div>{e.message}</div>}
+      >
+        {() => (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -227,8 +225,8 @@ function RouteComponent() {
               </TableBody>
             </Table>
           </form>
-        </Match>
-      </Switch>
+        )}
+      </QueryWrapper>
     </PageLayout>
   );
 }
