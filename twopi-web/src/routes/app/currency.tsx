@@ -10,6 +10,7 @@ import { Save, Trash } from "lucide-solid";
 import { For, Match, Switch } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Table,
   TableBody,
@@ -160,7 +161,7 @@ function RouteComponent() {
                   <TableCell>
                     <form.Field name="code">
                       {(field) => (
-                        <input
+                        <Input
                           type="text"
                           placeholder="Code"
                           name={field().name}
@@ -174,7 +175,7 @@ function RouteComponent() {
                   <TableCell>
                     <form.Field name="name">
                       {(field) => (
-                        <input
+                        <Input
                           type="text"
                           placeholder="Name"
                           name={field().name}
@@ -188,7 +189,7 @@ function RouteComponent() {
                   <TableCell>
                     <form.Field name="decimal_digits">
                       {(field) => (
-                        <input
+                        <Input
                           type="number"
                           placeholder="Decimal Digits"
                           name={field().name}
