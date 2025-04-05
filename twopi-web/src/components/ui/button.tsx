@@ -1,6 +1,6 @@
 import { Root } from "@kobalte/core/button";
 import { cva, type VariantProps } from "class-variance-authority";
-import { type ComponentProps } from "solid-js";
+import { splitProps, type ComponentProps } from "solid-js";
 import { cn } from "~/lib/utils";
 
 const buttonVariants = cva(
@@ -37,19 +37,26 @@ const buttonVariants = cva(
 function Button(
   props: ComponentProps<"button"> & VariantProps<typeof buttonVariants>,
 ) {
+  const [local, others] = splitProps(props, [
+    "variant",
+    "size",
+    "class",
+    "children",
+  ]);
+
   return (
     <Root
       data-slot="button"
       class={cn(
         buttonVariants({
-          variant: props.variant,
-          size: props.size,
-          class: props.class,
+          variant: local.variant,
+          size: local.size,
+          class: local.class,
         }),
       )}
-      {...props}
+      {...others}
     >
-      {props.children}
+      {local.children}
     </Root>
   );
 }
