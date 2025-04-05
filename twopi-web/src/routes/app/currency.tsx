@@ -1,10 +1,28 @@
-import { useQuery, useQueryClient } from "@tanstack/solid-query";
+import { createForm } from "@tanstack/solid-form";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute } from "@tanstack/solid-router";
-import { Trash } from "lucide-solid";
+import {
+  createSolidTable,
+  flexRender,
+  getCoreRowModel,
+} from "@tanstack/solid-table";
+import { Save, Trash } from "lucide-solid";
 import { For, Match, Switch } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import { Button } from "~/components/ui/button";
-import { deleteCurrency, syncCurrencies } from "~/lib/api/currency";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import {
+  createCurrency,
+  deleteCurrency,
+  syncCurrencies,
+} from "~/lib/api/currency";
 import { currencyQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/currency")({
@@ -20,10 +38,81 @@ function RouteComponent() {
     await queryClient.invalidateQueries(currencyQueryOptions());
   };
 
-  const deleteAction = async (code: string) => {
-    await deleteCurrency(code);
-    await queryClient.invalidateQueries(currencyQueryOptions());
+  const createMutation = useMutation(() => ({
+    mutationFn: (data: {
+      code: string;
+      name: string;
+      decimal_digits: number;
+    }) =>
+      createCurrency(data).then(() => {
+        form.reset();
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: currencyQueryOptions().queryKey,
+      });
+    },
+  }));
+
+  const deleteMutation = useMutation(() => ({
+    mutationFn: async (code: string) => await deleteCurrency(code),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(currencyQueryOptions());
+    },
+  }));
+
+  const form = createForm(() => ({
+    defaultValues: {
+      code: "",
+      name: "",
+      decimal_digits: 0,
+    },
+    onSubmit({ value }) {
+      createMutation.mutate(value);
+    },
+  }));
+
+  type Currency = {
+    code: string;
+    name: string;
+    decimal_digits: number;
   };
+
+  const table = createSolidTable<Currency>({
+    columns: [
+      {
+        accessorKey: "code",
+        header: "Code",
+      },
+      {
+        accessorKey: "name",
+        header: "Name",
+      },
+      {
+        accessorKey: "decimal_digits",
+        header: "Decimal Digits",
+      },
+      {
+        header: "Actions",
+        accessorKey: "code",
+        cell: (props) => (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => {
+              deleteMutation.mutate(props.getValue());
+            }}
+          >
+            <Trash />
+          </Button>
+        ),
+      },
+    ],
+    get data() {
+      return currenciesQuery.data?.data ?? [];
+    },
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <PageLayout
@@ -38,50 +127,105 @@ function RouteComponent() {
           <div>Error: {currenciesQuery.error?.message}</div>
         </Match>
         <Match when={currenciesQuery.isSuccess}>
-          <table class="w-full table-auto border-collapse border border-slate-400">
-            <thead>
-              <tr>
-                <th class="border border-slate-300 px-2 py-1">Name</th>
-                <th class="border border-slate-300 px-2 py-1">Code</th>
-                <th class="border border-slate-300 px-2 py-1">
-                  Decimal Digits
-                </th>
-                <th class="border border-slate-300 px-2 py-1">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <For
-                each={currenciesQuery.data?.data}
-                fallback={
-                  <tr>
-                    <td colSpan={3}>No currencies</td>
-                  </tr>
-                }
-              >
-                {(currency) => (
-                  <tr>
-                    <td class="border border-slate-300 px-2 py-1">
-                      {currency.name}
-                    </td>
-                    <td class="border border-slate-300 px-2 py-1">
-                      {currency.code}
-                    </td>
-                    <td class="border border-slate-300 px-2 py-1">
-                      {currency.decimal_digits}
-                    </td>
-                    <td class="border border-slate-300 px-2 py-1">
-                      <Button
-                        variant="destructive"
-                        onClick={() => deleteAction(currency.code)}
-                      >
-                        <Trash />
-                      </Button>
-                    </td>
-                  </tr>
-                )}
-              </For>
-            </tbody>
-          </table>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
+            <Table>
+              <TableHeader>
+                <For each={table.getHeaderGroups()}>
+                  {(headerGroup) => (
+                    <TableRow>
+                      <For each={headerGroup.headers}>
+                        {(header) => (
+                          <TableHead>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext(),
+                                )}
+                          </TableHead>
+                        )}
+                      </For>
+                    </TableRow>
+                  )}
+                </For>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    <form.Field name="code">
+                      {(field) => (
+                        <input
+                          type="text"
+                          placeholder="Code"
+                          name={field().name}
+                          value={field().state.value}
+                          onBlur={field().handleBlur}
+                          onChange={(e) => field().handleChange(e.target.value)}
+                        />
+                      )}
+                    </form.Field>
+                  </TableCell>
+                  <TableCell>
+                    <form.Field name="name">
+                      {(field) => (
+                        <input
+                          type="text"
+                          placeholder="Name"
+                          name={field().name}
+                          value={field().state.value}
+                          onBlur={field().handleBlur}
+                          onChange={(e) => field().handleChange(e.target.value)}
+                        />
+                      )}
+                    </form.Field>
+                  </TableCell>
+                  <TableCell>
+                    <form.Field name="decimal_digits">
+                      {(field) => (
+                        <input
+                          type="number"
+                          placeholder="Decimal Digits"
+                          name={field().name}
+                          value={field().state.value}
+                          onBlur={field().handleBlur}
+                          onChange={(e) =>
+                            field().handleChange(Number(e.target.value))
+                          }
+                        />
+                      )}
+                    </form.Field>
+                  </TableCell>
+                  <TableCell>
+                    <Button type="submit">
+                      <Save />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+                <For each={table.getRowModel().rows}>
+                  {(row) => (
+                    <TableRow>
+                      <For each={row.getVisibleCells()}>
+                        {(cell) => (
+                          <TableCell>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        )}
+                      </For>
+                    </TableRow>
+                  )}
+                </For>
+              </TableBody>
+            </Table>
+          </form>
         </Match>
       </Switch>
     </PageLayout>
