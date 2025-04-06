@@ -85,6 +85,9 @@ function RouteComponent() {
         </>
       }
     >
+      {mutation.isError && (
+        <p class="text-destructive">{mutation.error.message}</p>
+      )}
       <QueryWrapper
         queryResult={categoriesQuery}
         errorRender={(e) => <div>{e.message}</div>}
