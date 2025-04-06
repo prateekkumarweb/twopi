@@ -1,14 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { ArrowLeft, Edit, Trash } from "lucide-solid";
-import { Show } from "solid-js";
+import { createMemo, Show } from "solid-js";
 import DynamicIcon from "~/components/DynamicIcon";
 import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
+import TransactionList from "~/components/TransactionList";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { deleteCategory } from "~/lib/api/category";
-import { categoryQueryOptions } from "~/lib/query-options";
+import {
+  categoryQueryOptions,
+  transactionQueryOptions,
+} from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/category/$id/")({
   component: RouteComponent,
@@ -19,6 +23,13 @@ function RouteComponent() {
   const params = Route.useParams();
   const categoriesQuery = useQuery(categoryQueryOptions);
   const navigate = Route.useNavigate();
+  const transactionQuery = useQuery(transactionQueryOptions);
+  const filteredTransactions = createMemo(
+    () =>
+      transactionQuery.data?.transactions?.filter((transaction) =>
+        transaction.items?.some((item) => item.category_id === params().id),
+      ) ?? [],
+  );
 
   const mutation = useMutation(() => ({
     mutationFn: async (id: string) => {
@@ -96,7 +107,12 @@ function RouteComponent() {
                     )
                   }
                 />
-                {/* TODO: Show related transaction */}
+                <div class="mt-2">
+                  <h2 class="text-lg font-bold">Transactions</h2>
+                  <TransactionList
+                    transactions={filteredTransactions() ?? []}
+                  />
+                </div>
               </>
             )}
           </Show>

@@ -2,16 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import dayjs from "dayjs";
 import { ArrowLeft, Edit, Trash } from "lucide-solid";
+import { createMemo } from "solid-js";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
+import TransactionList from "~/components/TransactionList";
 import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { deleteAccount } from "~/lib/api/account";
 import {
   accountByIdQueryOptions,
   accountQueryOptions,
+  transactionQueryOptions,
 } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/account/$id/")({
@@ -22,6 +25,13 @@ function RouteComponent() {
   const params = Route.useParams();
   const queryClient = useQueryClient();
   const accountQuery = useQuery(() => accountByIdQueryOptions(params().id));
+  const transactionQuery = useQuery(transactionQueryOptions);
+  const filteredTransactions = createMemo(
+    () =>
+      transactionQuery.data?.transactions?.filter((transaction) =>
+        transaction.items?.some((item) => item.account_id === params().id),
+      ) ?? [],
+  );
 
   const navigate = Route.useNavigate();
   const mutation = useMutation(() => ({
@@ -125,7 +135,10 @@ function RouteComponent() {
               label="Active"
               value={account.account.is_active ? "Yes" : "No"}
             />
-            {/* TODO: Show related transaction */}
+            <div class="mt-2">
+              <h2 class="text-lg font-bold">Transactions</h2>
+              <TransactionList transactions={filteredTransactions() ?? []} />
+            </div>
           </>
         )}
       </QueryWrapper>
