@@ -56,7 +56,7 @@ impl TransactionReq {
     pub async fn find_all_with_items(db: &DbConn) -> Result<Vec<TransactionExpandedModel>, DbErr> {
         TransactionEntity::find()
             .order_by_asc(TransactionColumn::Timestamp)
-            .find_also_related(TransactionItemEntity::default())
+            .find_with_related(TransactionItemEntity::default())
             .all(db)
             .await
             .map(|transactions| {
@@ -78,10 +78,11 @@ impl TransactionReq {
         id: Uuid,
     ) -> Result<Option<TransactionExpandedModel>, DbErr> {
         TransactionEntity::find_by_id(id)
-            .find_also_related(TransactionItemEntity::default())
-            .one(db)
+            .find_with_related(TransactionItemEntity::default())
+            .all(db)
             .await
             .map(|t| {
+                let t = t.into_iter().next();
                 t.map(|(t, items)| TransactionExpandedModel {
                     transaction: TransactionModel(t),
                     items: items.into_iter().map(TransactionItemModel).collect(),
