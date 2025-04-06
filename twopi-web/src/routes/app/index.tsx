@@ -1,3 +1,4 @@
+import { makePersisted } from "@solid-primitives/storage";
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute } from "@tanstack/solid-router";
 import { createMemo, createSignal, For, Show } from "solid-js";
@@ -42,6 +43,11 @@ export const Route = createFileRoute("/app/")({
   component: RouteComponent,
 });
 
+const [currentCurrency, setCurrentCurrency] = makePersisted(
+  // eslint-disable-next-line solid/reactivity
+  createSignal("USD"),
+);
+
 function RouteComponent() {
   const currenciesQuery = useQuery(currencyQueryOptions);
   const currencyRatesQuery = useQuery(currencyRatesQueryOptions);
@@ -55,7 +61,6 @@ function RouteComponent() {
   const category = (id?: string | null) =>
     categoriesQuery.data?.categories.find((category) => category.id === id);
 
-  const [currentCurrency, setCurrentCurrency] = createSignal("USD");
   const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
   const currencies =
     currenciesQuery.data?.data?.filter((c) =>
