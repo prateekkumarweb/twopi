@@ -224,10 +224,15 @@ export default function AccountEditor(
             </div>
           )}
         </form.Field>
-        <Button type="submit" disabled={mutation.isPending}>
-          {props.edit ? "Update" : "Create"}
-        </Button>
-        {mutation.isPending && <p class="text-accent">Creating...</p>}
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+        >
+          {(val) => (
+            <Button type="submit" disabled={!val()[0]}>
+              {val()[1] ? "..." : props.edit ? "Update" : "Create"}
+            </Button>
+          )}
+        </form.Subscribe>
         {mutation.isError && (
           <p class="text-destructive">{mutation.error?.message}</p>
         )}

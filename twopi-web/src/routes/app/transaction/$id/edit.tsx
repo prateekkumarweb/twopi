@@ -5,7 +5,11 @@ import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import TransactionEditor from "~/components/TransactionEditor";
 import { buttonVariants } from "~/components/ui/button";
-import { transactionByIdQueryOptions } from "~/lib/query-options";
+import {
+  accountQueryOptions,
+  categoryQueryOptions,
+  transactionByIdQueryOptions,
+} from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/transaction/$id/edit")({
   component: RouteComponent,
@@ -16,6 +20,12 @@ function RouteComponent() {
   const transactionQuery = useQuery(() =>
     transactionByIdQueryOptions(params().id),
   );
+  const accountsQuery = useQuery(accountQueryOptions);
+  const categoriesQuery = useQuery(categoryQueryOptions);
+  const account = (id: string) =>
+    accountsQuery.data?.accounts.find((account) => account.account.id === id);
+  const category = (id?: string | null) =>
+    categoriesQuery.data?.categories.find((category) => category.id === id);
 
   return (
     <PageLayout
@@ -45,9 +55,9 @@ function RouteComponent() {
               items: data.items.map((item) => ({
                 id: item.id,
                 notes: item.notes,
-                account_id: item.account_id,
+                accountName: account(item.account_id)?.account.name ?? "",
                 amount: item.amount,
-                category_id: item.category_id,
+                categoryName: category(item.category_id)?.name,
               })),
             }}
           />
