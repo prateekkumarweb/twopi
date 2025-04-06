@@ -13,7 +13,7 @@ export default function TransactionList(
       Object.groupBy(props.transactions, (transaction) =>
         dayjs(transaction.transaction.timestamp).format("YYYY-MM-DD"),
       ),
-    ).sort((a, b) => b[0].localeCompare(a[0])),
+    ).toSorted((a, b) => b[0].localeCompare(a[0])),
   );
 
   return (
@@ -26,7 +26,7 @@ export default function TransactionList(
             </div>
             {
               <For
-                each={txs?.sort((a, b) =>
+                each={txs?.toSorted((a, b) =>
                   b.transaction.timestamp.localeCompare(
                     a.transaction.timestamp,
                   ),

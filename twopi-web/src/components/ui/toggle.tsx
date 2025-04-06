@@ -1,5 +1,3 @@
-"use client";
-
 import * as TogglePrimitive from "@kobalte/core/toggle-button";
 import { cva, type VariantProps } from "class-variance-authority";
 import { type ComponentProps, splitProps } from "solid-js";
