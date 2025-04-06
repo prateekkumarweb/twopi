@@ -77,8 +77,7 @@ function RouteComponent() {
       >
         {(data) => (
           <div class="my-2 flex flex-col gap-2">
-            {data.accounts?.length === 0 && <div>No accounts found</div>}
-            <For each={data.accounts} fallback={<div>No accounts found</div>}>
+            <For each={data.accounts} fallback={<div>No accounts found.</div>}>
               {(account, i) => (
                 <>
                   <AccountItem

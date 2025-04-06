@@ -18,15 +18,20 @@ export default function TransactionList(
 
   return (
     <div class="my-2 flex flex-col gap-3">
-      {transactions().length === 0 && <div>No transactions found</div>}
-      <For each={transactions()}>
+      <For each={transactions()} fallback={<div>No transactions found.</div>}>
         {([date, txs]) => (
           <div class="flex flex-col gap-1">
             <div class="font-light text-zinc-700">
               {dayjs(date).format("MMM D, YYYY")}
             </div>
             {
-              <For each={txs}>
+              <For
+                each={txs?.sort((a, b) =>
+                  b.transaction.timestamp.localeCompare(
+                    a.transaction.timestamp,
+                  ),
+                )}
+              >
                 {(transaction) => <TransactionRow transaction={transaction} />}
               </For>
             }

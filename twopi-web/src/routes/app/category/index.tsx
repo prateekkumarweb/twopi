@@ -38,7 +38,7 @@ function RouteComponent() {
         errorRender={(e) => <div>{e.message}</div>}
       >
         {(data) => (
-          <For each={data.groups}>
+          <For each={data.groups} fallback={<div>No categories found.</div>}>
             {(group) => (
               <Card class="mb-4 last:mb-0">
                 <CardHeader>
