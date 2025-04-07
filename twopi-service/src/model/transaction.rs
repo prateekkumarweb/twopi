@@ -119,15 +119,129 @@ impl TransactionReq {
             .unwrap_or_default())
     }
 
-    pub async fn upsert(db: &DbConn, transaction: Self) -> Result<Uuid, DbErr> {
-        TransactionEntity::insert(TransactionActiveModel {
-            id: ActiveValue::Set(transaction.id.unwrap_or_else(Uuid::now_v7)),
-            title: ActiveValue::Set(transaction.title),
-            timestamp: ActiveValue::Set(transaction.timestamp),
-        })
-        .exec(db)
-        .await
-        .map(|t| t.last_insert_id)
+    pub async fn upsert(db: &DbConn, tx: Self) -> Result<Uuid, DbErr> {
+        let id = db
+            .transaction::<_, _, DbErr>(|txn| {
+                Box::pin(async move {
+                    let tx_id = tx.id.unwrap_or_else(|| {
+                        Uuid::new_v7(uuid::Timestamp::from_unix(
+                            uuid::timestamp::context::NoContext,
+                            tx.timestamp.timestamp() as u64,
+                            0,
+                        ))
+                    });
+                    TransactionEntity::insert(TransactionActiveModel {
+                        id: ActiveValue::Set(tx_id),
+                        title: ActiveValue::Set(tx.title.trim().to_owned()),
+                        timestamp: ActiveValue::Set(tx.timestamp),
+                    })
+                    .on_conflict(
+                        OnConflict::column(TransactionColumn::Id)
+                            .update_columns([
+                                TransactionColumn::Title,
+                                TransactionColumn::Timestamp,
+                            ])
+                            .to_owned(),
+                    )
+                    .exec(txn)
+                    .await?;
+
+                    let old_items = TransactionItemEntity::find()
+                        .filter(transaction_item::Column::TransactionId.eq(tx_id))
+                        .all(txn)
+                        .await?;
+
+                    for item in old_items {
+                        TransactionItemEntity::delete_by_id(item.id)
+                            .exec(txn)
+                            .await?;
+                    }
+
+                    for item in &tx.items {
+                        let account = AccountEntity::find()
+                            .filter(AccountColumn::Name.eq(item.account_name.to_string()))
+                            .one(txn)
+                            .await?
+                            .ok_or_else(|| {
+                                DbErr::RecordNotFound(format!(
+                                    "account_name: {:?}",
+                                    item.account_name
+                                ))
+                            })?;
+                        let cat_id = if let Some(cat) = &item.category_name {
+                            let found = CategoryEntity::find()
+                                .filter(CategoryColumn::Name.eq(item.category_name.clone()))
+                                .one(txn)
+                                .await?;
+                            if let Some(found) = found {
+                                Some(found.id)
+                            } else {
+                                Some(
+                                    CategoryEntity::insert(CategoryActiveModel {
+                                        id: ActiveValue::Set(Uuid::new_v7(
+                                            uuid::Timestamp::from_unix(
+                                                uuid::timestamp::context::NoContext,
+                                                tx.timestamp.timestamp() as u64,
+                                                0,
+                                            ),
+                                        )),
+                                        name: ActiveValue::Set(cat.clone()),
+                                        group: ActiveValue::Set(String::new()),
+                                        icon: ActiveValue::Set(String::new()),
+                                    })
+                                    .on_conflict(
+                                        OnConflict::column(CategoryColumn::Name)
+                                            .do_nothing()
+                                            .to_owned(),
+                                    )
+                                    .exec(txn)
+                                    .await?
+                                    .last_insert_id,
+                                )
+                            }
+                        } else {
+                            None
+                        };
+
+                        TransactionItemEntity::insert(TransactionItemActiveModel {
+                            id: ActiveValue::Set(item.id.unwrap_or_else(|| {
+                                Uuid::new_v7(uuid::Timestamp::from_unix(
+                                    uuid::timestamp::context::NoContext,
+                                    tx.timestamp.timestamp() as u64,
+                                    0,
+                                ))
+                            })),
+                            notes: ActiveValue::Set(item.notes.trim().to_owned()),
+                            transaction_id: ActiveValue::Set(tx_id),
+                            account_id: ActiveValue::Set(account.id),
+                            category_id: ActiveValue::Set(cat_id),
+                            amount: ActiveValue::Set(item.amount),
+                        })
+                        .on_conflict(
+                            OnConflict::column(TransactionItemColumn::Id)
+                                .update_columns([
+                                    TransactionItemColumn::Notes,
+                                    TransactionItemColumn::TransactionId,
+                                    TransactionItemColumn::AccountId,
+                                    TransactionItemColumn::CategoryId,
+                                    TransactionItemColumn::Amount,
+                                ])
+                                .to_owned(),
+                        )
+                        .exec(txn)
+                        .await?;
+                    }
+
+                    Ok(tx_id)
+                })
+            })
+            .await
+            .map_err(|e| match e {
+                sea_orm::TransactionError::Connection(e)
+                | sea_orm::TransactionError::Transaction(e) => e,
+            })?;
+
+        Ok(id)
     }
 
     pub async fn upsert_many(db: &DbConn, transactions: Vec<Self>) -> Result<(), DbErr> {

@@ -6,7 +6,9 @@ import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { useIsMobile } from "~/lib/utils";
 
 // eslint-disable-next-line solid/reactivity
-const [sidebarOpen, setSidebarOpen] = makePersisted(createSignal(false));
+const [sidebarOpen, setSidebarOpen] = makePersisted(createSignal(false), {
+  name: "sidebarOpen",
+});
 
 export function AppSidebar(
   props: Readonly<{

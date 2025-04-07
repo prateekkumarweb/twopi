@@ -46,6 +46,9 @@ export const Route = createFileRoute("/app/")({
 const [currentCurrency, setCurrentCurrency] = makePersisted(
   // eslint-disable-next-line solid/reactivity
   createSignal("USD"),
+  {
+    name: "currentCurrency",
+  },
 );
 
 function RouteComponent() {
