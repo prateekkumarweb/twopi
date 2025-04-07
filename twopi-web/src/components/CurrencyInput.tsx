@@ -38,7 +38,7 @@ export default function CurrencyInput(
         {isNegative() ? "-" : "+"}
       </Toggle>
       <Input
-        type="number"
+        type="text"
         name={props.name}
         value={amount()}
         placeholder={props.placeholder}
