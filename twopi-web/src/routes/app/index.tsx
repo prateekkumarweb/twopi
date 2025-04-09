@@ -251,7 +251,7 @@ function RouteComponent() {
           0,
         );
         return {
-          name,
+          name: category(name)?.name ?? name,
           current_value,
           prev_value,
           prev_prev_value,
@@ -447,7 +447,6 @@ function RouteComponent() {
                 <TableRow>
                   <TableHead>Category</TableHead>
                   <TableHead class="text-right">
-                    Amount (
                     <Show when={prev_prev_month()}>
                       {(prev_prev_month) =>
                         Intl.DateTimeFormat("en", {
@@ -461,10 +460,8 @@ function RouteComponent() {
                         )
                       }
                     </Show>
-                    )
                   </TableHead>
                   <TableHead class="text-right">
-                    Amount (
                     <Show when={prev_month()}>
                       {(prev_month) =>
                         Intl.DateTimeFormat("en", {
@@ -475,10 +472,8 @@ function RouteComponent() {
                         )
                       }
                     </Show>
-                    )
                   </TableHead>
                   <TableHead class="text-right">
-                    Amount (
                     <Show when={current_month()}>
                       {(current_month) =>
                         Intl.DateTimeFormat("en", {
@@ -492,7 +487,6 @@ function RouteComponent() {
                         )
                       }
                     </Show>
-                    )
                   </TableHead>
                   <TableHead />
                 </TableRow>
@@ -501,7 +495,7 @@ function RouteComponent() {
                 <For each={categories()}>
                   {({ name, current_value, prev_value, prev_prev_value }) => (
                     <TableRow>
-                      <TableCell>{category(name)?.name}</TableCell>
+                      <TableCell>{name}</TableCell>
                       <TableCell class="text-right">
                         <CurrencyDisplay
                           value={

@@ -15,7 +15,7 @@ axum = { version = "0.8.3", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.40", features = ["serde"] }
 clap = { version = "4.5.35", features = ["derive"] }
-jiff = { version = "0.2.5", features = ["serde"] }
+jiff = { version = "0.2.6", features = ["serde"] }
 jsonwebtoken = "9.3.1"
 lru = "0.13.0"
 migration = { path = "migration" }
