@@ -99,24 +99,29 @@ function RouteComponent() {
     return wealth;
   });
 
-  const chartData = createMemo(() => {
-    const daysInMonth = [];
-    daysInMonth.push();
+  const daysInMonth = createMemo(() => {
+    const days = [];
+    days.push();
     const date = new Date(
       Date.UTC(monthAndYear().year, monthAndYear().month, 1),
     );
     const firstDay = date.getTime();
     while (date.getUTCMonth() === monthAndYear().month) {
-      daysInMonth.push(new Date(date));
+      days.push(new Date(date));
       date.setDate(date.getUTCDate() + 1);
     }
+    return { days, firstDay };
+  });
 
+  const chartData = createMemo(() => {
     let cumulative = 0;
     let cashFlowCumulative = 0;
     const categories: { [key: string]: number } = {};
     accountsQuery.data?.accounts
       ?.filter(
-        (account) => new Date(account.account.created_at).getTime() < firstDay,
+        (account) =>
+          new Date(account.account.created_at).getTime() <
+          daysInMonth().firstDay,
       )
       .forEach((account) => {
         cumulative +=
@@ -134,7 +139,8 @@ function RouteComponent() {
     transactionsQuery.data?.transactions
       ?.filter(
         (transaction) =>
-          new Date(transaction.transaction.timestamp).getTime() < firstDay,
+          new Date(transaction.transaction.timestamp).getTime() <
+          daysInMonth().firstDay,
       )
       .forEach((transaction) => {
         transaction.items.forEach((t) => {
@@ -158,7 +164,7 @@ function RouteComponent() {
         });
       });
 
-    const wealthData = daysInMonth.map((d) => {
+    const wealthData = daysInMonth().days.map((d) => {
       const dateStart = d.getTime();
       const dateEnd = dateStart + 24 * 60 * 60 * 1000;
       let wealth = 0;
