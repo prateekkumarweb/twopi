@@ -11,8 +11,6 @@ export default function CurrencyDisplay(
       {Intl.NumberFormat("en-US", {
         style: "currency",
         currency: props.currencyCode,
-        minimumFractionDigits: props.decimalDigits,
-        maximumFractionDigits: props.decimalDigits,
       }).format(amount())}
     </div>
   );
