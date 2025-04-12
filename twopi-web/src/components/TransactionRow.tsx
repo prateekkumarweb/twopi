@@ -3,7 +3,9 @@ import { Link } from "@tanstack/solid-router";
 import dayjs from "dayjs";
 import { For, Show } from "solid-js";
 import { type getTransaction } from "~/lib/api/transaction";
+import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { accountQueryOptions, categoryQueryOptions } from "~/lib/query-options";
+import { AccountTypeIcon } from "./AccountTypeIcon";
 import CurrencyDisplay from "./CurrencyDisplay";
 import DynamicIcon from "./DynamicIcon";
 import { Badge } from "./ui/badge";
@@ -58,6 +60,15 @@ export default function TransactionRow(
                     {item.notes}
                   </div>
                   <Badge variant="outline">
+                    <Show when={account(item.account_id)}>
+                      {(account) => (
+                        <AccountTypeIcon
+                          type={
+                            account().account.account_type as AccountTypeOrigin
+                          }
+                        />
+                      )}
+                    </Show>
                     {account(item.account_id)?.account.name}
                   </Badge>
                   <Badge

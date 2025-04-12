@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { Plus } from "lucide-solid";
 import { createMemo, For } from "solid-js";
+import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
@@ -9,6 +10,7 @@ import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { type getAccounts } from "~/lib/api/account";
+import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   transactionQueryOptions,
@@ -112,6 +114,9 @@ function AccountItem(
           <div class="flex grow gap-2">
             {props.account.account.name}
             <Badge variant="outline">
+              <AccountTypeIcon
+                type={props.account.account.account_type as AccountTypeOrigin}
+              />
               {props.account.account.account_type}
             </Badge>
             <Badge variant="outline">

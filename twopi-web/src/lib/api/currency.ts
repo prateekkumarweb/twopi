@@ -51,5 +51,5 @@ export async function getCurrencyExchangeRates() {
   if (error) {
     throw new Error(error);
   }
-  return data;
+  return { data: data?.data };
 }

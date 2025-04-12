@@ -147,7 +147,7 @@ function RouteComponent() {
           cumulative +=
             t.amount /
             Math.pow(10, account(t.account_id)?.currency.decimal_digits ?? 2) /
-            (currencyRatesQuery.data?.data[
+            (currencyRatesQuery.data?.data?.[
               account(t.account_id)?.currency.code ?? "USD"
             ]?.value ?? 1);
           if (account(t.account_id)?.account.is_cash_flow) {
@@ -157,7 +157,7 @@ function RouteComponent() {
                 10,
                 account(t.account_id)?.currency.decimal_digits ?? 2,
               ) /
-              (currencyRatesQuery.data?.data[
+              (currencyRatesQuery.data?.data?.[
                 account(t.account_id)?.currency.code ?? "USD"
               ]?.value ?? 1);
           }
@@ -179,12 +179,13 @@ function RouteComponent() {
           wealth +=
             account.account.starting_balance /
             Math.pow(10, account.currency.decimal_digits) /
-            (currencyRatesQuery.data?.data[account.currency.code]?.value ?? 1);
+            (currencyRatesQuery.data?.data?.[account.currency.code]?.value ??
+              1);
           if (account.account.is_cash_flow) {
             cashFlow +=
               account.account.starting_balance /
               Math.pow(10, account.currency.decimal_digits) /
-              (currencyRatesQuery.data?.data[account.currency.code]?.value ??
+              (currencyRatesQuery.data?.data?.[account.currency.code]?.value ??
                 1);
           }
         });
@@ -203,7 +204,7 @@ function RouteComponent() {
                 10,
                 account(t.account_id)?.currency.decimal_digits ?? 2,
               ) /
-              (currencyRatesQuery.data?.data[
+              (currencyRatesQuery.data?.data?.[
                 account(t.account_id)?.currency.code ?? "USD"
               ]?.value ?? 1);
             if (t.category_id) {
@@ -375,7 +376,7 @@ function RouteComponent() {
                     style: "currency",
                   }).format(
                     wealth *
-                      (currencyRatesQuery.data?.data[currentCurrency()]
+                      (currencyRatesQuery.data?.data?.[currentCurrency()]
                         ?.value ?? 1),
                   ),
                   cashFlow: Intl.NumberFormat("en", {
@@ -383,7 +384,7 @@ function RouteComponent() {
                     style: "currency",
                   }).format(
                     cashFlow *
-                      (currencyRatesQuery.data?.data[currentCurrency()]
+                      (currencyRatesQuery.data?.data?.[currentCurrency()]
                         ?.value ?? 1),
                   ),
                 })),
@@ -424,7 +425,7 @@ function RouteComponent() {
                     style: "currency",
                   }).format(
                     wealth *
-                      (currencyRatesQuery.data?.data[currentCurrency()]
+                      (currencyRatesQuery.data?.data?.[currentCurrency()]
                         ?.value ?? 1),
                   ),
                   cashFlow: Intl.NumberFormat("en", {
@@ -432,7 +433,7 @@ function RouteComponent() {
                     style: "currency",
                   }).format(
                     cashFlow *
-                      (currencyRatesQuery.data?.data[currentCurrency()]
+                      (currencyRatesQuery.data?.data?.[currentCurrency()]
                         ?.value ?? 1),
                   ),
                 })),
