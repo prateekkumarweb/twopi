@@ -18,8 +18,8 @@ importers:
         specifier: ^1.3.2
         version: 1.3.2(solid-js@1.9.5)
       '@tanstack/solid-query':
-        specifier: ^5.72.2
-        version: 5.72.2(solid-js@1.9.5)
+        specifier: ^5.73.3
+        version: 5.73.3(solid-js@1.9.5)
       '@tanstack/solid-router':
         specifier: ^1.115.3
         version: 1.115.3(solid-js@1.9.5)
@@ -70,8 +70,8 @@ importers:
         specifier: ^4.1.3
         version: 4.1.3(vite@6.2.6(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3))
       '@tanstack/eslint-plugin-query':
-        specifier: ^5.72.2
-        version: 5.72.2(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)
+        specifier: ^5.73.3
+        version: 5.73.3(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)
       '@tanstack/router-cli':
         specifier: ^1.115.3
         version: 1.115.3(@tanstack/react-router@1.114.24(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
@@ -79,8 +79,8 @@ importers:
         specifier: ^1.115.3
         version: 1.115.3(@tanstack/react-router@1.114.24(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(vite-plugin-solid@2.11.6(solid-js@1.9.5)(vite@6.2.6(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)))(vite@6.2.6(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3))
       '@tanstack/solid-query-devtools':
-        specifier: ^5.72.2
-        version: 5.72.2(@tanstack/solid-query@5.72.2(solid-js@1.9.5))(solid-js@1.9.5)
+        specifier: ^5.73.3
+        version: 5.73.3(@tanstack/solid-query@5.73.3(solid-js@1.9.5))(solid-js@1.9.5)
       '@tanstack/solid-router-devtools':
         specifier: ^1.115.3
         version: 1.115.3(@tanstack/router-core@1.115.3)(@tanstack/solid-router@1.115.3(solid-js@1.9.5))(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)
@@ -383,8 +383,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@eslint-community/eslint-utils@4.5.1':
-    resolution: {integrity: sha512-soEIOALTfTK6EjmKMMoLugwaP0rzkad90iIWd1hMO9ARkSAyjfMfkRRhLvD5qH7vvM0Cg72pieUfR6yh6XxC4w==}
+  '@eslint-community/eslint-utils@4.6.0':
+    resolution: {integrity: sha512-WhCn7Z7TauhBtmzhvKpoQs0Wwb/kBcy4CwpuI0/eEIr2Lx2auxmulAzLr91wVZJaz47iUZdkXOK7WlAfxGKCnA==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
@@ -851,8 +851,8 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6
 
-  '@tanstack/eslint-plugin-query@5.72.2':
-    resolution: {integrity: sha512-JzfDu6fA/6jj25td+NxYSjiSC2kqo62uVWgquqUUOgzQK+/eJ2IH3pVDeIXrrhQ9VsaJEBeaJN4Lc0klnlVvGQ==}
+  '@tanstack/eslint-plugin-query@5.73.3':
+    resolution: {integrity: sha512-GmUtnOkRzDuNOq96g3eW5ADKC1nWfrM9RI0kRyQVr87rOl6y+PUgkuVaPxh3R2C0EVODxCS07b9aaWphidl/OA==}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
 
@@ -867,11 +867,11 @@ packages:
     resolution: {integrity: sha512-K7JJNrRVvyjAVnbXOH2XLRhFXDkeP54Kt2P4FR1Kl2KDGlIbkua5VqZQD2rot3qaDrpufyUa63nuLai1kOLTsQ==}
     engines: {node: '>=12'}
 
-  '@tanstack/query-core@5.72.2':
-    resolution: {integrity: sha512-fxl9/0yk3mD/FwTmVEf1/H6N5B975H0luT+icKyX566w6uJG0x6o+Yl+I38wJRCaogiMkstByt+seXfDbWDAcA==}
+  '@tanstack/query-core@5.73.3':
+    resolution: {integrity: sha512-LUpsgVT3IkvOECdkQ3QD6esczSH71mAzH/LDZ2cu8j6w430v5W0JB1ulzsG8FFwFBd5fm/ePM2DFpg9TucRMgQ==}
 
-  '@tanstack/query-devtools@5.72.2':
-    resolution: {integrity: sha512-mMKnGb+iOhVBcj6jaerCFRpg8pACStdG8hmUBHPtToeZzs4ctjBUL1FajqpVn2WaMxnq8Wya+P3Q5tPFNM9jQw==}
+  '@tanstack/query-devtools@5.73.3':
+    resolution: {integrity: sha512-hBQyYwsOuO7QOprK75NzfrWs/EQYjgFA0yykmcvsV62q0t6Ua97CU3sYgjHx0ZvxkXSOMkY24VRJ5uv9f5Ik4w==}
 
   '@tanstack/react-router@1.114.24':
     resolution: {integrity: sha512-xHrgcYi/GvwBh/lTpVpZtDFGA8f8oBSSsFagAGgSGkvz+EPTIhAML0hvwKCV1jP2HaIdU/7aJk14y4q8TT2M4Q==}
@@ -950,14 +950,14 @@ packages:
     peerDependencies:
       solid-js: ^1.6.0
 
-  '@tanstack/solid-query-devtools@5.72.2':
-    resolution: {integrity: sha512-duYFN6EMsV0iwz1vV60GvxsQy3PXycgHhrucaik2yvJlRKrEYuHTYGqpRTy+P3JrFZkEzVLjevMnbzR4IIt5vw==}
+  '@tanstack/solid-query-devtools@5.73.3':
+    resolution: {integrity: sha512-iFE1/jAibtt/8My2xkausjFouHPwFIpoDvOBFs9aOMcWd31MlmfS9AHX1P33w93WHjna6yrvy77tjd6dR4Ep1Q==}
     peerDependencies:
-      '@tanstack/solid-query': ^5.72.2
+      '@tanstack/solid-query': ^5.73.3
       solid-js: ^1.6.0
 
-  '@tanstack/solid-query@5.72.2':
-    resolution: {integrity: sha512-ty4J5q+DIPEs7xB01TqkTfx0wYkcccJaofb378Nq/HfWoQ/0300A8TM7CU7YotJUmVWA3qwBHnJLChXlNzX4ow==}
+  '@tanstack/solid-query@5.73.3':
+    resolution: {integrity: sha512-qDM27By4ltUTFyfh/ha+xabVveX2TZSmGTwcAoZUMjRzU0hRwFdtXVpztMcMAJ31WjxCceGSER0kkqdwQqPj+g==}
     peerDependencies:
       solid-js: ^1.6.0
 
@@ -2335,8 +2335,8 @@ packages:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
 
-  unplugin@2.3.1:
-    resolution: {integrity: sha512-l9lOQPGN82rUAnyX7Qw8z0E9oLgQ8tkPxFyAqX3x7DnX/jvgLHUqKX1b8u5RP6u6K0/GKfgvaiaB018j7zr+Nw==}
+  unplugin@2.3.2:
+    resolution: {integrity: sha512-3n7YA46rROb3zSj8fFxtxC/PqoyvYQ0llwz9wtUPUutr9ig09C8gGo5CWCwHrUzlqC1LLR43kxp5vEIyH1ac1w==}
     engines: {node: '>=18.12.0'}
 
   update-browserslist-db@1.1.3:
@@ -2683,7 +2683,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.2':
     optional: true
 
-  '@eslint-community/eslint-utils@4.5.1(eslint@9.24.0(jiti@2.4.2))':
+  '@eslint-community/eslint-utils@4.6.0(eslint@9.24.0(jiti@2.4.2))':
     dependencies:
       eslint: 9.24.0(jiti@2.4.2)
       eslint-visitor-keys: 3.4.3
@@ -3125,7 +3125,7 @@ snapshots:
       tailwindcss: 4.1.3
       vite: 6.2.6(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)
 
-  '@tanstack/eslint-plugin-query@5.72.2(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)':
+  '@tanstack/eslint-plugin-query@5.73.3(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)':
     dependencies:
       '@typescript-eslint/utils': 8.29.1(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)
       eslint: 9.24.0(jiti@2.4.2)
@@ -3141,9 +3141,9 @@ snapshots:
 
   '@tanstack/history@1.115.0': {}
 
-  '@tanstack/query-core@5.72.2': {}
+  '@tanstack/query-core@5.73.3': {}
 
-  '@tanstack/query-devtools@5.72.2': {}
+  '@tanstack/query-devtools@5.73.3': {}
 
   '@tanstack/react-router@1.114.24(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
@@ -3218,7 +3218,7 @@ snapshots:
       '@types/babel__traverse': 7.20.7
       babel-dead-code-elimination: 1.0.10
       chokidar: 3.6.0
-      unplugin: 2.3.1
+      unplugin: 2.3.2
       zod: 3.24.2
     optionalDependencies:
       '@tanstack/react-router': 1.114.24(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -3240,15 +3240,15 @@ snapshots:
       '@tanstack/solid-store': 0.7.0(solid-js@1.9.5)
       solid-js: 1.9.5
 
-  '@tanstack/solid-query-devtools@5.72.2(@tanstack/solid-query@5.72.2(solid-js@1.9.5))(solid-js@1.9.5)':
+  '@tanstack/solid-query-devtools@5.73.3(@tanstack/solid-query@5.73.3(solid-js@1.9.5))(solid-js@1.9.5)':
     dependencies:
-      '@tanstack/query-devtools': 5.72.2
-      '@tanstack/solid-query': 5.72.2(solid-js@1.9.5)
+      '@tanstack/query-devtools': 5.73.3
+      '@tanstack/solid-query': 5.73.3(solid-js@1.9.5)
       solid-js: 1.9.5
 
-  '@tanstack/solid-query@5.72.2(solid-js@1.9.5)':
+  '@tanstack/solid-query@5.73.3(solid-js@1.9.5)':
     dependencies:
-      '@tanstack/query-core': 5.72.2
+      '@tanstack/query-core': 5.73.3
       solid-js: 1.9.5
 
   '@tanstack/solid-router-devtools@1.115.3(@tanstack/router-core@1.115.3)(@tanstack/solid-router@1.115.3(solid-js@1.9.5))(csstype@3.1.3)(solid-js@1.9.5)(tiny-invariant@1.3.3)':
@@ -3390,7 +3390,7 @@ snapshots:
 
   '@typescript-eslint/utils@8.29.1(eslint@9.24.0(jiti@2.4.2))(typescript@5.8.3)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.5.1(eslint@9.24.0(jiti@2.4.2))
+      '@eslint-community/eslint-utils': 4.6.0(eslint@9.24.0(jiti@2.4.2))
       '@typescript-eslint/scope-manager': 8.29.1
       '@typescript-eslint/types': 8.29.1
       '@typescript-eslint/typescript-estree': 8.29.1(typescript@5.8.3)
@@ -3814,7 +3814,7 @@ snapshots:
 
   eslint@9.24.0(jiti@2.4.2):
     dependencies:
-      '@eslint-community/eslint-utils': 4.5.1(eslint@9.24.0(jiti@2.4.2))
+      '@eslint-community/eslint-utils': 4.6.0(eslint@9.24.0(jiti@2.4.2))
       '@eslint-community/regexpp': 4.12.1
       '@eslint/config-array': 0.20.0
       '@eslint/config-helpers': 0.2.1
@@ -4767,7 +4767,7 @@ snapshots:
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
 
-  unplugin@2.3.1:
+  unplugin@2.3.2:
     dependencies:
       acorn: 8.14.1
       picomatch: 4.0.2

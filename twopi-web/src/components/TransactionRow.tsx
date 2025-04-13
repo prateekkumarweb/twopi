@@ -74,10 +74,10 @@ export default function TransactionRow(
                   <Badge
                     class={
                       item.amount < 0
-                        ? "bg-red-900"
+                        ? "border-red-600 bg-red-200 text-red-900"
                         : item.amount > 0
-                          ? "bg-green-900"
-                          : ""
+                          ? "border-green-600 bg-green-200 text-green-900"
+                          : "border-gray-600 bg-gray-200 text-gray-900"
                     }
                   >
                     <Show when={account(item.account_id)}>
