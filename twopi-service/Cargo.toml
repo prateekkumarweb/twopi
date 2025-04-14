@@ -8,19 +8,19 @@ publish = false
 members = [".", "migration", "user-migration"]
 
 [dependencies]
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 argon2 = { version = "0.5.3", features = ["std"] }
 async-trait = "0.1.88"
 axum = { version = "0.8.3", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.40", features = ["serde"] }
 clap = { version = "4.5.36", features = ["derive"] }
-jiff = { version = "0.2.6", features = ["serde"] }
+jiff = { version = "0.2.8", features = ["serde"] }
 jsonwebtoken = "9.3.1"
 lru = "0.14.0"
 migration = { path = "migration" }
 reqwest = { version = "0.12.15", features = ["json"] }
-sea-orm = { version = "1.1.8", features = [
+sea-orm = { version = "1.1.10", features = [
     "sqlx-sqlite",
     "runtime-tokio-rustls",
     "macros",
