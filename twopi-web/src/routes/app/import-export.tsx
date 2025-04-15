@@ -3,6 +3,12 @@ import { createFileRoute, useRouter } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import { QueriesWrapper } from "~/components/QueryWrapper";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { createAccounts } from "~/lib/api/account";
@@ -153,44 +159,46 @@ function RouteComponent() {
         {(data) => (
           <div class="flex flex-col gap-4">
             {error() && <p class="text-red-700">{error()}</p>}
-            <details>
-              <summary>
-                <h2 class="inline font-semibold">Import Accounts</h2>
-              </summary>
-              <Textarea
-                class="mb-2 h-64 font-mono"
-                value={accountCsv()}
-                onChange={(e) => setAccountCsv(e.target.value)}
-              />
-              <Button onClick={importAccounts}>Import</Button>
-            </details>
-            <details>
-              <summary>
-                <h2 class="inline font-semibold">Import Transactions</h2>
-              </summary>
-              <Textarea
-                class="mb-2 h-64 font-mono"
-                value={transactionCsv()}
-                onChange={(e) => setTransactionCsv(e.target.value)}
-              />
-              <Button onClick={importTransactions}>Import</Button>
-            </details>
-            <details>
-              <summary>
-                <h2 class="inline font-semibold">Export everything</h2>
-              </summary>
-              <Textarea
-                class="mt-4 h-64 font-mono"
-                value={JSON.stringify(
-                  {
-                    accounts: data[0].accounts,
-                    transactions: data[1].transactions,
-                  },
-                  null,
-                  2,
-                )}
-              />
-            </details>
+            <Accordion collapsible multiple>
+              <AccordionItem value="import-accounts">
+                <AccordionTrigger>Import Accounts</AccordionTrigger>
+                <AccordionContent>
+                  <Textarea
+                    class="mb-2 h-64 font-mono"
+                    value={accountCsv()}
+                    onChange={(e) => setAccountCsv(e.target.value)}
+                  />
+                  <Button onClick={importAccounts}>Import</Button>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="import-transactions">
+                <AccordionTrigger>Import Transactions</AccordionTrigger>
+                <AccordionContent>
+                  <Textarea
+                    class="mb-2 h-64 font-mono"
+                    value={transactionCsv()}
+                    onChange={(e) => setTransactionCsv(e.target.value)}
+                  />
+                  <Button onClick={importTransactions}>Import</Button>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="export-all">
+                <AccordionTrigger>Export everything</AccordionTrigger>
+                <AccordionContent>
+                  <Textarea
+                    class="mt-4 h-64 font-mono"
+                    value={JSON.stringify(
+                      {
+                        accounts: data[0].accounts,
+                        transactions: data[1].transactions,
+                      },
+                      null,
+                      2,
+                    )}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         )}
       </QueriesWrapper>
