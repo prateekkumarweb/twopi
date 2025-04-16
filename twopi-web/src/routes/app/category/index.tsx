@@ -6,7 +6,14 @@ import DynamicIcon from "~/components/DynamicIcon";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import { buttonVariants } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { categoryQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/category/")({
@@ -38,32 +45,50 @@ function RouteComponent() {
         errorRender={(e) => <div>{e.message}</div>}
       >
         {(data) => (
-          <For each={data.groups} fallback={<div>No categories found.</div>}>
-            {(group) => (
-              <Card class="mb-4 last:mb-0">
-                <CardHeader>
-                  <CardTitle>{group.group || "Ungrouped"}</CardTitle>
-                </CardHeader>
-                <CardContent class="flex flex-col gap-2 px-4">
-                  <For each={group.categories}>
-                    {(category) => (
-                      <Link to="/app/category/$id" params={{ id: category.id }}>
-                        <div class="border-1 my-auto grow rounded-md p-4 text-gray-500">
-                          {category.icon && (
-                            <DynamicIcon
-                              name={category.icon as "Loader"}
-                              class="mr-2 inline-block h-4 w-4"
-                            />
-                          )}
-                          {category.name}
-                        </div>
-                      </Link>
-                    )}
-                  </For>
-                </CardContent>
-              </Card>
-            )}
-          </For>
+          <>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead class="px-6 py-4">Name</TableHead>
+                  <TableHead class="px-6 py-4">Group</TableHead>
+                  <TableHead class="px-6 py-4">Icon</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <For
+                  each={data.groups}
+                  fallback={<div>No categories found.</div>}
+                >
+                  {(group) => (
+                    <For each={group.categories}>
+                      {(category) => (
+                        <TableRow>
+                          <TableCell>
+                            <Link
+                              class={buttonVariants({ variant: "link" })}
+                              to="/app/category/$id"
+                              params={{ id: category.id }}
+                            >
+                              {category.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{group.group}</TableCell>
+                          <TableCell>
+                            {category.icon && (
+                              <DynamicIcon
+                                name={category.icon as "Loader"}
+                                class="mr-2 inline-block h-4 w-4"
+                              />
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </For>
+                  )}
+                </For>
+              </TableBody>
+            </Table>
+          </>
         )}
       </QueryWrapper>
     </PageLayout>
