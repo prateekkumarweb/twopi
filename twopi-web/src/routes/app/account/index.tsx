@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/solid-query";
-import { createFileRoute, Link } from "@tanstack/solid-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
 import { Plus } from "lucide-solid";
 import { createMemo, For } from "solid-js";
 import { AccountTypeIcon } from "~/components/AccountTypeIcon";
@@ -8,7 +8,14 @@ import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
 import { type getAccounts } from "~/lib/api/account";
 import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
@@ -23,6 +30,7 @@ export const Route = createFileRoute("/app/account/")({
 type Account = Awaited<ReturnType<typeof getAccounts>>["accounts"][number];
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const accountsQuery = useQuery(accountQueryOptions);
   const transactionsQuery = useQuery(transactionQueryOptions);
 
@@ -78,70 +86,90 @@ function RouteComponent() {
         errorRender={(e) => <div>{e.message}</div>}
       >
         {(data) => (
-          <div class="my-2 flex flex-col gap-2">
-            <For each={data.accounts} fallback={<div>No accounts found.</div>}>
-              {(account, i) => (
-                <>
-                  <AccountItem
-                    account={account}
-                    currentBalance={calculateBalance(account)}
-                  />
-                  {data.accounts?.length !== i() + 1 && <Separator />}
-                </>
-              )}
-            </For>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow class="*:py-4">
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead class="text-right">Starting Balance</TableHead>
+                <TableHead class="text-right">Current Balance</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <For
+                each={data.accounts}
+                fallback={<div>No accounts found.</div>}
+              >
+                {(account) => (
+                  <TableRow
+                    onClick={() => {
+                      navigate({
+                        to: "/app/account/$id",
+                        params: {
+                          id: account.account.id,
+                        },
+                      });
+                    }}
+                    class="cursor-pointer *:py-4"
+                  >
+                    <TableCell>{account.account.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        <AccountTypeIcon
+                          type={
+                            account.account.account_type as AccountTypeOrigin
+                          }
+                        />
+                        {account.account.account_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell class="text-right">
+                      <CurrencyComp
+                        value={account.account.starting_balance}
+                        currencyCode={account.account.currency_code}
+                        decimalDigits={account.currency.decimal_digits}
+                      />
+                    </TableCell>
+                    <TableCell class="text-right">
+                      <CurrencyComp
+                        value={calculateBalance(account)}
+                        currencyCode={account.account.currency_code}
+                        decimalDigits={account.currency.decimal_digits}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )}
+              </For>
+            </TableBody>
+          </Table>
         )}
       </QueryWrapper>
     </PageLayout>
   );
 }
 
-function AccountItem(
+function CurrencyComp(
   props: Readonly<{
-    account: Account;
-    currentBalance: number;
+    value: number;
+    currencyCode: string;
+    decimalDigits: number;
   }>,
 ) {
   return (
-    <div class="w-full p-2">
-      <Link
-        to="/app/account/$id"
-        params={{ id: props.account.account.id }}
-        class="flex grow flex-col gap-2"
-      >
-        <div class="flex gap-2">
-          <div class="flex grow gap-2">
-            {props.account.account.name}
-            <Badge variant="outline">
-              <AccountTypeIcon
-                type={props.account.account.account_type as AccountTypeOrigin}
-              />
-              {props.account.account.account_type}
-            </Badge>
-            <Badge variant="outline">
-              {props.account.account.currency_code}
-            </Badge>
-          </div>
-          <div>
-            <Badge
-              class={
-                props.currentBalance < 0
-                  ? "border-red-600 bg-red-200 text-red-900"
-                  : props.currentBalance > 0
-                    ? "border-green-600 bg-green-200 text-green-900"
-                    : "border-gray-600 bg-gray-200 text-gray-900"
-              }
-            >
-              <CurrencyDisplay
-                value={props.currentBalance}
-                currencyCode={props.account.account.currency_code}
-                decimalDigits={props.account.currency.decimal_digits}
-              />
-            </Badge>
-          </div>
-        </div>
-      </Link>
-    </div>
+    <Badge
+      class={
+        props.value < 0
+          ? "border-red-600 bg-red-200 text-red-900"
+          : props.value > 0
+            ? "border-green-600 bg-green-200 text-green-900"
+            : "border-gray-600 bg-gray-200 text-gray-900"
+      }
+    >
+      <CurrencyDisplay
+        value={props.value}
+        currencyCode={props.currencyCode}
+        decimalDigits={props.decimalDigits}
+      />
+    </Badge>
   );
 }

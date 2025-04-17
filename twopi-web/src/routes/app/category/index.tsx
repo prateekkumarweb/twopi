@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/solid-query";
-import { createFileRoute, Link } from "@tanstack/solid-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
 import { Plus } from "lucide-solid";
 import { For } from "solid-js";
 import DynamicIcon from "~/components/DynamicIcon";
@@ -22,6 +22,7 @@ export const Route = createFileRoute("/app/category/")({
 
 function RouteComponent() {
   const categoryQuery = useQuery(categoryQueryOptions);
+  const navigate = useNavigate();
 
   return (
     <PageLayout
@@ -45,50 +46,50 @@ function RouteComponent() {
         errorRender={(e) => <div>{e.message}</div>}
       >
         {(data) => (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead class="px-6 py-4">Name</TableHead>
-                  <TableHead class="px-6 py-4">Group</TableHead>
-                  <TableHead class="px-6 py-4">Icon</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <For
-                  each={data.groups}
-                  fallback={<div>No categories found.</div>}
-                >
-                  {(group) => (
-                    <For each={group.categories}>
-                      {(category) => (
-                        <TableRow>
-                          <TableCell>
-                            <Link
-                              class={buttonVariants({ variant: "link" })}
-                              to="/app/category/$id"
-                              params={{ id: category.id }}
-                            >
-                              {category.name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{group.group}</TableCell>
-                          <TableCell>
-                            {category.icon && (
-                              <DynamicIcon
-                                name={category.icon as "Loader"}
-                                class="mr-2 inline-block h-4 w-4"
-                              />
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </For>
-                  )}
-                </For>
-              </TableBody>
-            </Table>
-          </>
+          <Table>
+            <TableHeader>
+              <TableRow class="*:py-4">
+                <TableHead>Name</TableHead>
+                <TableHead>Group</TableHead>
+                <TableHead>Icon</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <For
+                each={data.groups}
+                fallback={<div>No categories found.</div>}
+              >
+                {(group) => (
+                  <For each={group.categories}>
+                    {(category) => (
+                      <TableRow
+                        onClick={() => {
+                          navigate({
+                            to: "/app/category/$id",
+                            params: {
+                              id: category.id,
+                            },
+                          });
+                        }}
+                        class="cursor-pointer *:py-4"
+                      >
+                        <TableCell>{category.name}</TableCell>
+                        <TableCell>{group.group}</TableCell>
+                        <TableCell>
+                          {category.icon && (
+                            <DynamicIcon
+                              name={category.icon as "Loader"}
+                              class="mr-2 inline-block h-4 w-4"
+                            />
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </For>
+                )}
+              </For>
+            </TableBody>
+          </Table>
         )}
       </QueryWrapper>
     </PageLayout>
