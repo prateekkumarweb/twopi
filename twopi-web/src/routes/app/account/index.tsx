@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
-import { Plus } from "lucide-solid";
+import { Check, Plus, X } from "lucide-solid";
 import { createMemo, For } from "solid-js";
 import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
@@ -88,11 +88,14 @@ function RouteComponent() {
         {(data) => (
           <Table>
             <TableHeader>
-              <TableRow class="*:py-4">
+              <TableRow class="*:py-2">
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead class="text-right">Starting Balance</TableHead>
-                <TableHead class="text-right">Current Balance</TableHead>
+                <TableHead class="text-right">Starting balance</TableHead>
+                <TableHead class="text-right">Cash flow</TableHead>
+                <TableHead class="text-right">Active</TableHead>
+                <TableHead class="text-right">Created at</TableHead>
+                <TableHead class="text-right">Current balance</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -110,7 +113,7 @@ function RouteComponent() {
                         },
                       });
                     }}
-                    class="cursor-pointer *:py-4"
+                    class="cursor-pointer *:py-2"
                   >
                     <TableCell>{account.account.name}</TableCell>
                     <TableCell>
@@ -129,6 +132,25 @@ function RouteComponent() {
                         currencyCode={account.account.currency_code}
                         decimalDigits={account.currency.decimal_digits}
                       />
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {account.account.is_cash_flow ? (
+                        <Check class="inline" />
+                      ) : (
+                        <X class="inline" />
+                      )}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {account.account.is_active ? (
+                        <Check class="inline" />
+                      ) : (
+                        <X class="inline" />
+                      )}
+                    </TableCell>
+                    <TableCell class="text-right">
+                      {Intl.DateTimeFormat("en-IN", {
+                        dateStyle: "medium",
+                      }).format(new Date(account.account.created_at))}
                     </TableCell>
                     <TableCell class="text-right">
                       <CurrencyComp
