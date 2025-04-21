@@ -69,6 +69,14 @@ export function AppLayout(
                 </Link>
               </li>
             </ul>
+            <div class="my-2 mt-6 font-semibold">Documents</div>
+            <ul class="flex flex-col gap-2 text-gray-800 *:hover:underline">
+              <li>
+                <Link to="/app/docs" class="flex items-center gap-2">
+                  <LayoutDashboard /> Home
+                </Link>
+              </li>
+            </ul>
           </nav>
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-2">
