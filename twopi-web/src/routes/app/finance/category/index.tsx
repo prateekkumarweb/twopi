@@ -16,7 +16,7 @@ import {
 } from "~/components/ui/table";
 import { categoryQueryOptions } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/category/")({
+export const Route = createFileRoute("/app/finance/category/")({
   component: RouteComponent,
 });
 
@@ -30,7 +30,7 @@ function RouteComponent() {
       actions={
         <>
           <Link
-            to="/app/category/new"
+            to="/app/finance/category/new"
             class={buttonVariants({
               variant: "outline",
               size: "icon",
@@ -65,7 +65,7 @@ function RouteComponent() {
                       <TableRow
                         onClick={() => {
                           navigate({
-                            to: "/app/category/$id",
+                            to: "/app/finance/category/$id",
                             params: {
                               id: category.id,
                             },

@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import { ArrowLeft } from "lucide-solid";
+import CategoryEditor from "~/components/CategoryEditor";
 import { PageLayout } from "~/components/PageLayout";
-import TransactionEditor from "~/components/TransactionEditor";
 import { buttonVariants } from "~/components/ui/button";
 
-export const Route = createFileRoute("/app/transaction/new")({
+export const Route = createFileRoute("/app/finance/category/new")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   return (
     <PageLayout
-      title="New Transaction"
+      title="New Category"
       actions={
         <Link
           to=".."
@@ -24,7 +24,7 @@ function RouteComponent() {
         </Link>
       }
     >
-      <TransactionEditor />
+      <CategoryEditor />
     </PageLayout>
   );
 }

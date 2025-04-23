@@ -27,7 +27,7 @@ import {
 } from "~/lib/api/currency";
 import { currencyQueryOptions } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/currency")({
+export const Route = createFileRoute("/app/finance/currency")({
   component: RouteComponent,
 });
 

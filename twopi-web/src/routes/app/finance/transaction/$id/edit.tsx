@@ -11,7 +11,7 @@ import {
   transactionByIdQueryOptions,
 } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/transaction/$id/edit")({
+export const Route = createFileRoute("/app/finance/transaction/$id/edit")({
   component: RouteComponent,
 });
 

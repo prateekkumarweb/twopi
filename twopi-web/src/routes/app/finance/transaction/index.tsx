@@ -7,7 +7,7 @@ import TransactionList from "~/components/TransactionList";
 import { buttonVariants } from "~/components/ui/button";
 import { transactionQueryOptions } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/transaction/")({
+export const Route = createFileRoute("/app/finance/transaction/")({
   component: RouteComponent,
 });
 
@@ -19,7 +19,7 @@ function RouteComponent() {
       title="Transaction"
       actions={
         <Link
-          to="/app/transaction/new"
+          to="/app/finance/transaction/new"
           class={buttonVariants({
             variant: "outline",
             size: "icon",

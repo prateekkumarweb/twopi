@@ -19,7 +19,7 @@ import {
   transactionQueryOptions,
 } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/import-export")({
+export const Route = createFileRoute("/app/finance/import-export")({
   component: RouteComponent,
 });
 
@@ -85,7 +85,7 @@ function RouteComponent() {
     }
     try {
       await createAccounts(data);
-      router.navigate({ to: "/app/account" });
+      router.navigate({ to: "/app/finance/account" });
     } catch (e) {
       // @ts-expect-error e is of type unknown
       setError(e?.message);
@@ -142,7 +142,7 @@ function RouteComponent() {
     }
     try {
       await createTransactions(data);
-      router.navigate({ to: "/app/transaction" });
+      router.navigate({ to: "/app/finance/transaction" });
     } catch (e) {
       // @ts-expect-error e is of type any
       setError(e?.message);

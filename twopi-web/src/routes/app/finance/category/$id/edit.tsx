@@ -8,7 +8,7 @@ import QueryWrapper from "~/components/QueryWrapper";
 import { buttonVariants } from "~/components/ui/button";
 import { categoryQueryOptions } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/category/$id/edit")({
+export const Route = createFileRoute("/app/finance/category/$id/edit")({
   component: RouteComponent,
 });
 

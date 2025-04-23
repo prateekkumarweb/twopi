@@ -39,32 +39,44 @@ export function AppLayout(
             <div class="my-2 font-semibold">Personal Finance</div>
             <ul class="flex flex-col gap-2 text-gray-800 *:hover:underline">
               <li>
-                <Link to="/app" class="flex items-center gap-2">
+                <Link to="/app/finance" class="flex items-center gap-2">
                   <LayoutDashboard /> Dashboard
                 </Link>
               </li>
               <li>
-                <Link to="/app/currency" class="flex items-center gap-2">
+                <Link
+                  to="/app/finance/currency"
+                  class="flex items-center gap-2"
+                >
                   <BadgeDollarSign /> Currency
                 </Link>
               </li>
               <li>
-                <Link to="/app/category" class="flex items-center gap-2">
+                <Link
+                  to="/app/finance/category"
+                  class="flex items-center gap-2"
+                >
                   <List /> Category
                 </Link>
               </li>
               <li>
-                <Link to="/app/account" class="flex items-center gap-2">
+                <Link to="/app/finance/account" class="flex items-center gap-2">
                   <Banknote /> Account
                 </Link>
               </li>
               <li>
-                <Link to="/app/transaction" class="flex items-center gap-2">
+                <Link
+                  to="/app/finance/transaction"
+                  class="flex items-center gap-2"
+                >
                   <WalletCards /> Transaction
                 </Link>
               </li>
               <li>
-                <Link to="/app/import-export" class="flex items-center gap-2">
+                <Link
+                  to="/app/finance/import-export"
+                  class="flex items-center gap-2"
+                >
                   <Upload /> Import/Export
                 </Link>
               </li>

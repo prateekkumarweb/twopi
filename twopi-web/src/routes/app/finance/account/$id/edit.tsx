@@ -8,7 +8,7 @@ import { buttonVariants } from "~/components/ui/button";
 import { type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { accountByIdQueryOptions } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/account/$id/edit")({
+export const Route = createFileRoute("/app/finance/account/$id/edit")({
   component: RouteComponent,
 });
 

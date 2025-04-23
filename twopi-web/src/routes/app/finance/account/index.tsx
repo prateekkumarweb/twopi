@@ -23,7 +23,7 @@ import {
   transactionQueryOptions,
 } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/account/")({
+export const Route = createFileRoute("/app/finance/account/")({
   component: RouteComponent,
 });
 
@@ -71,7 +71,7 @@ function RouteComponent() {
       title="Account"
       actions={
         <Link
-          to="/app/account/new"
+          to="/app/finance/account/new"
           class={buttonVariants({
             variant: "outline",
             size: "icon",
@@ -107,7 +107,7 @@ function RouteComponent() {
                   <TableRow
                     onClick={() => {
                       navigate({
-                        to: "/app/account/$id",
+                        to: "/app/finance/account/$id",
                         params: {
                           id: account.account.id,
                         },

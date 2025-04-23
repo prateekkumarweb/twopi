@@ -19,7 +19,7 @@ import {
   transactionQueryOptions,
 } from "~/lib/query-options";
 
-export const Route = createFileRoute("/app/transaction/$id/")({
+export const Route = createFileRoute("/app/finance/transaction/$id/")({
   component: RouteComponent,
 });
 
@@ -73,7 +73,7 @@ function RouteComponent() {
             <ArrowLeft />
           </Link>
           <Link
-            to="/app/transaction/$id/edit"
+            to="/app/finance/transaction/$id/edit"
             params={{ id: params().id }}
             class={buttonVariants({
               variant: "outline",

@@ -25,7 +25,7 @@ export default function TransactionRow(
   return (
     <div class="border-1 rounded-2xl p-3">
       <Link
-        to="/app/transaction/$id"
+        to="/app/finance/transaction/$id"
         params={{ id: props.transaction.transaction.id }}
         class="flex flex-col gap-2"
       >
