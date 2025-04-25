@@ -2,7 +2,7 @@ import { createForm } from "@tanstack/solid-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { useNavigate } from "@tanstack/solid-router";
 import dayjs from "dayjs";
-import { Trash } from "lucide-solid";
+import { LucideTrash } from "lucide-solid";
 import { For } from "solid-js";
 import { createTransaction } from "~/lib/api/transaction";
 import {
@@ -242,7 +242,7 @@ export default function TransactionEditor(
                       variant="destructive"
                       onClick={() => field().removeValue(i())}
                     >
-                      <Trash />
+                      <LucideTrash />
                     </Button>
                   </div>
                 )}

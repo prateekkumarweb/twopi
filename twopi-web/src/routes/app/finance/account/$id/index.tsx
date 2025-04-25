@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
 import dayjs from "dayjs";
-import { ArrowLeft, Edit, Trash } from "lucide-solid";
+import { LucideArrowLeft, LucideEdit, LucideTrash } from "lucide-solid";
 import { createMemo } from "solid-js";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import LabelAndValue from "~/components/LabelAndValue";
@@ -66,7 +66,7 @@ function RouteComponent() {
               size: "icon",
             })}
           >
-            <ArrowLeft />
+            <LucideArrowLeft />
           </Link>
           <Link
             to="/app/finance/account/$id/edit"
@@ -76,14 +76,14 @@ function RouteComponent() {
               size: "icon",
             })}
           >
-            <Edit />
+            <LucideEdit />
           </Link>
           <Button
             variant="destructive"
             onClick={deleteAccountHandler}
             disabled={mutation.isPending}
           >
-            <Trash />
+            <LucideTrash />
           </Button>
         </>
       }

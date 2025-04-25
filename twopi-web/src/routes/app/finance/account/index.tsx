@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
-import { Check, Plus, X } from "lucide-solid";
+import { LucideCheck, LucidePlus, LucideX } from "lucide-solid";
 import { createMemo, For } from "solid-js";
 import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
@@ -77,7 +77,7 @@ function RouteComponent() {
             size: "icon",
           })}
         >
-          <Plus />
+          <LucidePlus />
         </Link>
       }
     >
@@ -135,16 +135,16 @@ function RouteComponent() {
                     </TableCell>
                     <TableCell class="text-right">
                       {account.account.is_cash_flow ? (
-                        <Check class="inline" />
+                        <LucideCheck class="inline" />
                       ) : (
-                        <X class="inline" />
+                        <LucideX class="inline" />
                       )}
                     </TableCell>
                     <TableCell class="text-right">
                       {account.account.is_active ? (
-                        <Check class="inline" />
+                        <LucideCheck class="inline" />
                       ) : (
-                        <X class="inline" />
+                        <LucideX class="inline" />
                       )}
                     </TableCell>
                     <TableCell class="text-right">

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { ArrowLeft } from "lucide-solid";
+import { LucideArrowLeft } from "lucide-solid";
 import { Show } from "solid-js";
 import CategoryEditor from "~/components/CategoryEditor";
 import { PageLayout } from "~/components/PageLayout";
@@ -27,7 +27,7 @@ function RouteComponent() {
             size: "icon",
           })}
         >
-          <ArrowLeft />
+          <LucideArrowLeft />
         </Link>
       }
     >

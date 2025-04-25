@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { ArrowLeft, Edit, Trash } from "lucide-solid";
+import { LucideArrowLeft, LucideEdit, LucideTrash } from "lucide-solid";
 import { createMemo, Show } from "solid-js";
 import DynamicIcon from "~/components/DynamicIcon";
 import LabelAndValue from "~/components/LabelAndValue";
@@ -63,7 +63,7 @@ function RouteComponent() {
               size: "icon",
             })}
           >
-            <ArrowLeft />
+            <LucideArrowLeft />
           </Link>
           <Link
             to="/app/finance/category/$id/edit"
@@ -73,14 +73,14 @@ function RouteComponent() {
               size: "icon",
             })}
           >
-            <Edit />
+            <LucideEdit />
           </Link>
           <Button
             variant="destructive"
             onClick={deleteCategoryHandler}
             disabled={mutation.isPending}
           >
-            <Trash />
+            <LucideTrash />
           </Button>
         </>
       }

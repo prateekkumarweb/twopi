@@ -1,10 +1,10 @@
 import {
-  Banknote,
-  BookUser,
-  CreditCard,
-  HandCoins,
-  Landmark,
-  Wallet,
+  LucideBanknote,
+  LucideBookUser,
+  LucideCreditCard,
+  LucideHandCoins,
+  LucideLandmark,
+  LucideWallet,
 } from "lucide-solid";
 import { Match, Switch } from "solid-js";
 import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
@@ -18,22 +18,22 @@ export function AccountTypeIcon(
   return (
     <Switch>
       <Match when={props.type === "Cash"}>
-        <Banknote class={props.class} />
+        <LucideBanknote class={props.class} />
       </Match>
       <Match when={props.type === "Wallet"}>
-        <Wallet class={props.class} />
+        <LucideWallet class={props.class} />
       </Match>
       <Match when={props.type === "Bank"}>
-        <Landmark class={props.class} />
+        <LucideLandmark class={props.class} />
       </Match>
       <Match when={props.type === "CreditCard"}>
-        <CreditCard class={props.class} />
+        <LucideCreditCard class={props.class} />
       </Match>
       <Match when={props.type === "Loan"}>
-        <HandCoins class={props.class} />
+        <LucideHandCoins class={props.class} />
       </Match>
       <Match when={props.type === "Person"}>
-        <BookUser class={props.class} />
+        <LucideBookUser class={props.class} />
       </Match>
     </Switch>
   );

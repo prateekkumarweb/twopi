@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { ArrowLeft } from "lucide-solid";
+import { LucideArrowLeft } from "lucide-solid";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import TransactionEditor from "~/components/TransactionEditor";
@@ -38,7 +38,7 @@ function RouteComponent() {
             size: "icon",
           })}
         >
-          <ArrowLeft />
+          <LucideArrowLeft />
         </Link>
       }
     >

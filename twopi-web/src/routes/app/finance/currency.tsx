@@ -6,7 +6,7 @@ import {
   flexRender,
   getCoreRowModel,
 } from "@tanstack/solid-table";
-import { Save, Trash } from "lucide-solid";
+import { LucideSave, LucideTrash } from "lucide-solid";
 import { For } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
@@ -105,7 +105,7 @@ function RouteComponent() {
               deleteMutation.mutate(props.getValue());
             }}
           >
-            <Trash />
+            <LucideTrash />
           </Button>
         ),
       },
@@ -202,7 +202,7 @@ function RouteComponent() {
                   </TableCell>
                   <TableCell>
                     <Button type="submit">
-                      <Save />
+                      <LucideSave />
                     </Button>
                   </TableCell>
                 </TableRow>

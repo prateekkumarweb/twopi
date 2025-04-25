@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/solid-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
-import { Plus } from "lucide-solid";
+import { LucidePlus } from "lucide-solid";
 import { For } from "solid-js";
 import DynamicIcon from "~/components/DynamicIcon";
 import { PageLayout } from "~/components/PageLayout";
@@ -36,7 +36,7 @@ function RouteComponent() {
               size: "icon",
             })}
           >
-            <Plus />
+            <LucidePlus />
           </Link>
         </>
       }

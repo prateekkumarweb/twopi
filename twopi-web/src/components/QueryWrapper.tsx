@@ -1,5 +1,5 @@
 import type { UseQueryResult } from "@tanstack/solid-query";
-import { Loader } from "lucide-solid";
+import { LucideLoader } from "lucide-solid";
 import { Match, Show, Switch, type JSX } from "solid-js";
 
 export default function QueryWrapper<T, E>(
@@ -13,7 +13,7 @@ export default function QueryWrapper<T, E>(
     <Switch>
       <Match when={props.queryResult.isLoading}>
         <div>
-          <Loader />
+          <LucideLoader />
         </div>
       </Match>
       <Match when={props.queryResult.isError}>
@@ -41,7 +41,7 @@ export function QueriesWrapper<T1, T2, E>(
     <Switch>
       <Match when={props.queryResults.some((r) => r.isLoading)}>
         <div>
-          <Loader />
+          <LucideLoader />
         </div>
       </Match>
       <Match when={props.queryResults.some((r) => r.isError)}>

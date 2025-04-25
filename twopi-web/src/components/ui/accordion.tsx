@@ -1,5 +1,5 @@
 import * as AccordionPrimitive from "@kobalte/core/accordion";
-import { ChevronDownIcon } from "lucide-solid";
+import { LucideChevronDown } from "lucide-solid";
 import { splitProps, type ComponentProps } from "solid-js";
 import { cn } from "~/lib/utils";
 
@@ -33,7 +33,7 @@ function AccordionTrigger(
         {...others}
       >
         {local.children}
-        <ChevronDownIcon class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
+        <LucideChevronDown class="text-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200" />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   );

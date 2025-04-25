@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
-import { ArrowLeft } from "lucide-solid";
+import { LucideArrowLeft } from "lucide-solid";
 import AccountEditor from "~/components/AccountEditor";
 import { PageLayout } from "~/components/PageLayout";
 import { buttonVariants } from "~/components/ui/button";
@@ -20,7 +20,7 @@ function RouteComponent() {
             size: "icon",
           })}
         >
-          <ArrowLeft />
+          <LucideArrowLeft />
         </Link>
       }
     >

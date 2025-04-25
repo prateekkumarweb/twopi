@@ -5,7 +5,7 @@ import type { PolymorphicProps } from "@kobalte/core/polymorphic";
 import * as SelectPrimitive from "@kobalte/core/select";
 import { cva } from "class-variance-authority";
 
-import { Check, ChevronsUpDown } from "lucide-solid";
+import { LucideCheck, LucideChevronsUpDown } from "lucide-solid";
 import { cn } from "~/lib/utils";
 
 const Select = SelectPrimitive.Root;
@@ -35,7 +35,7 @@ const SelectTrigger = <T extends ValidComponent = "button">(
     >
       {local.children}
       <SelectPrimitive.Icon>
-        <ChevronsUpDown class="size-4 opacity-50" />
+        <LucideChevronsUpDown class="size-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -86,7 +86,7 @@ const SelectItem = <T extends ValidComponent = "li">(
       {...others}
     >
       <SelectPrimitive.ItemIndicator class="absolute right-2 flex size-3.5 items-center justify-center">
-        <Check class="size-4" />
+        <LucideCheck class="size-4" />
       </SelectPrimitive.ItemIndicator>
       <SelectPrimitive.ItemLabel>{local.children}</SelectPrimitive.ItemLabel>
     </SelectPrimitive.Item>

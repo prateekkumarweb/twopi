@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { Plus } from "lucide-solid";
+import { LucidePlus } from "lucide-solid";
 import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/preview")({
@@ -23,7 +23,7 @@ function RouteComponent() {
           <Button size="sm">Small</Button>
           <Button size="lg">Large</Button>
           <Button size="icon" variant="outline">
-            <Plus />
+            <LucidePlus />
           </Button>
         </div>
       </div>

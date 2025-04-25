@@ -1,13 +1,13 @@
 import { Link, useRouter } from "@tanstack/solid-router";
 import {
-  BadgeDollarSign,
-  Banknote,
-  LayoutDashboard,
-  List,
-  Settings,
-  Upload,
-  User,
-  WalletCards,
+  LucideBadgeDollarSign,
+  LucideBanknote,
+  LucideLayoutDashboard,
+  LucideList,
+  LucideSettings,
+  LucideUpload,
+  LucideUser,
+  LucideWalletCards,
 } from "lucide-solid";
 import { type JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
@@ -40,7 +40,7 @@ export function AppLayout(
             <ul class="flex flex-col gap-2 text-gray-800 *:hover:underline">
               <li>
                 <Link to="/app/finance" class="flex items-center gap-2">
-                  <LayoutDashboard /> Dashboard
+                  <LucideLayoutDashboard /> Dashboard
                 </Link>
               </li>
               <li>
@@ -48,7 +48,7 @@ export function AppLayout(
                   to="/app/finance/currency"
                   class="flex items-center gap-2"
                 >
-                  <BadgeDollarSign /> Currency
+                  <LucideBadgeDollarSign /> Currency
                 </Link>
               </li>
               <li>
@@ -56,12 +56,12 @@ export function AppLayout(
                   to="/app/finance/category"
                   class="flex items-center gap-2"
                 >
-                  <List /> Category
+                  <LucideList /> Category
                 </Link>
               </li>
               <li>
                 <Link to="/app/finance/account" class="flex items-center gap-2">
-                  <Banknote /> Account
+                  <LucideBanknote /> Account
                 </Link>
               </li>
               <li>
@@ -69,7 +69,7 @@ export function AppLayout(
                   to="/app/finance/transaction"
                   class="flex items-center gap-2"
                 >
-                  <WalletCards /> Transaction
+                  <LucideWalletCards /> Transaction
                 </Link>
               </li>
               <li>
@@ -77,7 +77,7 @@ export function AppLayout(
                   to="/app/finance/import-export"
                   class="flex items-center gap-2"
                 >
-                  <Upload /> Import/Export
+                  <LucideUpload /> Import/Export
                 </Link>
               </li>
             </ul>
@@ -85,19 +85,19 @@ export function AppLayout(
             <ul class="flex flex-col gap-2 text-gray-800 *:hover:underline">
               <li>
                 <Link to="/app/docs" class="flex items-center gap-2">
-                  <LayoutDashboard /> Home
+                  <LucideLayoutDashboard /> Home
                 </Link>
               </li>
             </ul>
           </nav>
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-2">
-              <User class="inline-block" />
+              <LucideUser class="inline-block" />
               {props.user.name}
             </div>
             <div>
               <Link to="/app/settings" class="flex items-center gap-2">
-                <Settings /> Settings
+                <LucideSettings /> Settings
               </Link>
             </div>
           </div>
@@ -140,7 +140,7 @@ function UserNav(
   return (
     <div class="flex items-center gap-4">
       <div class="flex items-center gap-2">
-        <User />
+        <LucideUser />
         {props.user.name}
       </div>
       <div>
