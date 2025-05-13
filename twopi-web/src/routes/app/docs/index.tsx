@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/solid-router";
+import { PageLayout } from "~/components/PageLayout";
 import { buttonVariants } from "~/components/ui/button";
 
 export const Route = createFileRoute("/app/docs/")({
@@ -7,13 +8,15 @@ export const Route = createFileRoute("/app/docs/")({
 
 function RouteComponent() {
   return (
-    <div>
-      Hello "/app/docs/"!
-      <div>
+    <PageLayout
+      title="Docs"
+      actions={
         <Link to="/app/docs/new" class={buttonVariants({ variant: "default" })}>
           New
         </Link>
-      </div>
-    </div>
+      }
+    >
+      <div>Hello "/app/docs/"!</div>
+    </PageLayout>
   );
 }
