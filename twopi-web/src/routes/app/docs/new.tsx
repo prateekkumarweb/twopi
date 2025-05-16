@@ -36,6 +36,16 @@ function RouteComponent() {
                 innerHTML={html()?.[index] ?? ""}
                 class="prose flex-1 rounded-lg border-2 p-4"
               />
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  const newMd = [...md];
+                  newMd.splice(index, 1);
+                  setMd(newMd);
+                }}
+              >
+                Delete
+              </Button>
             </div>
           )}
         </Index>
