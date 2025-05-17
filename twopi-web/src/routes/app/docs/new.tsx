@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
+import { LucidePlus, LucideTrash } from "lucide-solid";
 import { marked } from "marked";
-import { createResource, Index } from "solid-js";
+import { Index } from "solid-js";
 import { createStore } from "solid-js/store";
 import { PageLayout } from "~/components/PageLayout";
 import { Button } from "~/components/ui/button";
@@ -15,10 +16,6 @@ function RouteComponent() {
     `# Title 1\n## Title 2`,
     `# Title 1\n## Title 2`,
   ]);
-  const [html] = createResource(
-    () => md.slice(),
-    (md) => Promise.all(md.map((md) => marked.parse(md))),
-  );
 
   return (
     <PageLayout title="New Doc">
@@ -30,10 +27,12 @@ function RouteComponent() {
               <Textarea
                 class="flex-1"
                 value={item()}
-                onInput={(md) => setMd(index, md.currentTarget.value)}
+                onInput={(md) => {
+                  setMd(index, md.currentTarget.value);
+                }}
               />
               <div
-                innerHTML={html()?.[index] ?? ""}
+                innerHTML={marked.parse(item()) as string}
                 class="prose flex-1 rounded-lg border-2 p-4"
               />
               <Button
@@ -44,14 +43,16 @@ function RouteComponent() {
                   setMd(newMd);
                 }}
               >
-                Delete
+                <LucideTrash />
               </Button>
             </div>
           )}
         </Index>
-        <Button variant="default" onClick={() => setMd((v) => [...v, ""])}>
-          Add
-        </Button>
+        <div>
+          <Button variant="default" onClick={() => setMd((v) => [...v, ""])}>
+            <LucidePlus />
+          </Button>
+        </div>
       </div>
     </PageLayout>
   );
