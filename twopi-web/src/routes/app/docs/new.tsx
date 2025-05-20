@@ -37,10 +37,22 @@ function RouteComponent() {
           <Index each={blocks}>
             {(block, index) => (
               <div
+                class="focus:outline-none"
                 title={"Block: " + index}
                 contentEditable
                 onInput={(e) => {
+                  let selection = window.getSelection();
+                  if (!selection?.rangeCount) return;
+                  let range = selection.getRangeAt(0);
+                  const cursorPosition = range.startOffset;
                   setBlocks(index, "content", e.target.textContent ?? "");
+                  selection = window.getSelection();
+                  if (!selection?.rangeCount) return;
+                  range = selection.getRangeAt(0);
+                  range.setStart(range.startContainer, cursorPosition);
+                  range.collapse(true);
+                  selection?.removeAllRanges();
+                  selection?.addRange(range);
                 }}
               >
                 <Switch>
