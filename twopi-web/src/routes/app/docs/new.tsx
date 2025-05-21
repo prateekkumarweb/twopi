@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { LucidePlus, LucideTrash } from "lucide-solid";
-import { marked } from "marked";
+import { LucidePlus } from "lucide-solid";
 import { Index, Match, Switch } from "solid-js";
 import { createStore } from "solid-js/store";
 import { PageLayout } from "~/components/PageLayout";
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
 
 export const Route = createFileRoute("/app/docs/new")({
   component: RouteComponent,
@@ -21,100 +19,162 @@ enum Tag {
   P,
 }
 
+function WrapTag(
+  props: Readonly<{
+    tag: Tag;
+    content: string;
+    onInput: (e: InputEvent) => void;
+    onKeyDown: (e: KeyboardEvent) => void;
+    class?: string;
+  }>,
+) {
+  return (
+    <Switch>
+      <Match when={props.tag === Tag.H1}>
+        <h1
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h1>
+      </Match>
+      <Match when={props.tag === Tag.H2}>
+        <h2
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h2>
+      </Match>
+      <Match when={props.tag === Tag.H3}>
+        <h3
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h3>
+      </Match>
+      <Match when={props.tag === Tag.H4}>
+        <h4
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h4>
+      </Match>
+      <Match when={props.tag === Tag.H5}>
+        <h5
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h5>
+      </Match>
+      <Match when={props.tag === Tag.H6}>
+        <h6
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </h6>
+      </Match>
+      <Match when={props.tag === Tag.P}>
+        <p
+          class={props.class}
+          contentEditable
+          onInput={(e) => props.onInput(e)}
+          onKeyDown={(e) => props.onKeyDown(e)}
+        >
+          {props.content}
+        </p>
+      </Match>
+    </Switch>
+  );
+}
+
 function RouteComponent() {
   const [blocks, setBlocks] = createStore<{ tag: Tag; content: string }[]>([
     { tag: Tag.H1, content: "Title 1" },
   ]);
-  const [md, setMd] = createStore([
-    `# Title 1\n## Title 2`,
-    `# Title 1\n## Title 2`,
-  ]);
+
+  const onInput = (e: InputEvent, index: number) => {
+    console.log("onInput", e);
+    let selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    let range = selection.getRangeAt(0);
+    const cursorPosition = range.startOffset;
+    // @ts-expect-error "textContent" is defined on the target
+    setBlocks(index, "content", e.target?.textContent ?? "");
+    selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+    range = selection.getRangeAt(0);
+    range.setStart(range.startContainer, cursorPosition);
+    range.collapse(true);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  };
+
+  const onKeyDown = (e: KeyboardEvent, index: number) => {
+    console.log(e.key);
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newBlock = {
+        tag: Tag.P,
+        content: "",
+      };
+      setBlocks((blocks) => [...blocks, newBlock]);
+    } else if (e.key === "Backspace") {
+      // @ts-expect-error "textContent" is defined on the target
+      if (e.target?.textContent === "") {
+        e.preventDefault();
+        setBlocks((blocks) => {
+          if (blocks.length === 1) return blocks;
+          const newBlocks = [...blocks];
+          newBlocks.splice(index, 1);
+          return newBlocks;
+        });
+      }
+    }
+  };
 
   return (
     <PageLayout title="New Doc">
       <div class="flex h-full flex-col gap-4">
-        <div class="prose">
-          <Index each={blocks}>
-            {(block, index) => (
-              <div
+        <Index each={blocks}>
+          {(block, index) => (
+            <div class="rounded-lg bg-gray-100 p-4" title={"Block: " + index}>
+              <WrapTag
                 class="focus:outline-none"
-                title={"Block: " + index}
-                contentEditable
+                tag={block().tag}
+                content={block().content}
                 onInput={(e) => {
-                  let selection = window.getSelection();
-                  if (!selection?.rangeCount) return;
-                  let range = selection.getRangeAt(0);
-                  const cursorPosition = range.startOffset;
-                  setBlocks(index, "content", e.target.textContent ?? "");
-                  selection = window.getSelection();
-                  if (!selection?.rangeCount) return;
-                  range = selection.getRangeAt(0);
-                  range.setStart(range.startContainer, cursorPosition);
-                  range.collapse(true);
-                  selection?.removeAllRanges();
-                  selection?.addRange(range);
+                  onInput(e, index);
                 }}
-              >
-                <Switch>
-                  <Match when={block().tag === Tag.H1}>
-                    <h1>{block().content}</h1>
-                  </Match>
-                  <Match when={block().tag === Tag.H2}>
-                    <h2>{block().content}</h2>
-                  </Match>
-                  <Match when={block().tag === Tag.H3}>
-                    <h3>{block().content}</h3>
-                  </Match>
-                  <Match when={block().tag === Tag.H4}>
-                    <h4>{block().content}</h4>
-                  </Match>
-                  <Match when={block().tag === Tag.H5}>
-                    <h5>{block().content}</h5>
-                  </Match>
-                  <Match when={block().tag === Tag.H6}>
-                    <h6>{block().content}</h6>
-                  </Match>
-                  <Match when={block().tag === Tag.P}>
-                    <p>{block().content}</p>
-                  </Match>
-                </Switch>
-              </div>
-            )}
-          </Index>
-        </div>
-        {/* eslint-disable solid/no-innerhtml */}
-        <Index each={md}>
-          {(item, index) => (
-            <div class="flex gap-4">
-              <Textarea
-                class="flex-1"
-                value={item()}
-                onInput={(md) => {
-                  setMd(index, md.currentTarget.value);
+                onKeyDown={(e) => {
+                  onKeyDown(e, index);
                 }}
               />
-              <div
-                innerHTML={marked.parse(item()) as string}
-                class="prose flex-1 rounded-lg border-2 p-4"
-              />
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  const newMd = [...md];
-                  newMd.splice(index, 1);
-                  setMd(newMd);
-                }}
-              >
-                <LucideTrash />
-              </Button>
             </div>
           )}
         </Index>
-        <div>
-          <Button variant="default" onClick={() => setMd((v) => [...v, ""])}>
-            <LucidePlus />
-          </Button>
-        </div>
+        <Button
+          variant="default"
+          onClick={() => setBlocks((v) => [...v, { tag: Tag.P, content: "" }])}
+        >
+          <LucidePlus />
+        </Button>
       </div>
     </PageLayout>
   );
