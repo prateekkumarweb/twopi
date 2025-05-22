@@ -110,7 +110,6 @@ function RouteComponent() {
   ]);
 
   const onInput = (e: InputEvent, index: number) => {
-    console.log("onInput", e);
     let selection = window.getSelection();
     if (!selection?.rangeCount) return;
     let range = selection.getRangeAt(0);
@@ -127,7 +126,6 @@ function RouteComponent() {
   };
 
   const onKeyDown = (e: KeyboardEvent, index: number) => {
-    console.log(e.key);
     if (e.key === "Enter") {
       e.preventDefault();
       const newBlock = {
@@ -135,6 +133,31 @@ function RouteComponent() {
         content: "",
       };
       setBlocks((blocks) => [...blocks, newBlock]);
+      setTimeout(() => {
+        const newBlockIndex = index + 1;
+        const newBlockElement = document.querySelector(
+          `[title="Block: ${newBlockIndex}"] [contenteditable]`,
+        ) as HTMLElement;
+        if (newBlockElement) {
+          newBlockElement.focus();
+          const selection = window.getSelection();
+          if (selection && newBlockElement.firstChild) {
+            const range = document.createRange();
+            range.setStart(newBlockElement.firstChild, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          } else if (selection) {
+            const textNode = document.createTextNode("");
+            newBlockElement.appendChild(textNode);
+            const range = document.createRange();
+            range.setStart(textNode, 0);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      }, 0);
     } else if (e.key === "Backspace") {
       // @ts-expect-error "textContent" is defined on the target
       if (e.target?.textContent === "") {
