@@ -168,6 +168,32 @@ function RouteComponent() {
           newBlocks.splice(index, 1);
           return newBlocks;
         });
+        setTimeout(() => {
+          const prevBlockIndex = index - 1;
+          if (prevBlockIndex >= 0) {
+            const prevBlockElement = document.querySelector(
+              `[title="Block: ${prevBlockIndex}"] [contenteditable]`,
+            ) as HTMLElement;
+            if (prevBlockElement) {
+              prevBlockElement.focus();
+              const selection = window.getSelection();
+              if (selection) {
+                const range = document.createRange();
+                if (prevBlockElement.lastChild) {
+                  range.selectNodeContents(prevBlockElement);
+                  range.collapse(false); // false means collapse to end
+                } else {
+                  const textNode = document.createTextNode("");
+                  prevBlockElement.appendChild(textNode);
+                  range.setStart(textNode, 0);
+                  range.collapse(true);
+                }
+                selection.removeAllRanges();
+                selection.addRange(range);
+              }
+            }
+          }
+        }, 0);
       }
     }
   };
