@@ -32,7 +32,7 @@ function WrapTag(
     <Switch>
       <Match when={props.tag === Tag.H1}>
         <h1
-          class={props.class}
+          class={`mb-4 text-4xl font-bold tracking-tight text-gray-900 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -42,7 +42,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H2}>
         <h2
-          class={props.class}
+          class={`mb-3 text-3xl font-semibold tracking-tight text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -52,7 +52,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H3}>
         <h3
-          class={props.class}
+          class={`mb-2 text-2xl font-semibold text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -62,7 +62,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H4}>
         <h4
-          class={props.class}
+          class={`mb-2 text-xl font-medium text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -72,7 +72,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H5}>
         <h5
-          class={props.class}
+          class={`mb-1 text-lg font-medium text-gray-700 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -82,7 +82,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H6}>
         <h6
-          class={props.class}
+          class={`mb-1 text-base font-medium text-gray-700 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -92,7 +92,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.P}>
         <p
-          class={props.class}
+          class={`mb-4 text-base leading-relaxed text-gray-600 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
