@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { LucidePlus } from "lucide-solid";
 import { Index, Match, Switch } from "solid-js";
 import { createStore } from "solid-js/store";
 import { PageLayout } from "~/components/PageLayout";
-import { Button } from "~/components/ui/button";
 
 export const Route = createFileRoute("/app/docs/new")({
   component: RouteComponent,
@@ -28,6 +26,12 @@ function WrapTag(
     class?: string;
   }>,
 ) {
+  const preserveWhitespace = (content: string) => {
+    return content.replace(/^(\s+)/, (match) => {
+      return "\u00A0".repeat(match.length);
+    });
+  };
+
   return (
     <Switch>
       <Match when={props.tag === Tag.H1}>
@@ -36,8 +40,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h1>
       </Match>
       <Match when={props.tag === Tag.H2}>
@@ -46,8 +51,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h2>
       </Match>
       <Match when={props.tag === Tag.H3}>
@@ -56,8 +62,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h3>
       </Match>
       <Match when={props.tag === Tag.H4}>
@@ -66,8 +73,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h4>
       </Match>
       <Match when={props.tag === Tag.H5}>
@@ -76,8 +84,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h5>
       </Match>
       <Match when={props.tag === Tag.H6}>
@@ -86,8 +95,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </h6>
       </Match>
       <Match when={props.tag === Tag.P}>
@@ -96,8 +106,9 @@ function WrapTag(
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
+          style={{ "white-space": "pre-wrap" }}
         >
-          {props.content}
+          {preserveWhitespace(props.content)}
         </p>
       </Match>
     </Switch>
@@ -114,8 +125,13 @@ function RouteComponent() {
     if (!selection?.rangeCount) return;
     let range = selection.getRangeAt(0);
     const cursorPosition = range.startOffset;
+
     // @ts-expect-error "textContent" is defined on the target
-    setBlocks(index, "content", e.target?.textContent ?? "");
+    let content = e.target?.textContent ?? "";
+    content = content.replace(/\u00A0/g, " ");
+
+    setBlocks(index, "content", content);
+
     selection = window.getSelection();
     if (!selection?.rangeCount) return;
     range = selection.getRangeAt(0);
@@ -125,77 +141,148 @@ function RouteComponent() {
     selection?.addRange(range);
   };
 
+  /**
+   * Handles keyboard events for editing blocks
+   * - Enter: Splits block at cursor position
+   * - Backspace: Merges blocks when at start of a block or deletes empty blocks
+   */
   const onKeyDown = (e: KeyboardEvent, index: number) => {
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const currentBlockElement = e.target as HTMLElement;
+    const currentContent = currentBlockElement.textContent || "";
+    const cursorPosition = range.startOffset;
+
     if (e.key === "Enter") {
       e.preventDefault();
-      const newBlock = {
-        tag: Tag.P,
-        content: "",
-      };
-      setBlocks((blocks) => [...blocks, newBlock]);
-      setTimeout(() => {
-        const newBlockIndex = index + 1;
-        const newBlockElement = document.querySelector(
-          `[title="Block: ${newBlockIndex}"] [contenteditable]`,
-        ) as HTMLElement;
-        if (newBlockElement) {
-          newBlockElement.focus();
-          const selection = window.getSelection();
-          if (selection && newBlockElement.firstChild) {
-            const range = document.createRange();
-            range.setStart(newBlockElement.firstChild, 0);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          } else if (selection) {
-            const textNode = document.createTextNode("");
-            newBlockElement.appendChild(textNode);
-            const range = document.createRange();
-            range.setStart(textNode, 0);
-            range.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(range);
-          }
-        }
-      }, 0);
+      handleEnterKey(currentContent, cursorPosition, index);
     } else if (e.key === "Backspace") {
-      // @ts-expect-error "textContent" is defined on the target
-      if (e.target?.textContent === "") {
+      if (cursorPosition === 0 && index > 0) {
         e.preventDefault();
-        setBlocks((blocks) => {
-          if (blocks.length === 1) return blocks;
-          const newBlocks = [...blocks];
-          newBlocks.splice(index, 1);
-          return newBlocks;
-        });
-        setTimeout(() => {
-          const prevBlockIndex = index - 1;
-          if (prevBlockIndex >= 0) {
-            const prevBlockElement = document.querySelector(
-              `[title="Block: ${prevBlockIndex}"] [contenteditable]`,
-            ) as HTMLElement;
-            if (prevBlockElement) {
-              prevBlockElement.focus();
-              const selection = window.getSelection();
-              if (selection) {
-                const range = document.createRange();
-                if (prevBlockElement.lastChild) {
-                  range.selectNodeContents(prevBlockElement);
-                  range.collapse(false); // false means collapse to end
-                } else {
-                  const textNode = document.createTextNode("");
-                  prevBlockElement.appendChild(textNode);
-                  range.setStart(textNode, 0);
-                  range.collapse(true);
-                }
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
-            }
-          }
-        }, 0);
+        mergeWithPreviousBlock(currentContent, index);
+      } else if (currentContent === "") {
+        e.preventDefault();
+        deleteEmptyBlock(index);
       }
     }
+  };
+
+  /**
+   * Handles Enter key by splitting block at cursor position
+   */
+  const handleEnterKey = (
+    fullContent: string,
+    cursorPosition: number,
+    index: number,
+  ) => {
+    const normalizedContent = fullContent.replace(/\u00A0/g, " ");
+    const contentBeforeCursor = normalizedContent.substring(0, cursorPosition);
+    const contentAfterCursor = normalizedContent.substring(cursorPosition);
+
+    setBlocks(index, "content", contentBeforeCursor);
+
+    const newBlock = {
+      tag: Tag.P,
+      content: contentAfterCursor,
+    };
+
+    setBlocks((blocks) => {
+      const newBlocks = [...blocks];
+      newBlocks.splice(index + 1, 0, newBlock);
+      return newBlocks;
+    });
+
+    focusBlockAfterOperation(index + 1, 0, contentAfterCursor);
+  };
+
+  /**
+   * Merges current block with the previous block
+   */
+  const mergeWithPreviousBlock = (currentContent: string, index: number) => {
+    const prevBlockContent = blocks[index - 1]?.content || "";
+    const normalizedPrevContent = prevBlockContent.replace(/\u00A0/g, " ");
+    const normalizedCurrentContent = currentContent.replace(/\u00A0/g, " ");
+    const mergedContent = normalizedPrevContent + normalizedCurrentContent;
+
+    setBlocks(index - 1, "content", mergedContent);
+
+    setBlocks((blocks) => {
+      const newBlocks = [...blocks];
+      newBlocks.splice(index, 1);
+      return newBlocks;
+    });
+
+    focusBlockAfterOperation(index - 1, prevBlockContent.length);
+  };
+
+  /**
+   * Deletes an empty block and moves cursor to end of previous block
+   */
+  const deleteEmptyBlock = (index: number) => {
+    setBlocks((blocks) => {
+      if (blocks.length === 1) return blocks;
+
+      const newBlocks = [...blocks];
+      newBlocks.splice(index, 1);
+      return newBlocks;
+    });
+
+    if (index > 0) {
+      focusBlockAfterOperation(index - 1, -1); // -1 means position at end
+    }
+  };
+
+  /**
+   * Helper function to focus a block after an operation
+   * @param blockIndex - Index of block to focus
+   * @param cursorPosition - Position to place cursor, -1 means at end
+   * @param content - Optional content string for the block
+   */
+  const focusBlockAfterOperation = (
+    blockIndex: number,
+    cursorPosition: number,
+    content?: string,
+  ) => {
+    setTimeout(() => {
+      if (blockIndex < 0) return;
+
+      const blockElement = document.querySelector(
+        `[title="Block: ${blockIndex}"] [contenteditable]`,
+      ) as HTMLElement;
+
+      if (!blockElement) return;
+
+      blockElement.focus();
+      const selection = window.getSelection();
+      if (!selection) return;
+
+      const range = document.createRange();
+
+      if (blockElement.firstChild) {
+        if (cursorPosition === -1) {
+          range.selectNodeContents(blockElement);
+          range.collapse(false);
+        } else {
+          range.setStart(blockElement.firstChild, cursorPosition);
+          range.collapse(true);
+        }
+      } else {
+        const textNode = document.createTextNode(content || "");
+        blockElement.appendChild(textNode);
+
+        if (cursorPosition === -1) {
+          range.setStart(textNode, textNode.length);
+        } else {
+          range.setStart(textNode, cursorPosition);
+        }
+        range.collapse(true);
+      }
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }, 0);
   };
 
   return (
@@ -218,12 +305,6 @@ function RouteComponent() {
             </div>
           )}
         </Index>
-        <Button
-          variant="default"
-          onClick={() => setBlocks((v) => [...v, { tag: Tag.P, content: "" }])}
-        >
-          <LucidePlus />
-        </Button>
       </div>
     </PageLayout>
   );
