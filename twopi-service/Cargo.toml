@@ -15,7 +15,7 @@ axum = { version = "0.8.4", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
 clap = { version = "4.5.38", features = ["derive"] }
-jiff = { version = "0.2.13", features = ["serde"] }
+jiff = { version = "0.2.14", features = ["serde"] }
 jsonwebtoken = "9.3.1"
 lru = "0.14.0"
 migration = { path = "migration" }
@@ -40,5 +40,5 @@ utoipa-axum = "0.2.0"
 utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
 utoipa-swagger-ui = { version = "9.0.1", features = ["axum"] }
-uuid = { version = "1.16.0", features = ["v7", "serde"] }
+uuid = { version = "1.17.0", features = ["v7", "serde"] }
 validator = { version = "0.20.0", features = ["derive"] }
