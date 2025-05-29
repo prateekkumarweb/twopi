@@ -290,7 +290,22 @@ function RouteComponent() {
       <div class="flex h-full flex-col gap-4">
         <Index each={blocks}>
           {(block, index) => (
-            <div class="rounded-lg bg-gray-100 p-4" title={"Block: " + index}>
+            <div
+              class="group relative rounded-lg bg-gray-100 p-4"
+              title={"Block: " + index}
+            >
+              <div class="absolute top-0 -translate-x-1/2 -translate-y-full px-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                  type="button"
+                  class="flex min-w-[2rem] items-center justify-center rounded-md bg-blue-500 px-2 py-1 text-xs font-medium text-white shadow-md hover:bg-blue-600"
+                  onClick={() => {
+                    const newTag = (block().tag + 1) % 7;
+                    setBlocks(index, "tag", newTag);
+                  }}
+                >
+                  {Tag[block().tag]}
+                </button>
+              </div>
               <WrapTag
                 class="focus:outline-none"
                 tag={block().tag}
