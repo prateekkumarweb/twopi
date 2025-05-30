@@ -155,16 +155,25 @@ function RouteComponent() {
     const currentContent = currentBlockElement.textContent || "";
     const cursorPosition = range.startOffset;
 
+    const isTextSelected = !range.collapsed;
+
     if (e.key === "Enter") {
       e.preventDefault();
       handleEnterKey(currentContent, cursorPosition, index);
     } else if (e.key === "Backspace") {
+      if (isTextSelected) {
+        return;
+      }
+
+      if (currentContent === "") {
+        e.preventDefault();
+        deleteEmptyBlock(index);
+        return;
+      }
+
       if (cursorPosition === 0 && index > 0) {
         e.preventDefault();
         mergeWithPreviousBlock(currentContent, index);
-      } else if (currentContent === "") {
-        e.preventDefault();
-        deleteEmptyBlock(index);
       }
     }
   };
