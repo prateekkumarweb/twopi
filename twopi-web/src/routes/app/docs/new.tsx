@@ -47,7 +47,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H2}>
         <h2
-          class={`mb-3 text-3xl font-semibold tracking-tight text-gray-800 ${props.class || ""}`}
+          class={`mb-2 text-3xl font-semibold tracking-tight text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -58,7 +58,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H3}>
         <h3
-          class={`mb-2 text-2xl font-semibold text-gray-800 ${props.class || ""}`}
+          class={`mb-1 text-2xl font-semibold text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -69,7 +69,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.H4}>
         <h4
-          class={`mb-2 text-xl font-medium text-gray-800 ${props.class || ""}`}
+          class={`mb-1 text-xl font-medium text-gray-800 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -102,7 +102,7 @@ function WrapTag(
       </Match>
       <Match when={props.tag === Tag.P}>
         <p
-          class={`mb-4 text-base leading-relaxed text-gray-600 ${props.class || ""}`}
+          class={`text-base leading-relaxed text-gray-600 ${props.class || ""}`}
           contentEditable
           onInput={(e) => props.onInput(e)}
           onKeyDown={(e) => props.onKeyDown(e)}
@@ -300,7 +300,7 @@ function RouteComponent() {
         <Index each={blocks}>
           {(block, index) => (
             <div
-              class="group relative rounded-lg bg-gray-100 p-4"
+              class="group relative rounded-lg p-2 hover:bg-gray-100"
               title={"Block: " + index}
             >
               <div class="absolute top-0 -translate-x-1/2 -translate-y-full px-2 opacity-0 transition-opacity group-hover:opacity-100">
