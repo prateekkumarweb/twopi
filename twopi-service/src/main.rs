@@ -5,7 +5,7 @@
     clippy::unwrap_used,
     clippy::expect_used
 )]
-#![allow(clippy::cast_sign_loss, clippy::too_many_lines)]
+#![allow(clippy::cast_sign_loss, clippy::too_many_lines, clippy::similar_names)]
 
 mod auth;
 mod cache;
