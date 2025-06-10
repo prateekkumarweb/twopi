@@ -14,7 +14,7 @@ async-trait = "0.1.88"
 axum = { version = "0.8.4", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
-clap = { version = "4.5.39", features = ["derive"] }
+clap = { version = "4.5.40", features = ["derive"] }
 jiff = { version = "0.2.14", features = ["serde"] }
 jsonwebtoken = "9.3.1"
 lru = "0.14.0"
