@@ -300,6 +300,8 @@ impl TransactionReq {
                                 .await?;
                             if let Some(found) = found {
                                 Some(found.id)
+                            } else if cat.is_empty() {
+                                None
                             } else {
                                 Some(
                                     CategoryEntity::insert(CategoryActiveModel {
