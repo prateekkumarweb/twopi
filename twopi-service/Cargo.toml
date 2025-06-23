@@ -15,11 +15,11 @@ axum = { version = "0.8.4", features = ["macros", "http2"] }
 axum-login = "0.17.0"
 chrono = { version = "0.4.41", features = ["serde"] }
 clap = { version = "4.5.40", features = ["derive"] }
-jiff = { version = "0.2.14", features = ["serde"] }
+jiff = { version = "0.2.15", features = ["serde"] }
 jsonwebtoken = "9.3.1"
 lru = "0.14.0"
 migration = { path = "migration" }
-reqwest = { version = "0.12.19", features = ["json"] }
+reqwest = { version = "0.12.20", features = ["json"] }
 sea-orm = { version = "1.1.12", features = [
     "sqlx-sqlite",
     "runtime-tokio-rustls",
@@ -35,7 +35,7 @@ tower-sessions-sqlx-store = { version = "0.15.0", features = ["sqlite"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
 user-migration = { version = "0.1.0", path = "user-migration" }
-utoipa = { version = "5.3.1", features = ["axum_extras", "chrono", "uuid"] }
+utoipa = { version = "5.4.0", features = ["axum_extras", "chrono", "uuid"] }
 utoipa-axum = "0.2.0"
 utoipa-rapidoc = { version = "6.0.0", features = ["axum"] }
 utoipa-scalar = { version = "0.3.0", features = ["axum"] }
