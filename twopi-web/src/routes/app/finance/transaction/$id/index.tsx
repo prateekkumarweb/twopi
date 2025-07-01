@@ -131,7 +131,15 @@ function RouteComponent() {
                           value={
                             <Show when={account(transactionItem.account_id)}>
                               {(account) => (
-                                <Badge>
+                                <Badge
+                                  class={
+                                    transactionItem.amount < 0
+                                      ? "border-red-600 bg-red-200 text-red-900"
+                                      : transactionItem.amount > 0
+                                        ? "border-green-600 bg-green-200 text-green-900"
+                                        : "border-gray-600 bg-gray-200 text-gray-900"
+                                  }
+                                >
                                   <CurrencyDisplay
                                     value={transactionItem.amount}
                                     currencyCode={account()?.currency.code}
