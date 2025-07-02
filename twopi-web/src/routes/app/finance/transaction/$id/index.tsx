@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/solid-router";
 import dayjs from "dayjs";
 import { LucideArrowLeft, LucideEdit, LucideTrash } from "lucide-solid";
 import { For, Show } from "solid-js";
+import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import DynamicIcon from "~/components/DynamicIcon";
 import LabelAndValue from "~/components/LabelAndValue";
@@ -12,6 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { deleteTransaction } from "~/lib/api/transaction";
+import { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   categoryQueryOptions,
@@ -123,7 +125,23 @@ function RouteComponent() {
                         <LabelAndValue
                           label="Account"
                           value={
-                            account(transactionItem.account_id)?.account.name
+                            <Link
+                              to="/app/finance/account/$id"
+                              params={{ id: transactionItem.account_id }}
+                            >
+                              <Badge variant="outline">
+                                <AccountTypeIcon
+                                  type={
+                                    account(transactionItem.account_id)?.account
+                                      .account_type as AccountTypeOrigin
+                                  }
+                                />
+                                {
+                                  account(transactionItem.account_id)?.account
+                                    .name
+                                }
+                              </Badge>
+                            </Link>
                           }
                         />
                         <LabelAndValue
@@ -164,7 +182,20 @@ function RouteComponent() {
                                       class="mr-2 inline-block h-4 w-4"
                                     />
                                   )}
-                                  {category().name}
+                                  <Link
+                                    to="/app/finance/category/$id"
+                                    params={{ id: category().id }}
+                                  >
+                                    <Badge variant="secondary" class="mr-2">
+                                      {category().id && (
+                                        <DynamicIcon
+                                          name={category().icon as "Loader"}
+                                          class="inline-block h-4 w-4"
+                                        />
+                                      )}
+                                      {category().name}
+                                    </Badge>
+                                  </Link>
                                 </>
                               }
                             />
