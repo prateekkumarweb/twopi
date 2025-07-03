@@ -13,7 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { deleteTransaction } from "~/lib/api/transaction";
-import { AccountTypeOrigin } from "~/lib/hacks/account-type";
+import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
 import {
   accountQueryOptions,
   categoryQueryOptions,
