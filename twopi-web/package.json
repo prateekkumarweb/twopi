@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@editorjs/editorjs": "^2.30.8",
+    "@editorjs/header": "^2.8.8",
     "@kobalte/core": "^0.13.10",
     "@solid-primitives/storage": "^4.3.3",
     "@tanstack/solid-form": "^1.12.4",
