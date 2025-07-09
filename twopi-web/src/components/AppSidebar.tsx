@@ -27,7 +27,7 @@ export function AppSidebar(
 
   return (
     <Show when={sidebarOpen()}>
-      <aside class="border-l-1 flex w-full flex-col border-gray-200 bg-gray-100 p-4 md:w-64">
+      <aside class="border-r-1 flex w-full flex-col border-gray-300 p-4 md:w-64">
         {props.children}
       </aside>
     </Show>
@@ -46,7 +46,7 @@ export function AppSidebarInset(
 
   return (
     <div
-      class="w-full overflow-auto p-4"
+      class="m-4 w-full overflow-auto"
       classList={{ hidden: sidebarOpen(), "md:block": sidebarOpen() }}
     >
       {children()}

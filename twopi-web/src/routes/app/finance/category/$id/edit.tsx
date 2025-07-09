@@ -5,7 +5,7 @@ import { Show } from "solid-js";
 import CategoryEditor from "~/components/CategoryEditor";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
-import { buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/glass/Button";
 import { categoryQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/finance/category/$id/edit")({
@@ -23,7 +23,7 @@ function RouteComponent() {
         <Link
           to=".."
           class={buttonVariants({
-            variant: "outline",
+            variant: "secondary",
             size: "icon",
           })}
         >

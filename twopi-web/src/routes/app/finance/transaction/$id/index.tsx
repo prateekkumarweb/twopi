@@ -6,11 +6,11 @@ import { For, Show } from "solid-js";
 import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
 import DynamicIcon from "~/components/DynamicIcon";
+import { Button, buttonVariants } from "~/components/glass/Button";
 import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import { Badge } from "~/components/ui/badge";
-import { Button, buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { deleteTransaction } from "~/lib/api/transaction";
 import type { AccountTypeOrigin } from "~/lib/hacks/account-type";
@@ -68,7 +68,7 @@ function RouteComponent() {
           <Link
             to=".."
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -78,7 +78,7 @@ function RouteComponent() {
             to="/app/finance/transaction/$id/edit"
             params={{ id: params().id }}
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -86,6 +86,7 @@ function RouteComponent() {
           </Link>
           <Button
             variant="destructive"
+            size="icon"
             onClick={deleteTransactionHandler}
             disabled={mutation.isPending}
           >

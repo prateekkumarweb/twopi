@@ -12,7 +12,7 @@ import {
 import { type JSXElement } from "solid-js";
 import { apiClient } from "~/lib/openapi";
 import { AppSidebar, AppSidebarInset, AppSidebarToggle } from "./AppSidebar";
-import { Button } from "./ui/button";
+import { Button } from "./glass/Button";
 
 export function AppLayout(
   props: Readonly<{
@@ -25,8 +25,8 @@ export function AppLayout(
   }>,
 ) {
   return (
-    <div class="flex h-screen w-full flex-col">
-      <nav class="border-b-1 flex h-16 items-center justify-between border-gray-200 p-4">
+    <div class="bg-body-gradient flex h-screen w-full flex-col">
+      <nav class="border-b-1 flex h-16 items-center justify-between border-gray-300 p-4">
         <div class="flex items-center gap-4">
           <AppSidebarToggle />
           <AppLogo />
@@ -144,7 +144,7 @@ function UserNav(
         {props.user.name}
       </div>
       <div>
-        <Button variant="outline" onClick={signOut}>
+        <Button variant="secondary" onClick={signOut}>
           Sign out
         </Button>
       </div>

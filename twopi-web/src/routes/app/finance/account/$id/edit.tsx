@@ -4,7 +4,7 @@ import { LucideArrowLeft } from "lucide-solid";
 import AccountEditor from "~/components/AccountEditor";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
-import { buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/glass/Button";
 import { type AccountTypeOrigin } from "~/lib/hacks/account-type";
 import { accountByIdQueryOptions } from "~/lib/query-options";
 
@@ -23,7 +23,7 @@ function RouteComponent() {
         <Link
           to=".."
           class={buttonVariants({
-            variant: "outline",
+            variant: "secondary",
             size: "icon",
           })}
         >

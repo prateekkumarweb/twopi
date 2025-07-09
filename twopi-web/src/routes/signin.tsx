@@ -3,7 +3,7 @@ import { createFileRoute, useRouter } from "@tanstack/solid-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { createSignal, Show } from "solid-js";
 import z from "zod";
-import { Button } from "~/components/ui/button";
+import { Button } from "~/components/glass/Button";
 import { Input } from "~/components/ui/input";
 import { apiClient } from "~/lib/openapi";
 

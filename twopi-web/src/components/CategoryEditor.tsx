@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/solid-router";
 import { icons } from "lucide-solid";
 import { createCategory } from "~/lib/api/category";
 import { categoryQueryOptions } from "~/lib/query-options";
-import { Button } from "./ui/button";
+import { Button } from "./glass/Button";
 import {
   Combobox,
   ComboboxContent,

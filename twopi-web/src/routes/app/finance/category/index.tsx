@@ -5,7 +5,7 @@ import { For } from "solid-js";
 import DynamicIcon from "~/components/DynamicIcon";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
-import { buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/glass/Button";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ function RouteComponent() {
           <Link
             to="/app/finance/category/new"
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >

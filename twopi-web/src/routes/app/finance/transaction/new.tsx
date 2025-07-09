@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/solid-router";
 import { LucideArrowLeft } from "lucide-solid";
 import { PageLayout } from "~/components/PageLayout";
 import TransactionEditor from "~/components/TransactionEditor";
-import { buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/glass/Button";
 
 export const Route = createFileRoute("/app/finance/transaction/new")({
   component: RouteComponent,
@@ -16,7 +16,7 @@ function RouteComponent() {
         <Link
           to=".."
           class={buttonVariants({
-            variant: "outline",
+            variant: "secondary",
             size: "icon",
           })}
         >

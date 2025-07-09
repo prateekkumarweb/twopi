@@ -7,7 +7,7 @@ import {
   type ErrorComponentProps,
 } from "@tanstack/solid-router";
 import { createEffect } from "solid-js";
-import { Button } from "./ui/button";
+import { Button } from "./glass/Button";
 
 export function DefaultCatchBoundary(props: Readonly<ErrorComponentProps>) {
   const router = useRouter();

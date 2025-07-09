@@ -10,7 +10,7 @@ import { LucideSave, LucideTrash } from "lucide-solid";
 import { For } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
-import { Button } from "~/components/ui/button";
+import { Button } from "~/components/glass/Button";
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -99,7 +99,7 @@ function RouteComponent() {
         accessorKey: "code",
         cell: (props) => (
           <Button
-            variant="outline"
+            variant="secondary"
             size="icon"
             onClick={() => {
               deleteMutation.mutate(props.getValue());

@@ -1,6 +1,7 @@
 import { useQueries } from "@tanstack/solid-query";
 import { createFileRoute, useRouter } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
+import { Button } from "~/components/glass/Button";
 import { PageLayout } from "~/components/PageLayout";
 import { QueriesWrapper } from "~/components/QueryWrapper";
 import {
@@ -9,7 +10,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
-import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
 import { createAccounts } from "~/lib/api/account";
 import { createTransactions } from "~/lib/api/transaction";

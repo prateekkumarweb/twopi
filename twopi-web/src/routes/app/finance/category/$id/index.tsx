@@ -7,7 +7,7 @@ import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import TransactionList from "~/components/TransactionList";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/glass/Button";
 import { deleteCategory } from "~/lib/api/category";
 import {
   categoryQueryOptions,
@@ -59,7 +59,7 @@ function RouteComponent() {
           <Link
             to=".."
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -69,7 +69,7 @@ function RouteComponent() {
             to="/app/finance/category/$id/edit"
             params={{ id: params().id }}
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -77,6 +77,7 @@ function RouteComponent() {
           </Link>
           <Button
             variant="destructive"
+            size="icon"
             onClick={deleteCategoryHandler}
             disabled={mutation.isPending}
           >

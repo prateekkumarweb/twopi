@@ -4,7 +4,7 @@ import { LucidePlus } from "lucide-solid";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import TransactionList from "~/components/TransactionList";
-import { buttonVariants } from "~/components/ui/button";
+import { buttonVariants } from "~/components/glass/Button";
 import { transactionQueryOptions } from "~/lib/query-options";
 
 export const Route = createFileRoute("/app/finance/transaction/")({
@@ -21,7 +21,7 @@ function RouteComponent() {
         <Link
           to="/app/finance/transaction/new"
           class={buttonVariants({
-            variant: "outline",
+            variant: "secondary",
             size: "icon",
           })}
         >

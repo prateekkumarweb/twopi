@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/solid-router";
 import { createSignal } from "solid-js";
+import { Button } from "~/components/glass/Button";
 import { PageLayout } from "~/components/PageLayout";
 import {
   AlertDialog,
@@ -10,7 +11,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import { Button } from "~/components/ui/button";
 import { apiClient } from "~/lib/openapi";
 
 export const Route = createFileRoute("/app/settings")({

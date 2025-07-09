@@ -4,10 +4,10 @@ import { LucideCheck, LucidePlus, LucideX } from "lucide-solid";
 import { createMemo, For } from "solid-js";
 import { AccountTypeIcon } from "~/components/AccountTypeIcon";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
+import { buttonVariants } from "~/components/glass/Button";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import { Badge } from "~/components/ui/badge";
-import { buttonVariants } from "~/components/ui/button";
 import {
   Table,
   TableBody,
@@ -73,7 +73,7 @@ function RouteComponent() {
         <Link
           to="/app/finance/account/new"
           class={buttonVariants({
-            variant: "outline",
+            variant: "secondary",
             size: "icon",
           })}
         >

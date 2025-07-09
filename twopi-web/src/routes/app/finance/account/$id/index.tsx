@@ -4,12 +4,12 @@ import dayjs from "dayjs";
 import { LucideArrowLeft, LucideEdit, LucideTrash } from "lucide-solid";
 import { createMemo } from "solid-js";
 import CurrencyDisplay from "~/components/CurrencyDisplay";
+import { Button, buttonVariants } from "~/components/glass/Button";
 import LabelAndValue from "~/components/LabelAndValue";
 import { PageLayout } from "~/components/PageLayout";
 import QueryWrapper from "~/components/QueryWrapper";
 import TransactionList from "~/components/TransactionList";
 import { Badge } from "~/components/ui/badge";
-import { Button, buttonVariants } from "~/components/ui/button";
 import { deleteAccount } from "~/lib/api/account";
 import {
   accountByIdQueryOptions,
@@ -62,7 +62,7 @@ function RouteComponent() {
           <Link
             to=".."
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -72,7 +72,7 @@ function RouteComponent() {
             to="/app/finance/account/$id/edit"
             params={{ id: params().id }}
             class={buttonVariants({
-              variant: "outline",
+              variant: "secondary",
               size: "icon",
             })}
           >
@@ -80,6 +80,7 @@ function RouteComponent() {
           </Link>
           <Button
             variant="destructive"
+            size="icon"
             onClick={deleteAccountHandler}
             disabled={mutation.isPending}
           >
