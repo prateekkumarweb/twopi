@@ -1,7 +1,8 @@
-import EditorJS, { type ToolConstructable } from "@editorjs/editorjs";
-import Header from "@editorjs/header";
 import { createFileRoute } from "@tanstack/solid-router";
-import { onMount } from "solid-js";
+import { Editor } from "@tiptap/core";
+import Typography from "@tiptap/extension-typography";
+import StarterKit from "@tiptap/starter-kit";
+import { createSignal, onMount } from "solid-js";
 import { PageLayout } from "~/components/PageLayout";
 
 export const Route = createFileRoute("/app/docs/new")({
@@ -10,33 +11,46 @@ export const Route = createFileRoute("/app/docs/new")({
 
 function RouteComponent() {
   let editorRef: HTMLDivElement | undefined;
+  const [editorJson, setEditorJson] = createSignal<string>("");
 
   onMount(() => {
-    const editor = new EditorJS({
-      holder: editorRef,
-      tools: {
-        header: {
-          class: Header as unknown as ToolConstructable,
-          config: {
+    const editor = new Editor({
+      element: editorRef,
+      extensions: [
+        StarterKit.configure({
+          heading: {
             levels: [1, 2, 3, 4, 5, 6],
-            defaultLevel: 2,
           },
+        }),
+        Typography,
+      ],
+      content: "<p>Hello World!</p>",
+      autofocus: true,
+      editable: true,
+      editorProps: {
+        attributes: {
+          class:
+            "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none",
         },
       },
+      onUpdate: ({ editor }) => {
+        const value = JSON.stringify(editor.getJSON(), null, 2);
+        setEditorJson(value);
+      },
     });
-    editor.isReady
-      .then(() => {
-        console.log("Editor.js is ready to work!");
-      })
-      .catch((reason) => {
-        console.log(`Editor.js initialization failed because of ${reason}`);
-      });
+    setEditorJson(JSON.stringify(editor.getJSON(), null, 2));
   });
 
   return (
     <PageLayout title="New Doc">
-      <div class="flex h-full flex-col gap-4">
-        <div ref={editorRef} class="rounded-2xl border-2" />
+      <div class="flex h-full gap-4">
+        <div
+          ref={editorRef}
+          class="flex-1/2 rounded-2xl border-2 border-gray-200 p-2"
+        />
+        <pre class="flex-1/2 rounded-2xl border-2 border-gray-200 p-2">
+          {editorJson()}
+        </pre>
       </div>
     </PageLayout>
   );

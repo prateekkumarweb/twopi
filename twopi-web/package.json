@@ -16,8 +16,6 @@
     "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
   },
   "dependencies": {
-    "@editorjs/editorjs": "^2.30.8",
-    "@editorjs/header": "^2.8.8",
     "@kobalte/core": "^0.13.10",
     "@solid-primitives/storage": "^4.3.3",
     "@tanstack/solid-form": "^1.12.4",
@@ -26,6 +24,9 @@
     "@tanstack/solid-table": "^8.21.3",
     "@tanstack/solid-virtual": "^3.13.12",
     "@tanstack/zod-adapter": "^1.125.3",
+    "@tiptap/core": "^2.25.0",
+    "@tiptap/extension-typography": "^2.25.0",
+    "@tiptap/starter-kit": "^2.25.0",
     "class-variance-authority": "^0.7.1",
     "dayjs": "^1.11.13",
     "lucide-solid": "^0.525.0",
