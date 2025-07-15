@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import * as z from "zod";
+import { useAuthUser, useSignIn, useSignUp } from "@/lib/auth";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { onMounted, reactive } from "vue";
+import { computed, reactive, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { apiClient } from "@/lib/openapi";
-import { ref } from "vue";
+import * as z from "zod";
 
 const route = useRoute();
 const router = useRouter();
-const signInError = ref<string | undefined>();
-const signUpError = ref<string | undefined>();
 
 const signInSchema = z.object({
   email: z.email("Invalid email address"),
@@ -35,62 +32,33 @@ const signUpState = reactive<Partial<SignUpForm>>({
   password: "",
 });
 
-async function onSignIn(event: FormSubmitEvent<SignInForm>) {
-  const { error } = await apiClient.POST("/twopi-api/api/signin", {
-    body: {
-      email: event.data.email,
-      password: event.data.password,
-    },
+const { signIn, signInError } = useSignIn();
+const { signUp, signUpError } = useSignUp();
+
+function onSignIn(event: FormSubmitEvent<SignInForm>) {
+  signIn({
+    email: event.data.email,
+    password: event.data.password,
   });
-  if (error) {
-    signInError.value = error;
-  } else {
-    signInError.value = undefined;
-    if (route.query.next) {
-      router.push(route.query.next as string);
-    } else {
-      router.push("/");
-    }
-  }
 }
 
-async function onSignUp(event: FormSubmitEvent<SignUpForm>) {
-  const { error } = await apiClient.POST("/twopi-api/api/signup", {
-    body: {
-      name: event.data.name,
-      email: event.data.email,
-      password: event.data.password,
-    },
+function onSignUp(event: FormSubmitEvent<SignUpForm>) {
+  signUp({
+    name: event.data.name,
+    email: event.data.email,
+    password: event.data.password,
   });
-  if (error) {
-    signUpError.value = error;
-  } else {
-    signUpError.value = undefined;
-    if (route.query.next) {
-      router.push(route.query.next as string);
-    } else {
-      router.push("/");
-    }
-  }
 }
 
-const user = ref();
+const { session } = useAuthUser();
+const user = computed(() => session.value.data?.user);
 
-onMounted(async () => {
-  const { data, error, response } = await apiClient.GET("/twopi-api/api/user");
-  if (response.status === 500) {
-    console.error(response.statusText, response);
-    throw new Error("Internal Server Error");
-  }
-  if (error) {
-    console.error("Auth Error", error);
-  }
-  if (data) {
-    user.value = data ? { user: data } : undefined;
+watchEffect(() => {
+  if (user.value) {
     if (route.query.next) {
       router.push(route.query.next as string);
     } else {
-      router.push("/");
+      router.push("/app");
     }
   }
 });
@@ -113,6 +81,8 @@ onMounted(async () => {
         </UFormField>
 
         <UButton type="submit"> Submit </UButton>
+
+        <p v-if="signInError" class="text-red-600">{{ signInError }}</p>
       </UForm>
     </div>
     <div class="flex-1">
@@ -131,6 +101,8 @@ onMounted(async () => {
         </UFormField>
 
         <UButton type="submit"> Submit </UButton>
+
+        <p v-if="signUpError" class="text-red-600">{{ signUpError }}</p>
       </UForm>
     </div>
   </div>
