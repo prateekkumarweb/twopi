@@ -13,15 +13,19 @@
     "lint:eslint": "eslint .",
     "lint": "run-s lint:*",
     "fmt": "prettier --check src/",
-    "fmt:fix": "prettier --write src/"
+    "fmt:fix": "prettier --write src/",
+    "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/openapi.gen.ts",
+    "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
   },
   "dependencies": {
     "@nuxt/ui": "^3.2.0",
     "@unhead/vue": "^2.0.12",
+    "openapi-fetch": "^0.14.0",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.11",
     "vue": "^3.5.17",
-    "vue-router": "^4.5.1"
+    "vue-router": "^4.5.1",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
@@ -36,6 +40,7 @@
     "eslint-plugin-vue": "~10.3.0",
     "jiti": "^2.4.2",
     "npm-run-all2": "^8.0.4",
+    "openapi-typescript": "^7.8.0",
     "oxlint": "~1.6.0",
     "prettier": "3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",

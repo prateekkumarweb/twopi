@@ -30,3 +30,5 @@ coverage
 *.tsbuildinfo
 auto-imports.d.ts
 components.d.ts
+src/**/*.gen.ts
+*.gen.json
