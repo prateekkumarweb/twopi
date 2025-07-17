@@ -5,10 +5,10 @@ const { session } = useAuthUser();
 </script>
 
 <template>
-  <div v-if="session.data?.user">
+  <div v-if="session.data?.user" class="p-4">
     <RouterLink to="/app">Go to App</RouterLink>
   </div>
-  <div v-else>
+  <div v-else class="p-4">
     <RouterLink to="/signin">Sign In / Sign Up</RouterLink>
   </div>
 </template>
