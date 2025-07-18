@@ -34,6 +34,7 @@ const items: NavigationMenuItem[] = [
   {
     label: "Currency",
     icon: "i-lucide-badge-dollar-sign",
+    to: "/app/currency",
   },
   {
     label: "Category",

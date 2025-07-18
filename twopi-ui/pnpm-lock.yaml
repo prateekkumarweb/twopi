@@ -14,6 +14,12 @@ importers:
       '@pinia/colada':
         specifier: ^0.17.1
         version: 0.17.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))
+      '@pinia/colada-plugin-retry':
+        specifier: ^0.1.0
+        version: 0.1.0(@pinia/colada@0.17.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))))
+      '@tanstack/vue-table':
+        specifier: ^8.21.3
+        version: 8.21.3(vue@3.5.17(typescript@5.8.3))
       '@unhead/vue':
         specifier: ^2.0.12
         version: 2.0.12(vue@3.5.17(typescript@5.8.3))
@@ -656,6 +662,11 @@ packages:
     resolution: {integrity: sha512-jOj3L/gfLc0IwgOTkZMiZ5c673i/hbAmidlaylT0gE6H18hln9HxPgp5GCf4E4y6mwEJlW8QC5hQi221+9otdA==}
     cpu: [x64]
     os: [win32]
+
+  '@pinia/colada-plugin-retry@0.1.0':
+    resolution: {integrity: sha512-xC0jmyVWqgknoyIApT9laXcTB8PdYwYpv7i0ngM6/ZqICMqbYTpdSBuhYx8wbwMkP8yRMvr2lFd8IjTVuX9ruA==}
+    peerDependencies:
+      '@pinia/colada': '>=0.16.0'
 
   '@pinia/colada@0.17.1':
     resolution: {integrity: sha512-we89QKKfLCCbhz/UOCJBYvZ5XdnbJYLDsO2prIO9W/0qMLSBRcehAi/Pm+q0wFIhvUbrAvblN3kUFxFNeyDxTw==}
@@ -3533,6 +3544,10 @@ snapshots:
 
   '@oxlint/win32-x64@1.6.0':
     optional: true
+
+  '@pinia/colada-plugin-retry@0.1.0(@pinia/colada@0.17.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3))))':
+    dependencies:
+      '@pinia/colada': 0.17.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))
 
   '@pinia/colada@0.17.1(pinia@3.0.3(typescript@5.8.3)(vue@3.5.17(typescript@5.8.3)))':
     dependencies:

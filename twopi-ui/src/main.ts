@@ -6,11 +6,19 @@ import { createPinia } from "pinia";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { router } from "./router.ts";
+import { PiniaColadaRetry } from "@pinia/colada-plugin-retry";
 
 const app = createApp(App);
 
 app.use(createPinia());
-app.use(PiniaColada, {});
+app.use(PiniaColada, {
+  plugins: [
+    PiniaColadaRetry({
+      retry: 3,
+      delay: 1000,
+    }),
+  ],
+});
 app.use(router);
 app.use(ui);
 

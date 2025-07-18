@@ -1,12 +1,13 @@
 import { defineMutation, defineQuery, useMutation, useQuery, useQueryCache } from "@pinia/colada";
-import { apiClient } from "./openapi";
 import { ref } from "vue";
+import { apiClient } from "./openapi";
+import { USER_QUERY_KEYS } from "./query-keys";
 
 const queryCache = useQueryCache();
 
 export const useAuthUser = defineQuery(() => {
   const { state, ...rest } = useQuery({
-    key: ["user"],
+    key: USER_QUERY_KEYS.root,
     query: async () => {
       const { data, error, response } = await apiClient.GET("/twopi-api/api/user");
       if (data) {
@@ -43,7 +44,7 @@ export const useSignIn = defineMutation(() => {
     },
     onSettled: () => {
       if (!signInError.value) {
-        queryCache.invalidateQueries({ key: ["user"] });
+        queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
       }
     },
   });
@@ -71,7 +72,7 @@ export const useSignUp = defineMutation(() => {
     },
     onSettled: () => {
       if (!signUpError.value) {
-        queryCache.invalidateQueries({ key: ["user"] });
+        queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
       }
     },
   });
@@ -90,12 +91,11 @@ export const useSignOut = defineMutation(() => {
         console.error("Sign Out Error", error);
         return { success: false, error: error };
       } else {
-        queryCache.invalidateQueries({ key: ["user"] });
         return { success: true };
       }
     },
     onSettled: () => {
-      queryCache.invalidateQueries({ key: ["user"] });
+      queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
     },
   });
   return {
