@@ -15,7 +15,7 @@ const user = computed(() => session.value?.user);
 watchEffect(async () => {
   if (!user.value) {
     router.push({
-      path: "/signin",
+      name: "/signin",
       query: {
         next: route.fullPath,
       },
@@ -28,13 +28,17 @@ const items: NavigationMenuItem[] = [
   {
     label: "Dashboard",
     icon: "i-lucide-layout-dashboard",
-    to: "/app",
+    to: {
+      name: "/app/",
+    },
     exact: true,
   },
   {
     label: "Currency",
     icon: "i-lucide-badge-dollar-sign",
-    to: "/app/finance/currency",
+    to: {
+      name: "/app/finance/currency",
+    },
   },
   {
     label: "Category",
@@ -55,7 +59,7 @@ const items: NavigationMenuItem[] = [
   {
     label: "Settings",
     icon: "i-lucide-settings",
-    to: "/app/settings",
+    to: { name: "/app/settings" },
   },
 ];
 </script>

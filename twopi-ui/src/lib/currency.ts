@@ -16,6 +16,22 @@ export const useCurrencyQuery = defineQuery({
   },
 });
 
+export const useCreateCurrencyMutation = defineMutation({
+  mutation: async (currencyData: { code: string; name: string; decimal_digits: number }) => {
+    const { error } = await apiClient.POST("/twopi-api/currency", {
+      body: currencyData,
+    });
+    if (error) {
+      throw new Error(`Failed to create currency: ${error}`);
+    } else {
+      return { success: true };
+    }
+  },
+  onSettled: () => {
+    queryCache.invalidateQueries({ key: CURRENCY_QUERY_KEYS.root });
+  },
+});
+
 export const useDeleteCurrencyMutation = defineMutation({
   mutation: async (currencyCode: string) => {
     const { error } = await apiClient.DELETE("/twopi-api/currency", {

@@ -3,7 +3,7 @@ import { useAuthUser, useSignIn, useSignUp } from "@/lib/auth";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import { computed, reactive, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import * as z from "zod";
+import z from "zod";
 
 const route = useRoute();
 const router = useRouter();
@@ -58,7 +58,9 @@ watchEffect(() => {
     if (route.query.next) {
       router.push(route.query.next as string);
     } else {
-      router.push("/app");
+      router.push({
+        name: "/app",
+      });
     }
   }
 });
