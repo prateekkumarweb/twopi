@@ -9,8 +9,8 @@ const { signOut } = useSignOut();
 const router = useRouter();
 const route = useRoute();
 
-const { session } = useAuthUser();
-const user = computed(() => session.value.data?.user);
+const { data: session } = useAuthUser();
+const user = computed(() => session.value?.user);
 
 watchEffect(async () => {
   if (!user.value) {
@@ -34,7 +34,7 @@ const items: NavigationMenuItem[] = [
   {
     label: "Currency",
     icon: "i-lucide-badge-dollar-sign",
-    to: "/app/currency",
+    to: "/app/finance/currency",
   },
   {
     label: "Category",

@@ -1,30 +1,21 @@
-import { defineMutation, defineQuery, useMutation, useQuery, useQueryCache } from "@pinia/colada";
+import { defineMutation, defineQuery, useMutation, useQueryCache } from "@pinia/colada";
 import { ref } from "vue";
 import { apiClient } from "./openapi";
 import { USER_QUERY_KEYS } from "./query-keys";
 
 const queryCache = useQueryCache();
 
-export const useAuthUser = defineQuery(() => {
-  const { state, ...rest } = useQuery({
-    key: USER_QUERY_KEYS.root,
-    query: async () => {
-      const { data, error, response } = await apiClient.GET("/twopi-api/api/user");
-      if (data) {
-        return { user: data };
-      } else {
-        console.log("Auth User Query", { data, error, response });
-        return {
-          authenticated: false,
-        };
-      }
-    },
-  });
-  console.log("Auth User Query State", state.value);
-  return {
-    ...rest,
-    session: state,
-  };
+export const useAuthUser = defineQuery({
+  key: USER_QUERY_KEYS.root,
+  query: async () => {
+    const { data, error } = await apiClient.GET("/twopi-api/api/user");
+    if (data) {
+      return { user: data };
+    } else {
+      console.log("Auth User Query", { data, error });
+      return { error };
+    }
+  },
 });
 
 export const useSignIn = defineMutation(() => {

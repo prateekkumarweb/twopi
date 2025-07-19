@@ -50,8 +50,8 @@ function onSignUp(event: FormSubmitEvent<SignUpForm>) {
   });
 }
 
-const { session } = useAuthUser();
-const user = computed(() => session.value.data?.user);
+const { data: session } = useAuthUser();
+const user = computed(() => session.value?.user);
 
 watchEffect(() => {
   if (user.value) {
