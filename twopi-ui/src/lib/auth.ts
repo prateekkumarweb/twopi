@@ -1,5 +1,4 @@
 import { defineMutation, defineQuery, useMutation, useQueryCache } from "@pinia/colada";
-import { ref } from "vue";
 import { apiClient } from "./openapi";
 import { USER_QUERY_KEYS } from "./query-keys";
 

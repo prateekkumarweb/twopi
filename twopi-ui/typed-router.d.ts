@@ -19,10 +19,14 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
-    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/finance/currency' | '/app/finance/currency.new' | '/app/finance/dashboard' | '/app/settings'>,
+    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/finance/account' | '/app/finance/category' | '/app/finance/currency' | '/app/finance/currency.new' | '/app/finance/dashboard' | '/app/finance/import-export' | '/app/finance/transaction' | '/app/settings'>,
+    '/app/finance/account': RouteRecordInfo<'/app/finance/account', '/app/finance/account', Record<never, never>, Record<never, never>>,
+    '/app/finance/category': RouteRecordInfo<'/app/finance/category', '/app/finance/category', Record<never, never>, Record<never, never>>,
     '/app/finance/currency': RouteRecordInfo<'/app/finance/currency', '/app/finance/currency', Record<never, never>, Record<never, never>>,
     '/app/finance/currency.new': RouteRecordInfo<'/app/finance/currency.new', '/app/finance/currency/new', Record<never, never>, Record<never, never>>,
     '/app/finance/dashboard': RouteRecordInfo<'/app/finance/dashboard', '/app/finance/dashboard', Record<never, never>, Record<never, never>>,
+    '/app/finance/import-export': RouteRecordInfo<'/app/finance/import-export', '/app/finance/import-export', Record<never, never>, Record<never, never>>,
+    '/app/finance/transaction': RouteRecordInfo<'/app/finance/transaction', '/app/finance/transaction', Record<never, never>, Record<never, never>>,
     '/app/settings': RouteRecordInfo<'/app/settings', '/app/settings', Record<never, never>, Record<never, never>>,
     '/signin': RouteRecordInfo<'/signin', '/signin', Record<never, never>, Record<never, never>>,
   }

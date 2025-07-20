@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthUser, useSignIn, useSignUp } from "@/lib/auth";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { computed, reactive, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import z from "zod";
 

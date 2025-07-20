@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useCreateCurrencyMutation } from "@/lib/currency";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { reactive } from "vue";
 import { useRouter } from "vue-router";
 import z from "zod";
 

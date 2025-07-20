@@ -2,7 +2,6 @@
 import CurrencyAction from "@/components/CurrencyAction.vue";
 import { useCurrencyQuery, useSyncCurrencyMutation } from "@/lib/currency";
 import type { TableColumn } from "@nuxt/ui";
-import { h } from "vue";
 import { useRouter } from "vue-router";
 
 type Currency = {

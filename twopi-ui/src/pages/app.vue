@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthUser, useSignOut } from "@/lib/auth";
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { computed, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const { signOut } = useSignOut();
@@ -42,18 +41,30 @@ const items: NavigationMenuItem[] = [
   {
     label: "Category",
     icon: "i-lucide-tag",
+    to: {
+      name: "/app/finance/category",
+    },
   },
   {
     label: "Account",
     icon: "i-lucide-banknote",
+    to: {
+      name: "/app/finance/account",
+    },
   },
   {
     label: "Transaction",
     icon: "i-lucide-wallet-cards",
+    to: {
+      name: "/app/finance/transaction",
+    },
   },
   {
     label: "Import/Export",
     icon: "i-lucide-upload",
+    to: {
+      name: "/app/finance/import-export",
+    },
   },
   {
     label: "Settings",

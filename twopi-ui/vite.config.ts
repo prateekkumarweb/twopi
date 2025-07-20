@@ -14,6 +14,9 @@ export default defineConfig({
     vueDevTools(),
     tailwindcss(),
     ui({
+      autoImport: {
+        imports: ['vue', 'vue-router', ],
+      },
       ui: {
         colors: {
           primary: "blue",
