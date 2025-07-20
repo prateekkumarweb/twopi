@@ -94,3 +94,14 @@ export const useSignOut = defineMutation(() => {
     signOut,
   };
 });
+
+export const useResetAccount = defineMutation({
+  mutation: async () => {
+    const { error } = await apiClient.POST("/twopi-api/api/reset-account");
+    if (error) {
+      throw new Error(`Reset Account Error: ${error}`);
+    } else {
+      return { success: true };
+    }
+  },
+});

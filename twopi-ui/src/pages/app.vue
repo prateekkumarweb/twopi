@@ -29,9 +29,8 @@ const items: NavigationMenuItem[] = [
     label: "Dashboard",
     icon: "i-lucide-layout-dashboard",
     to: {
-      name: "/app/",
+      name: "/app/finance/dashboard",
     },
-    exact: true,
   },
   {
     label: "Currency",
