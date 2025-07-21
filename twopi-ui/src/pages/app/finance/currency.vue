@@ -60,8 +60,8 @@ const { mutate: syncCurrencies } = useSyncCurrencyMutation();
     <div v-if="state.status == 'pending'">
       <p>Loading...</p>
     </div>
-    <div v-else-if="state.status == 'error' || state.data.error" class="text-error">
-      <p>Error loading currencies: {{ state.data?.error ?? state.error?.message }}</p>
+    <div v-else-if="state.status == 'error'" class="text-error">
+      <p>Error loading currencies: {{ state.error?.message }}</p>
     </div>
     <div v-else class="flex-1 overflow-auto">
       <UTable :data="state.data.currency" :columns="columns" />

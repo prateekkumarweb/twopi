@@ -2,11 +2,11 @@ import "./app.css";
 
 import ui from "@nuxt/ui/vue-plugin";
 import { PiniaColada } from "@pinia/colada";
+import { PiniaColadaRetry } from "@pinia/colada-plugin-retry";
 import { createPinia } from "pinia";
 import { createApp } from "vue";
 import App from "./App.vue";
-import { router } from "./router.ts";
-import { PiniaColadaRetry } from "@pinia/colada-plugin-retry";
+import { router } from "./router";
 
 const app = createApp(App);
 

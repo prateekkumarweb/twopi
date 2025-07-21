@@ -3,7 +3,7 @@ import { useAuthUser, useSignOut } from "@/lib/auth";
 import type { NavigationMenuItem } from "@nuxt/ui";
 import { useRoute, useRouter } from "vue-router";
 
-const { signOut } = useSignOut();
+const { mutate: signOut } = useSignOut();
 
 const router = useRouter();
 const route = useRoute();

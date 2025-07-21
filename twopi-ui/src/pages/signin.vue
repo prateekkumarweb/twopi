@@ -31,8 +31,8 @@ const signUpState = reactive<Partial<SignUpForm>>({
   password: "",
 });
 
-const { signIn, signInError } = useSignIn();
-const { signUp, signUpError } = useSignUp();
+const { mutate: signIn, error: signInError } = useSignIn();
+const { mutate: signUp, error: signUpError } = useSignUp();
 
 function onSignIn(event: FormSubmitEvent<SignInForm>) {
   signIn({

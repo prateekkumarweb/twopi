@@ -11,7 +11,7 @@ export const useCurrencyQuery = defineQuery({
     if (data) {
       return { currency: data };
     } else {
-      return { error: error || "Failed to fetch currency data" };
+      throw new Error(`Currency Query Error: ${error}`);
     }
   },
 });
@@ -23,9 +23,8 @@ export const useCreateCurrencyMutation = defineMutation({
     });
     if (error) {
       throw new Error(`Failed to create currency: ${error}`);
-    } else {
-      return { success: true };
     }
+    return { success: true };
   },
   onSettled: () => {
     queryCache.invalidateQueries({ key: CURRENCY_QUERY_KEYS.root });
@@ -42,10 +41,9 @@ export const useDeleteCurrencyMutation = defineMutation({
       },
     });
     if (error) {
-      return { success: false, error: error };
-    } else {
-      return { success: true };
+      throw new Error(`Failed to delete currency: ${error}`);
     }
+    return { success: true };
   },
   onSettled: () => {
     queryCache.invalidateQueries({ key: CURRENCY_QUERY_KEYS.root });
@@ -56,10 +54,9 @@ export const useSyncCurrencyMutation = defineMutation({
   mutation: async () => {
     const { error } = await apiClient.PUT("/twopi-api/currency/sync");
     if (error) {
-      return { success: false, error: error };
-    } else {
-      return { success: true };
+      throw new Error(`Failed to sync currency: ${error}`);
     }
+    return { success: true };
   },
   onSettled: () => {
     queryCache.invalidateQueries({ key: CURRENCY_QUERY_KEYS.root });

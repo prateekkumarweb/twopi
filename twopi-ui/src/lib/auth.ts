@@ -1,4 +1,4 @@
-import { defineMutation, defineQuery, useMutation, useQueryCache } from "@pinia/colada";
+import { defineMutation, defineQuery, useQueryCache } from "@pinia/colada";
 import { apiClient } from "./openapi";
 import { USER_QUERY_KEYS } from "./query-keys";
 
@@ -11,87 +11,56 @@ export const useAuthUser = defineQuery({
     if (data) {
       return { user: data };
     } else {
-      console.log("Auth User Query", { data, error });
-      return { error };
+      throw new Error(`Auth User Query Error: ${error}`);
     }
   },
 });
 
-export const useSignIn = defineMutation(() => {
-  const signInError = ref<string | null>(null);
-  const { mutate: signIn, ...mutation } = useMutation({
-    mutation: async (data: { email: string; password: string }) => {
-      const { error } = await apiClient.POST("/twopi-api/api/signin", {
-        body: data,
-      });
-      if (error) {
-        signInError.value = error;
-        return { success: false, error: error };
-      } else {
-        signInError.value = null;
-        return { success: true };
-      }
-    },
-    onSettled: () => {
-      if (!signInError.value) {
-        queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
-      }
-    },
-  });
-  return {
-    signInError,
-    mutation,
-    signIn,
-  };
-});
-
-export const useSignUp = defineMutation(() => {
-  const signUpError = ref<string | null>(null);
-  const { mutate: signUp, ...mutation } = useMutation({
-    mutation: async (data: { name: string; email: string; password: string }) => {
-      const { error } = await apiClient.POST("/twopi-api/api/signup", {
-        body: data,
-      });
-      if (error) {
-        signUpError.value = error;
-        return { success: false, error: error };
-      } else {
-        signUpError.value = null;
-        return { success: true };
-      }
-    },
-    onSettled: () => {
-      if (!signUpError.value) {
-        queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
-      }
-    },
-  });
-  return {
-    signUpError,
-    mutation,
-    signUp,
-  };
-});
-
-export const useSignOut = defineMutation(() => {
-  const { mutate: signOut, ...mutation } = useMutation({
-    mutation: async () => {
-      const { error } = await apiClient.POST("/twopi-api/api/signout");
-      if (error) {
-        console.error("Sign Out Error", error);
-        return { success: false, error: error };
-      } else {
-        return { success: true };
-      }
-    },
-    onSettled: () => {
+export const useSignIn = defineMutation({
+  mutation: async (data: { email: string; password: string }) => {
+    const { error } = await apiClient.POST("/twopi-api/api/signin", {
+      body: data,
+    });
+    if (error) {
+      throw new Error(`Sign In Error: ${error}`);
+    }
+  },
+  onSettled: (_data, error) => {
+    if (!error) {
       queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
-    },
-  });
-  return {
-    mutation,
-    signOut,
-  };
+    }
+  },
+});
+
+export const useSignUp = defineMutation({
+  mutation: async (data: { name: string; email: string; password: string }) => {
+    const { error } = await apiClient.POST("/twopi-api/api/signup", {
+      body: data,
+    });
+    if (error) {
+      throw new Error(`Sign Up Error: ${error}`);
+    }
+  },
+  onSettled: (_data, error) => {
+    if (!error) {
+      queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
+    }
+  },
+});
+
+export const useSignOut = defineMutation({
+  mutation: async () => {
+    const { error } = await apiClient.POST("/twopi-api/api/signout");
+    if (error) {
+      console.error("Sign Out Error", error);
+      return { success: false, error: error };
+    } else {
+      return { success: true };
+    }
+  },
+  onSettled: () => {
+    queryCache.invalidateQueries({ key: USER_QUERY_KEYS.root });
+  },
 });
 
 export const useResetAccount = defineMutation({
