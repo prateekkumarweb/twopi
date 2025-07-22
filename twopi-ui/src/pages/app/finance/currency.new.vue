@@ -51,10 +51,10 @@ async function createCurrency(event: FormSubmitEvent<FormState>) {
       </UButton>
     </template>
     <UForm :schema="schema" :state="state" class="space-y-4" @submit="createCurrency">
-      <UFormField name="code" label="Code" :rules="{ required: true }">
+      <UFormField name="code" label="Code">
         <UInput v-model="state.code" />
       </UFormField>
-      <UFormField name="name" label="Name" :rules="{ required: true }">
+      <UFormField name="name" label="Name">
         <UInput v-model="state.name" />
       </UFormField>
       <UFormField name="decimal_digits" label="Decimal Digits">
