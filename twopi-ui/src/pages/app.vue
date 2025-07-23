@@ -26,6 +26,7 @@ const items: NavigationMenuItem[] = [
   {
     label: "Finance",
     icon: "i-lucide-wallet",
+    open: true,
     children: [
       {
         label: "Dashboard",
@@ -81,7 +82,7 @@ const items: NavigationMenuItem[] = [
 
 <template>
   <div v-if="user" class="flex h-screen flex-col">
-    <div class="border-b-accented bg-default flex w-full gap-4 border-b p-4">
+    <div class="border-b-accented flex w-full gap-4 border-b p-4">
       <RouterLink to="/" class="flex flex-1 items-center gap-2">
         <img src="/2pi.svg" alt="TwoPi" class="h-8 w-8" />
         <h1 class="flex-1 text-xl font-semibold">TwoPi</h1>
@@ -90,14 +91,8 @@ const items: NavigationMenuItem[] = [
         <UIcon :name="showNav ? 'i-lucide-x' : 'i-lucide-menu'" class="text-2xl" />
       </button>
     </div>
-    <div v-if="showNav" class="bg-default border-b-accented w-full border-b py-2">
-      <UNavigationMenu
-        orientation="vertical"
-        :items="items"
-        :disable-hover-trigger="true"
-        arrow
-        class="bg-default w-full"
-      />
+    <div v-if="showNav" class="border-b-accented w-full border-b py-2">
+      <UNavigationMenu orientation="vertical" :items="items" class="w-full" />
       <div class="flex flex-col gap-2 pl-3 pt-2">
         <div class="flex items-center gap-2">
           <UIcon name="i-lucide-user" />

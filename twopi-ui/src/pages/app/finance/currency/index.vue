@@ -1,41 +1,15 @@
 <script setup lang="ts">
-import CurrencyAction from "@/components/CurrencyAction.vue";
-import { useCurrencyQuery, useSyncCurrencyMutation } from "@/lib/currency";
-import type { TableColumn } from "@nuxt/ui";
-
-type Currency = {
-  code: string;
-  name: string;
-  decimal_digits: number;
-};
-
-const columns: TableColumn<Currency>[] = [
-  {
-    accessorKey: "code",
-    header: "Code",
-  },
-  {
-    accessorKey: "name",
-    header: "Name",
-  },
-  {
-    accessorKey: "decimal_digits",
-    header: "Decimal Digits",
-  },
-  {
-    header: "Actions",
-    cell: ({ row }) => {
-      return h(CurrencyAction, {
-        currencyCode: row.original.code,
-      });
-    },
-  },
-];
+import {
+  useCurrencyQuery,
+  useDeleteCurrencyMutation,
+  useSyncCurrencyMutation,
+} from "@/lib/currency";
 
 const { state } = useCurrencyQuery();
 const router = useRouter();
 
 const { mutate: syncCurrencies } = useSyncCurrencyMutation();
+const { mutate } = useDeleteCurrencyMutation();
 </script>
 
 <template>
@@ -62,8 +36,19 @@ const { mutate: syncCurrencies } = useSyncCurrencyMutation();
     <div v-else-if="state.status == 'error'" class="text-error">
       <p>Error loading currencies: {{ state.error?.message }}</p>
     </div>
-    <div v-else class="flex-1 overflow-auto">
-      <UTable :data="state.data.currency" :columns="columns" />
+    <div v-else class="space-y-4">
+      <UCard v-for="item of state.data.currency" :key="item.code">
+        <div class="flex gap-2">
+          <div class="flex-1 overflow-hidden text-ellipsis text-nowrap">{{ item.name }}</div>
+          <UBadge class="text-nowrap" variant="outline" color="neutral">
+            {{ item.decimal_digits }} digits
+          </UBadge>
+          <UBadge>{{ item.code }}</UBadge>
+          <UButton variant="outline" color="error" @click="() => mutate(item.code)">
+            <UIcon name="i-lucide-trash" />
+          </UButton>
+        </div>
+      </UCard>
     </div>
   </AppPage>
 </template>
