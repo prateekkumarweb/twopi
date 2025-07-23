@@ -1,4 +1,3 @@
 <template>
-  <AppPage title="Account">
-  </AppPage>
+  <AppPage title="Account"></AppPage>
 </template>
