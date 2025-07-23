@@ -10,7 +10,7 @@ const router = useRouter();
         @click="
           () => {
             router.push({
-              name: '/app/finance/category',
+              name: '/app/finance/category/',
             });
           }
         "

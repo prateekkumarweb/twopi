@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useResetAccount } from "@/lib/auth";
-import { useRouter } from "vue-router";
 
 const { mutateAsync, error } = useResetAccount();
 const router = useRouter();

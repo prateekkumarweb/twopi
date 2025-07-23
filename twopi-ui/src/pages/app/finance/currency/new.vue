@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useCreateCurrencyMutation } from "@/lib/currency";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { useRouter } from "vue-router";
 import z from "zod";
 
 const router = useRouter();
@@ -28,7 +27,7 @@ async function createCurrency(event: FormSubmitEvent<FormState>) {
   });
   if (done.success) {
     router.push({
-      name: "/app/finance/currency",
+      name: "/app/finance/currency/",
     });
   }
 }
@@ -42,7 +41,7 @@ async function createCurrency(event: FormSubmitEvent<FormState>) {
         @click="
           () => {
             router.push({
-              name: '/app/finance/currency',
+              name: '/app/finance/currency/',
             });
           }
         "

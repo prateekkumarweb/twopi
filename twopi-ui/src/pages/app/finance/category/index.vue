@@ -42,7 +42,7 @@ const router = useRouter();
       <UButton
         @click="
           () => {
-            router.push({ name: '/app/finance/category.new' });
+            router.push({ name: '/app/finance/category/new' });
           }
         "
       >

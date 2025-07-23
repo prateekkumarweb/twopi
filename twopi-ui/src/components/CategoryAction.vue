@@ -16,7 +16,7 @@ const router = useRouter();
       color="primary"
       @click="
         () => {
-          router.push({ name: '/app/finance/category.[id].detail', params: { id } });
+          router.push({ name: '/app/finance/category/[id].detail', params: { id } });
         }
       "
     >
@@ -27,7 +27,7 @@ const router = useRouter();
       color="secondary"
       @click="
         () => {
-          router.push({ name: '/app/finance/category.[id].edit', params: { id } });
+          router.push({ name: '/app/finance/category/[id].edit', params: { id } });
         }
       "
     >

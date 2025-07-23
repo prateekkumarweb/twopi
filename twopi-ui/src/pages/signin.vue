@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthUser, useSignIn, useSignUp } from "@/lib/auth";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import { useRoute, useRouter } from "vue-router";
 import z from "zod";
 
 const route = useRoute();

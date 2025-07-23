@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useAuthUser, useSignOut } from "@/lib/auth";
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { useRoute, useRouter } from "vue-router";
 
 const { mutate: signOut } = useSignOut();
 
@@ -10,6 +9,7 @@ const route = useRoute();
 
 const { data: session } = useAuthUser();
 const user = computed(() => session.value?.user);
+const showNav = ref(false);
 
 watchEffect(async () => {
   if (!user.value) {
@@ -23,48 +23,53 @@ watchEffect(async () => {
 });
 
 const items: NavigationMenuItem[] = [
-  { label: "Personal Finance", type: "label" },
   {
-    label: "Dashboard",
-    icon: "i-lucide-layout-dashboard",
-    to: {
-      name: "/app/finance/dashboard",
-    },
-  },
-  {
-    label: "Currency",
-    icon: "i-lucide-badge-dollar-sign",
-    to: {
-      name: "/app/finance/currency",
-    },
-  },
-  {
-    label: "Category",
-    icon: "i-lucide-tag",
-    to: {
-      name: "/app/finance/category",
-    },
-  },
-  {
-    label: "Account",
-    icon: "i-lucide-banknote",
-    to: {
-      name: "/app/finance/account",
-    },
-  },
-  {
-    label: "Transaction",
-    icon: "i-lucide-wallet-cards",
-    to: {
-      name: "/app/finance/transaction",
-    },
-  },
-  {
-    label: "Import/Export",
-    icon: "i-lucide-upload",
-    to: {
-      name: "/app/finance/import-export",
-    },
+    label: "Finance",
+    icon: "i-lucide-wallet",
+    children: [
+      {
+        label: "Dashboard",
+        icon: "i-lucide-layout-dashboard",
+        to: {
+          name: "/app/finance/dashboard",
+        },
+      },
+      {
+        label: "Currency",
+        icon: "i-lucide-badge-dollar-sign",
+        to: {
+          name: "/app/finance/currency/",
+        },
+      },
+      {
+        label: "Category",
+        icon: "i-lucide-tag",
+        to: {
+          name: "/app/finance/category/",
+        },
+      },
+      {
+        label: "Account",
+        icon: "i-lucide-banknote",
+        to: {
+          name: "/app/finance/account/",
+        },
+      },
+      {
+        label: "Transaction",
+        icon: "i-lucide-wallet-cards",
+        to: {
+          name: "/app/finance/transaction/",
+        },
+      },
+      {
+        label: "Import/Export",
+        icon: "i-lucide-upload",
+        to: {
+          name: "/app/finance/import-export",
+        },
+      },
+    ],
   },
   {
     label: "Settings",
@@ -75,14 +80,25 @@ const items: NavigationMenuItem[] = [
 </script>
 
 <template>
-  <div v-if="user" class="flex h-screen gap-4 p-4">
-    <header class="flex flex-col gap-2">
-      <RouterLink to="/" class="flex items-center gap-2">
+  <div v-if="user" class="flex h-screen flex-col">
+    <div class="border-b-accented bg-default flex w-full gap-4 border-b p-4">
+      <RouterLink to="/" class="flex flex-1 items-center gap-2">
         <img src="/2pi.svg" alt="TwoPi" class="h-8 w-8" />
         <h1 class="flex-1 text-xl font-semibold">TwoPi</h1>
       </RouterLink>
-      <UNavigationMenu orientation="vertical" :items="items" class="flex-1" />
-      <div class="flex flex-col gap-2 pl-2">
+      <button @click="showNav = !showNav">
+        <UIcon :name="showNav ? 'i-lucide-x' : 'i-lucide-menu'" class="text-2xl" />
+      </button>
+    </div>
+    <div v-if="showNav" class="bg-default border-b-accented w-full border-b py-2">
+      <UNavigationMenu
+        orientation="vertical"
+        :items="items"
+        :disable-hover-trigger="true"
+        arrow
+        class="bg-default w-full"
+      />
+      <div class="flex flex-col gap-2 pl-3 pt-2">
         <div class="flex items-center gap-2">
           <UIcon name="i-lucide-user" />
           <div>{{ user.name }}</div>
@@ -93,9 +109,8 @@ const items: NavigationMenuItem[] = [
           </UButton>
         </div>
       </div>
-    </header>
-    <USeparator orientation="vertical" class="h-full" />
-    <div class="w-full">
+    </div>
+    <div class="w-full p-4">
       <RouterView />
     </div>
   </div>

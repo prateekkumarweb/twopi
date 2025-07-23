@@ -2,7 +2,6 @@
 import CurrencyAction from "@/components/CurrencyAction.vue";
 import { useCurrencyQuery, useSyncCurrencyMutation } from "@/lib/currency";
 import type { TableColumn } from "@nuxt/ui";
-import { useRouter } from "vue-router";
 
 type Currency = {
   code: string;
@@ -46,7 +45,7 @@ const { mutate: syncCurrencies } = useSyncCurrencyMutation();
         @click="
           () => {
             router.push({
-              name: '/app/finance/currency.new',
+              name: '/app/finance/currency/new',
             });
           }
         "

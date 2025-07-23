@@ -37,7 +37,7 @@ async function createCategory(event: FormSubmitEvent<FormState>) {
   });
   if (done.success) {
     router.push({
-      name: "/app/finance/category",
+      name: "/app/finance/category/",
     });
   }
 }
