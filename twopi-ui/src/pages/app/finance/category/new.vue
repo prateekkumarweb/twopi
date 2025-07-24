@@ -1,22 +1,9 @@
-<script setup lang="ts">
-const router = useRouter();
-</script>
-
 <template>
   <AppPage title="New Category">
     <template #actions>
-      <UButton
-        variant="ghost"
-        @click="
-          () => {
-            router.push({
-              name: '/app/finance/category/',
-            });
-          }
-        "
-      >
+      <ULink :to="{ name: '/app/finance/category/' }" class="flex items-center gap-2">
         <UIcon name="i-lucide-arrow-left" /> All
-      </UButton>
+      </ULink>
     </template>
     <CategoryEditor />
   </AppPage>

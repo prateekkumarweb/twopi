@@ -22,6 +22,10 @@ watchEffect(async () => {
   }
 });
 
+const onSelect: NavigationMenuItem["onSelect"] = () => {
+  showNav.value = false;
+};
+
 const items: NavigationMenuItem[] = [
   {
     label: "Finance",
@@ -70,19 +74,23 @@ const items: NavigationMenuItem[] = [
           name: "/app/finance/import-export",
         },
       },
-    ],
+    ].map((item) => ({
+      ...item,
+      onSelect,
+    })),
   },
   {
     label: "Settings",
     icon: "i-lucide-settings",
     to: { name: "/app/settings" },
+    onSelect,
   },
 ];
 </script>
 
 <template>
-  <div v-if="user" class="flex h-screen flex-col">
-    <div class="border-b-accented flex w-full gap-4 border-b p-4">
+  <div v-if="user" class="relative flex h-screen flex-col">
+    <header class="border-b-accented flex w-full gap-4 border-b p-4">
       <RouterLink to="/" class="flex flex-1 items-center gap-2">
         <img src="/2pi.svg" alt="TwoPi" class="h-8 w-8" />
         <h1 class="flex-1 text-xl font-semibold">TwoPi</h1>
@@ -90,21 +98,30 @@ const items: NavigationMenuItem[] = [
       <button @click="showNav = !showNav">
         <UIcon :name="showNav ? 'i-lucide-x' : 'i-lucide-menu'" class="text-2xl" />
       </button>
-    </div>
-    <div v-if="showNav" class="border-b-accented w-full border-b py-2">
-      <UNavigationMenu orientation="vertical" :items="items" class="w-full" />
-      <div class="flex flex-col gap-2 pl-3 pt-2">
-        <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-user" />
-          <div>{{ user.name }}</div>
-        </div>
-        <div>
-          <UButton variant="outline" icon="i-lucide-log-out" @click="() => signOut()">
-            Sign out
-          </UButton>
+    </header>
+    <Transition
+      enter-active-class="transition-all duration-300"
+      leave-active-class="transition-all duration-300"
+      enter-from-class="-translate-y-20 opacity-0"
+      enter-to-class="translate-y-0 opacity-100"
+      leave-from-class="translate-y-0 opacity-100"
+      leave-to-class="-translate-y-20 opacity-0"
+    >
+      <div v-if="showNav" class="border-b-accented bg-default absolute top-20 w-full border-b pb-4">
+        <UNavigationMenu orientation="vertical" :items="items" class="w-full" />
+        <div class="flex flex-col gap-2 pl-3 pt-2">
+          <div class="flex items-center gap-2">
+            <UIcon name="i-lucide-user" />
+            <div>{{ user.name }}</div>
+          </div>
+          <div>
+            <UButton variant="outline" icon="i-lucide-log-out" @click="() => signOut()">
+              Sign out
+            </UButton>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
     <div class="w-full p-4">
       <RouterView />
     </div>

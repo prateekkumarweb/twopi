@@ -36,18 +36,9 @@ async function createCurrency(event: FormSubmitEvent<FormState>) {
 <template>
   <AppPage title="New Currency">
     <template #actions>
-      <UButton
-        variant="ghost"
-        @click="
-          () => {
-            router.push({
-              name: '/app/finance/currency/',
-            });
-          }
-        "
-      >
+      <ULink :to="{ name: '/app/finance/currency/' }" class="flex items-center gap-2">
         <UIcon name="i-lucide-arrow-left" /> All
-      </UButton>
+      </ULink>
     </template>
     <UForm :schema="schema" :state="state" class="space-y-4" @submit="createCurrency">
       <UFormField name="code" label="Code">

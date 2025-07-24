@@ -3,7 +3,6 @@ import { useCategoryQuery } from "@/lib/category";
 
 const { data: categoryies, state: categoriesState } = useCategoryQuery();
 const route = useRoute();
-const router = useRouter();
 const params = route.params as { id: string };
 
 const category = computed(() => {
@@ -12,20 +11,11 @@ const category = computed(() => {
 </script>
 
 <template>
-  <AppPage title="Edit Category">
+  <AppPage title="Category Details">
     <template #actions>
-      <UButton
-        variant="ghost"
-        @click="
-          () => {
-            router.push({
-              name: '/app/finance/category/',
-            });
-          }
-        "
-      >
+      <ULink :to="{ name: '/app/finance/category/' }" class="flex items-center gap-2">
         <UIcon name="i-lucide-arrow-left" /> All
-      </UButton>
+      </ULink>
     </template>
     <div v-if="categoriesState.status === 'pending'">
       <p>Loading category...</p>
