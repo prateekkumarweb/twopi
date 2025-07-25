@@ -30,7 +30,7 @@ const router = useRouter();
       <UCard v-for="item of state.data.categories" :key="item.id">
         <div class="flex">
           <div>{{ item.name }}</div>
-          <UBadge class="mx-2">{{ item.group }}</UBadge>
+          <UBadge v-if="item.group" class="mx-2">{{ item.group }}</UBadge>
           <div v-if="item.icon"><UIcon :name="item.icon" class="text-2xl" /></div>
           <div class="flex-1"></div>
           <div class="flex space-x-2">
