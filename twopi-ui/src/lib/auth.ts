@@ -11,6 +11,9 @@ export const useAuthUser = defineQuery({
     if (data) {
       return { user: data };
     } else {
+      if (!error) {
+        return { user: null };
+      }
       throw new Error(`Auth User Query Error: ${error}`);
     }
   },

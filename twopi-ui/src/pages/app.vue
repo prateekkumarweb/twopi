@@ -2,25 +2,20 @@
 import { useAuthUser, useSignOut } from "@/lib/auth";
 import type { NavigationMenuItem } from "@nuxt/ui";
 
-const { mutate: signOut } = useSignOut();
+const { mutateAsync: signOut } = useSignOut();
+const { data: session } = useAuthUser();
+const user = computed(() => session.value?.user);
 
 const router = useRouter();
 const route = useRoute();
 
-const { data: session } = useAuthUser();
-const user = computed(() => session.value?.user);
-const showNav = ref(false);
-
-watchEffect(async () => {
+watchEffect(() => {
   if (!user.value) {
-    router.push({
-      name: "/signin",
-      query: {
-        next: route.fullPath,
-      },
-    });
+    router.push({ name: "/signin", query: { next: route.fullPath } });
   }
 });
+
+const showNav = ref(false);
 
 const onSelect: NavigationMenuItem["onSelect"] = () => {
   showNav.value = false;
@@ -115,7 +110,15 @@ const items: NavigationMenuItem[] = [
             <div>{{ user.name }}</div>
           </div>
           <div>
-            <UButton variant="outline" icon="i-lucide-log-out" @click="() => signOut()">
+            <UButton
+              variant="outline"
+              icon="i-lucide-log-out"
+              @click="
+                () => {
+                  signOut();
+                }
+              "
+            >
               Sign out
             </UButton>
           </div>
