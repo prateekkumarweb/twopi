@@ -23,6 +23,7 @@
     "@pinia/colada-plugin-retry": "^0.1.0",
     "@tanstack/vue-table": "^8.21.3",
     "@unhead/vue": "^2.0.12",
+    "dayjs": "^1.11.13",
     "openapi-fetch": "^0.14.0",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.11",
