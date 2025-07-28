@@ -19,7 +19,8 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
-    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/finance/account/' | '/app/finance/account/[id].detail' | '/app/finance/account/[id].edit' | '/app/finance/account/new' | '/app/finance/category/' | '/app/finance/category/[id].detail' | '/app/finance/category/[id].edit' | '/app/finance/category/new' | '/app/finance/currency/' | '/app/finance/currency/new' | '/app/finance/dashboard' | '/app/finance/import-export' | '/app/finance/transaction/' | '/app/settings'>,
+    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/' | '/app/finance/account/' | '/app/finance/account/[id].detail' | '/app/finance/account/[id].edit' | '/app/finance/account/new' | '/app/finance/category/' | '/app/finance/category/[id].detail' | '/app/finance/category/[id].edit' | '/app/finance/category/new' | '/app/finance/currency/' | '/app/finance/currency/new' | '/app/finance/dashboard' | '/app/finance/import-export' | '/app/finance/transaction/' | '/app/settings'>,
+    '/app/': RouteRecordInfo<'/app/', '/app', Record<never, never>, Record<never, never>>,
     '/app/finance/account/': RouteRecordInfo<'/app/finance/account/', '/app/finance/account', Record<never, never>, Record<never, never>>,
     '/app/finance/account/[id].detail': RouteRecordInfo<'/app/finance/account/[id].detail', '/app/finance/account/:id/detail', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '/app/finance/account/[id].edit': RouteRecordInfo<'/app/finance/account/[id].edit', '/app/finance/account/:id/edit', { id: ParamValue<true> }, { id: ParamValue<false> }>,

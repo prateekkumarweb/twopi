@@ -164,13 +164,13 @@ function isCashFlow(accountType: AccountTypeOrigin): boolean {
     <UAccordion :items="items" type="multiple">
       <template #body="{ item }">
         <div v-if="item.value === 'import-accounts'" class="flex flex-col gap-4">
-          <UTextarea v-model="accountCsv" :rows="8" />
+          <UTextarea v-model="accountCsv" :rows="8" class="font-mono" />
           <div>
             <UButton color="primary" @click="importAccounts">Import Accounts</UButton>
           </div>
         </div>
         <div v-else-if="item.value === 'import-transactions'" class="flex flex-col gap-4">
-          <UTextarea v-model="transactionCsv" :rows="8" />
+          <UTextarea v-model="transactionCsv" :rows="8" class="font-mono" />
           <div>
             <UButton color="primary" @click="importTransactions">Import Transactions</UButton>
           </div>
@@ -189,6 +189,7 @@ function isCashFlow(accountType: AccountTypeOrigin): boolean {
                 2,
               )
             "
+            class="font-mono"
           />
         </div>
       </template>

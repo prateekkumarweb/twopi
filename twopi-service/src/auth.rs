@@ -1,5 +1,4 @@
 use argon2::{Argon2, PasswordHash, PasswordVerifier};
-use async_trait::async_trait;
 use axum_login::{AuthUser, AuthnBackend, UserId};
 use sea_orm::{DbConn, DbErr};
 use secrecy::{ExposeSecret, SecretString};
@@ -43,7 +42,6 @@ pub struct Credentials {
     password: SecretString,
 }
 
-#[async_trait]
 impl AuthnBackend for Backend {
     type User = User;
     type Credentials = Credentials;
