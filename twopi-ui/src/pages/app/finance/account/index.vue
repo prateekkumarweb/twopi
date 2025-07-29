@@ -1,8 +1,18 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
+import type { AccountTypeOrigin } from "@/lib/hacks/account-type";
 
 const { state } = useAccountsQuery();
 const router = useRouter();
+
+const iconMap: Record<AccountTypeOrigin, string> = {
+  Cash: "i-lucide-banknote",
+  Wallet: "i-lucide-wallet",
+  Bank: "i-lucide-landmark",
+  CreditCard: "i-lucide-credit-card",
+  Loan: "i-lucide-hand-coins",
+  Person: "i-lucide-book-user",
+} as const;
 </script>
 
 <template>
@@ -28,7 +38,9 @@ const router = useRouter();
       <UCard v-for="item of state.data.accounts" :key="item.account.id">
         <div class="flex">
           <div>{{ item.account.name }}</div>
-          <UBadge class="mx-2">{{ item.account.account_type }}</UBadge>
+          <UBadge class="mx-2" :icon="iconMap[item.account.account_type]">{{
+            item.account.account_type
+          }}</UBadge>
           <div class="flex-1"></div>
           <div class="flex space-x-2">
             <UButton

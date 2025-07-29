@@ -24,7 +24,7 @@ const account = computed(() => {
     <div v-else-if="account">
       <LabelAndValue label="Id">{{ account.account.id }}</LabelAndValue>
       <LabelAndValue label="Name">{{ account.account.name }}</LabelAndValue>
-      <LabelAndValue label="Account type">{{ account.account.account_extra }}</LabelAndValue>
+      <LabelAndValue label="Account type">{{ account.account.account_type }}</LabelAndValue>
       <LabelAndValue label="Created at">
         {{ dayjs(account.account.created_at).format("MMM D, YYYY h:mm A") }}
       </LabelAndValue>
