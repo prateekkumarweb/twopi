@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
+import { useDeleteCategoryMutation } from "@/lib/category";
 import type { AccountTypeOrigin } from "@/lib/hacks/account-type";
+
+const { mutate } = useDeleteCategoryMutation();
 
 const { state } = useAccountsQuery();
 const router = useRouter();
@@ -70,6 +73,9 @@ const iconMap: Record<AccountTypeOrigin, string> = {
               "
             >
               <UIcon name="i-lucide-edit" />
+            </UButton>
+            <UButton variant="outline" color="error" @click="() => mutate(item.account.id)">
+              <UIcon name="i-lucide-trash" />
             </UButton>
           </div>
         </div>
