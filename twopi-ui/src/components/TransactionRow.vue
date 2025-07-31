@@ -24,7 +24,7 @@ const category = (id?: string | null) => {
 </script>
 
 <template>
-  <div class="border-1 rounded-2xl p-3">
+  <UCard>
     <ULink
       :to="{
         name: '/app/finance/transaction/[id].detail',
@@ -70,6 +70,6 @@ const category = (id?: string | null) => {
         </div>
       </div>
     </ULink>
-  </div>
+  </UCard>
 </template>
 ;
