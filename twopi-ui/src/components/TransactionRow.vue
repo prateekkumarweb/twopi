@@ -46,18 +46,23 @@ const category = (id?: string | null) => {
         <div v-for="item in props.transaction.items" :key="item.id" class="flex items-center gap-2">
           <div class="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
             <LocalScope v-slot="{ scope }" :scope="category(item.category_id)">
-              <UBadge v-if="scope" variant="outline" class="mr-2" :icon="scope.icon">{{
+              <UBadge v-if="scope" variant="soft" class="text-nowrap" :icon="scope.icon">{{
                 scope.name
               }}</UBadge>
             </LocalScope>
             {{ item.notes }}
           </div>
           <LocalScope v-slot="{ scope }" :scope="account(item.account_id)">
-            <UBadge v-if="scope" variant="outline" :icon="iconMap[scope.account.account_type]">{{
-              scope.account.name
-            }}</UBadge>
             <UBadge
               v-if="scope"
+              variant="outline"
+              :icon="iconMap[scope.account.account_type]"
+              class="text-nowrap"
+              >{{ scope.account.name }}</UBadge
+            >
+            <UBadge
+              v-if="scope"
+              class="text-nowrap"
               :color="item.amount < 0 ? 'error' : item.amount > 0 ? 'success' : 'neutral'"
             >
               <CurrencyDisplay
