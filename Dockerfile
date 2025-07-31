@@ -27,14 +27,12 @@ WORKDIR /app/twopi-service
 COPY --from=node_planner /app/twopi-service/routes.gen.txt /app/twopi-service/routes.gen.txt
 RUN cargo build --release
 ENV TWOPI_DATA_DIR=../data
-ENV CURRENCY_API_KEY=""
-ENV TWOPI_SECRET_KEY=""
-RUN cargo run --release -- gen-api openapi.gen.json
+RUN CURRENCY_API_KEY="" TWOPI_SECRET_KEY="" cargo run --release -- gen-api openapi.gen.json
 
 FROM node_planner AS node_builder
 COPY --from=rust_builder /app/twopi-service/openapi.gen.json /app/twopi-ui/openapi.gen.json
 WORKDIR /app/twopi-ui
-RUN pnpm run build
+RUN pnpm run build-only
 
 FROM ubuntu:noble AS runtime
 COPY --from=node_builder /app/twopi-ui/dist /app/twopi-ui/dist
