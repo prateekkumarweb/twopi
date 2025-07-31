@@ -14,6 +14,7 @@
     "lint": "run-s lint:*",
     "fmt": "prettier --check src/",
     "fmt:fix": "prettier --write src/",
+    "gen:routes": "node extract-routes.js ../twopi-service/routes.gen.txt",
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o src/lib/openapi.gen.ts",
     "gen:api-file": "openapi-typescript ./openapi.gen.json -o src/lib/openapi.gen.ts"
   },
