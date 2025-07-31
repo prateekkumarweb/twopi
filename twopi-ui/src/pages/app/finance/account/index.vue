@@ -2,11 +2,49 @@
 import { useAccountsQuery } from "@/lib/account";
 import { useDeleteCategoryMutation } from "@/lib/category";
 import { iconMap } from "@/lib/hacks/account-type";
+import type { Paths } from "@/lib/openapi";
+import { useTransactionsQuery } from "@/lib/transaction";
+import dayjs from "dayjs";
 
 const { mutate } = useDeleteCategoryMutation();
+const { data: transactions } = useTransactionsQuery();
 
-const { state } = useAccountsQuery();
+const { state, data: accounts } = useAccountsQuery();
 const router = useRouter();
+
+type Account = NonNullable<
+  Paths["/twopi-api/account/{account_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+>;
+
+const filteredTransactions = computed(() => {
+  if (!transactions.value?.transactions || !accounts.value?.accounts) {
+    return [];
+  }
+  return transactions.value.transactions?.filter((transaction) => {
+    return (
+      transaction.items?.some((item) =>
+        accounts.value?.accounts.some((account) => account.account.id === item.account_id),
+      ) ?? false
+    );
+  });
+});
+
+function calculateBalance(account: Account) {
+  return (
+    account.account.starting_balance +
+    (filteredTransactions.value
+      ?.map((transaction) => {
+        let amount = 0;
+        for (const item of transaction.items) {
+          if (item.account_id === account.account.id) {
+            amount += item.amount;
+          }
+        }
+        return amount;
+      })
+      .reduce((acc, curr) => acc + curr, 0) ?? 0)
+  );
+}
 </script>
 
 <template>
@@ -69,6 +107,21 @@ const router = useRouter();
               <UIcon name="i-lucide-trash" />
             </UButton>
           </div>
+        </div>
+        <div class="mt-2 flex gap-2">
+          <UBadge variant="outline">
+            <CurrencyDisplay
+              :value="calculateBalance(item)"
+              :currency-code="item.currency.code"
+              :decimal-digits="item.currency.decimal_digits"
+            />
+          </UBadge>
+          <UBadge v-if="item.account.is_active" variant="soft" color="success">Active</UBadge>
+          <UBadge v-if="item.account.is_cash_flow" variant="soft" color="neutral">Cash flow</UBadge>
+          <div class="flex-1"></div>
+          <UBadge variant="soft">
+            {{ dayjs(item.account.created_at).format("D MMM YYYY") }}
+          </UBadge>
         </div>
       </UCard>
     </div>
