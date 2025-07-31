@@ -1,6 +1,6 @@
 import { defineMutation, defineQuery, useQueryCache } from "@pinia/colada";
 import { apiClient } from "./openapi";
-import { CURRENCY_QUERY_KEYS } from "./query-keys";
+import { CURRENCY_QUERY_KEYS, DASHBOARD_QUERY_KEYS } from "./query-keys";
 
 const queryCache = useQueryCache();
 
@@ -60,5 +60,29 @@ export const useSyncCurrencyMutation = defineMutation({
   },
   onSettled: () => {
     queryCache.invalidateQueries({ key: CURRENCY_QUERY_KEYS.root });
+  },
+});
+
+export const useCurrencyRatesQuery = defineQuery({
+  key: CURRENCY_QUERY_KEYS.rates,
+  query: async () => {
+    const { data, error } = await apiClient.GET("/twopi-api/currency-cache/latest");
+    if (data) {
+      return { rates: data };
+    } else {
+      throw new Error(`Currency Rates Query Error: ${error}`);
+    }
+  },
+});
+
+export const useDashboardQuery = defineQuery({
+  key: DASHBOARD_QUERY_KEYS.root,
+  query: async () => {
+    const { data, error } = await apiClient.GET("/twopi-api/dashboard");
+    if (data) {
+      return { dashboard: data };
+    } else {
+      throw new Error(`Dashboard Query Error: ${error}`);
+    }
   },
 });
