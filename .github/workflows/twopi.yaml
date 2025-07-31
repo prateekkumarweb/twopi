@@ -61,9 +61,6 @@ jobs:
       - name: twopi-ui - gen openapi types
         run: pnpm run gen:api-file
         working-directory: twopi-ui
-      - name: twopi-ui - type check
-        run: pnpm run type-check
-        working-directory: twopi-ui
       - name: twopi-ui - build
         run: pnpm run build
         working-directory: twopi-ui

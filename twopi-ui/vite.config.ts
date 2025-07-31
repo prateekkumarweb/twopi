@@ -15,7 +15,7 @@ export default defineConfig({
     tailwindcss(),
     ui({
       autoImport: {
-        imports: ['vue', 'vue-router', ],
+        imports: ["vue", "vue-router"],
       },
       ui: {
         colors: {
