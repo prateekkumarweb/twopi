@@ -1,21 +1,12 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
 import { useDeleteCategoryMutation } from "@/lib/category";
-import type { AccountTypeOrigin } from "@/lib/hacks/account-type";
+import { iconMap } from "@/lib/hacks/account-type";
 
 const { mutate } = useDeleteCategoryMutation();
 
 const { state } = useAccountsQuery();
 const router = useRouter();
-
-const iconMap: Record<AccountTypeOrigin, string> = {
-  Cash: "i-lucide-banknote",
-  Wallet: "i-lucide-wallet",
-  Bank: "i-lucide-landmark",
-  CreditCard: "i-lucide-credit-card",
-  Loan: "i-lucide-hand-coins",
-  Person: "i-lucide-book-user",
-} as const;
 </script>
 
 <template>

@@ -20,7 +20,7 @@ const schema = z.object({
   icon: z.string(),
 });
 type FormState = z.infer<typeof schema>;
-const state = reactive<Partial<FormState>>({
+const state = reactive<FormState>({
   name: props.category?.name || "",
   group: props.category?.group || "",
   icon: props.category?.icon || "",
@@ -52,7 +52,7 @@ async function createCategory(event: FormSubmitEvent<FormState>) {
       <UInput v-model="state.group" />
     </UFormField>
     <UFormField label="Icon" name="icon">
-      <UInput v-model="state.icon" />
+      <UInput v-model="state.icon" :trailing-icon="state.icon" />
     </UFormField>
     <UButton v-if="category" type="submit"> <UIcon name="i-lucide-save" /> Save </UButton>
     <UButton v-else type="submit"> <UIcon name="i-lucide-plus" /> Create </UButton>

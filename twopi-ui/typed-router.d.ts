@@ -19,7 +19,7 @@ declare module 'vue-router/auto-routes' {
    */
   export interface RouteNamedMap {
     '/': RouteRecordInfo<'/', '/', Record<never, never>, Record<never, never>>,
-    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/' | '/app/finance/account/' | '/app/finance/account/[id].detail' | '/app/finance/account/[id].edit' | '/app/finance/account/new' | '/app/finance/category/' | '/app/finance/category/[id].detail' | '/app/finance/category/[id].edit' | '/app/finance/category/new' | '/app/finance/currency/' | '/app/finance/currency/new' | '/app/finance/dashboard' | '/app/finance/import-export' | '/app/finance/transaction/' | '/app/settings'>,
+    '/app': RouteRecordInfo<'/app', '/app', Record<never, never>, Record<never, never>, '/app/' | '/app/finance/account/' | '/app/finance/account/[id].detail' | '/app/finance/account/[id].edit' | '/app/finance/account/new' | '/app/finance/category/' | '/app/finance/category/[id].detail' | '/app/finance/category/[id].edit' | '/app/finance/category/new' | '/app/finance/currency/' | '/app/finance/currency/new' | '/app/finance/dashboard' | '/app/finance/import-export' | '/app/finance/transaction/' | '/app/finance/transaction/[id].detail' | '/app/finance/transaction/[id].edit' | '/app/finance/transaction/new' | '/app/settings'>,
     '/app/': RouteRecordInfo<'/app/', '/app', Record<never, never>, Record<never, never>>,
     '/app/finance/account/': RouteRecordInfo<'/app/finance/account/', '/app/finance/account', Record<never, never>, Record<never, never>>,
     '/app/finance/account/[id].detail': RouteRecordInfo<'/app/finance/account/[id].detail', '/app/finance/account/:id/detail', { id: ParamValue<true> }, { id: ParamValue<false> }>,
@@ -34,6 +34,9 @@ declare module 'vue-router/auto-routes' {
     '/app/finance/dashboard': RouteRecordInfo<'/app/finance/dashboard', '/app/finance/dashboard', Record<never, never>, Record<never, never>>,
     '/app/finance/import-export': RouteRecordInfo<'/app/finance/import-export', '/app/finance/import-export', Record<never, never>, Record<never, never>>,
     '/app/finance/transaction/': RouteRecordInfo<'/app/finance/transaction/', '/app/finance/transaction', Record<never, never>, Record<never, never>>,
+    '/app/finance/transaction/[id].detail': RouteRecordInfo<'/app/finance/transaction/[id].detail', '/app/finance/transaction/:id/detail', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    '/app/finance/transaction/[id].edit': RouteRecordInfo<'/app/finance/transaction/[id].edit', '/app/finance/transaction/:id/edit', { id: ParamValue<true> }, { id: ParamValue<false> }>,
+    '/app/finance/transaction/new': RouteRecordInfo<'/app/finance/transaction/new', '/app/finance/transaction/new', Record<never, never>, Record<never, never>>,
     '/app/settings': RouteRecordInfo<'/app/settings', '/app/settings', Record<never, never>, Record<never, never>>,
     '/signin': RouteRecordInfo<'/signin', '/signin', Record<never, never>, Record<never, never>>,
   }

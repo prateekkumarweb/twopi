@@ -31,7 +31,7 @@ const { mutate } = useDeleteCurrencyMutation();
       </UButton>
     </template>
     <div v-if="state.status == 'pending'">
-      <p>Loading...</p>
+      <USkeleton class="h-32 w-full" />
     </div>
     <div v-else-if="state.status == 'error'" class="text-error">
       <p>Error loading currencies: {{ state.error?.message }}</p>

@@ -11,3 +11,12 @@ export const AccountType: { [k in AccountTypeOrigin]: k } = {
 } as const;
 
 export type AccountTypeOrigin = components["schemas"]["AccountType"];
+
+export const iconMap: Record<AccountTypeOrigin, string> = {
+  Cash: "i-lucide-banknote",
+  Wallet: "i-lucide-wallet",
+  Bank: "i-lucide-landmark",
+  CreditCard: "i-lucide-credit-card",
+  Loan: "i-lucide-hand-coins",
+  Person: "i-lucide-book-user",
+} as const;

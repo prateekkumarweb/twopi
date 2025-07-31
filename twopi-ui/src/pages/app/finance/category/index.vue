@@ -31,7 +31,7 @@ const router = useRouter();
         <div class="flex">
           <div>{{ item.name }}</div>
           <UBadge v-if="item.group" class="mx-2">{{ item.group }}</UBadge>
-          <div v-if="item.icon"><UIcon :name="item.icon" class="text-2xl" /></div>
+          <div v-if="item.icon"><UIcon :name="item.icon" class="ml-2 text-2xl" /></div>
           <div class="flex-1"></div>
           <div class="flex space-x-2">
             <UButton

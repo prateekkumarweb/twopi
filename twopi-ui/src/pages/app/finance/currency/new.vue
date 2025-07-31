@@ -34,7 +34,7 @@ async function createCurrency(event: FormSubmitEvent<FormState>) {
 </script>
 
 <template>
-  <AppPage title="New Currency">
+  <AppPage title="New currency">
     <template #actions>
       <ULink :to="{ name: '/app/finance/currency/' }" class="flex items-center gap-2">
         <UIcon name="i-lucide-arrow-left" /> All
