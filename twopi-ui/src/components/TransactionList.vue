@@ -22,7 +22,7 @@ const noTransactions = computed(() => props.transactions.length === 0);
 <template>
   <div class="my-2 flex flex-col gap-3">
     <div v-for="[date, txs] in transactions" :key="date" class="flex flex-col gap-2">
-      <div class="font-light text-zinc-700">
+      <div class="font-light">
         {{ dayjs(date).format("MMM D, YYYY") }}
       </div>
       <TransactionRow

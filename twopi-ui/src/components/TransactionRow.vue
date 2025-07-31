@@ -38,13 +38,13 @@ const category = (id?: string | null) => {
         <h2 class="grow overflow-hidden text-ellipsis text-nowrap">
           {{ props.transaction.transaction.title }}
         </h2>
-        <div class="flex gap-2 text-sm text-zinc-700">
+        <div class="flex gap-2 text-sm">
           {{ dayjs(props.transaction.transaction.timestamp).format("h:mm A") }}
         </div>
       </div>
       <div class="flex flex-col gap-2">
         <div v-for="item in props.transaction.items" :key="item.id" class="flex items-center gap-2">
-          <div class="grow overflow-hidden text-ellipsis text-nowrap text-sm text-gray-500">
+          <div class="grow overflow-hidden text-ellipsis text-nowrap text-sm">
             <LocalScope v-slot="{ scope }" :scope="category(item.category_id)">
               <UBadge v-if="scope" variant="soft" class="text-nowrap" :icon="scope.icon">{{
                 scope.name

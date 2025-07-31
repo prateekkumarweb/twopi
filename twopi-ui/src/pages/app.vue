@@ -102,7 +102,10 @@ const items: NavigationMenuItem[] = [
       leave-from-class="translate-y-0 opacity-100"
       leave-to-class="-translate-y-20 opacity-0"
     >
-      <div v-if="showNav" class="border-b-accented bg-default absolute top-20 w-full border-b pb-4">
+      <div
+        v-if="showNav"
+        class="border-b-accented bg-default absolute top-20 z-10 w-full border-b pb-4"
+      >
         <UNavigationMenu orientation="vertical" :items="items" class="w-full" />
         <div class="flex flex-col gap-2 pl-3 pt-2">
           <div class="flex items-center gap-2">
