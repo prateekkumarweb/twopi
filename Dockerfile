@@ -2,8 +2,8 @@ FROM node:22 AS node_planner
 RUN npm install -g pnpm
 RUN apt-get update && apt-get install -y ripgrep jq
 WORKDIR /app
-COPY twopi-web twopi-web
-WORKDIR /app/twopi-web
+COPY twopi-ui twopi-ui
+WORKDIR /app/twopi-ui
 RUN pnpm install
 RUN mkdir -p ../twopi-service
 RUN pnpm run gen:routes
@@ -32,12 +32,12 @@ ENV TWOPI_SECRET_KEY=""
 RUN cargo run --release -- gen-api openapi.gen.json
 
 FROM node_planner AS node_builder
-COPY --from=rust_builder /app/twopi-service/openapi.gen.json /app/twopi-web/openapi.gen.json
-WORKDIR /app/twopi-web
+COPY --from=rust_builder /app/twopi-service/openapi.gen.json /app/twopi-ui/openapi.gen.json
+WORKDIR /app/twopi-ui
 RUN pnpm run build
 
 FROM ubuntu:noble AS runtime
-COPY --from=node_builder /app/twopi-web/dist /app/twopi-web/dist
+COPY --from=node_builder /app/twopi-ui/dist /app/twopi-ui/dist
 COPY --from=rust_builder /app/twopi-service/target/release/twopi-service /app/twopi-service
 WORKDIR /app
 ENTRYPOINT [ "./twopi-service" ]

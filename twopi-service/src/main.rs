@@ -129,8 +129,8 @@ async fn main() -> anyhow::Result<()> {
 
     LazyLock::force(&KEYS);
 
-    let serve_dir = ServeDir::new("../twopi-web/dist");
-    let serve_file = ServeFile::new("../twopi-web/dist/index.html");
+    let serve_dir = ServeDir::new("../twopi-ui/dist");
+    let serve_file = ServeFile::new("../twopi-ui/dist/index.html");
     let routes = include_str!("../routes.gen.txt");
     let routes: HashSet<&str> = routes
         .trim()

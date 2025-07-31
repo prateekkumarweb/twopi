@@ -29,13 +29,13 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
-          cache-dependency-path: twopi-web/pnpm-lock.yaml
-      - name: twopi-web - install dependencies
+          cache-dependency-path: twopi-ui/pnpm-lock.yaml
+      - name: twopi-ui - install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: twopi-web
-      - name: twopi-web - gen routes
+        working-directory: twopi-ui
+      - name: twopi-ui - gen routes
         run: pnpm run gen:routes
-        working-directory: twopi-web
+        working-directory: twopi-ui
       - name: twopi-service - fmt
         run: cargo +nightly fmt --check
         working-directory: twopi-service
@@ -46,24 +46,24 @@ jobs:
         run: cargo +stable build --release
         working-directory: twopi-service
       - name: twopi-service - gen openapi
-        run: cargo +stable run --release -- gen-api ../twopi-web/openapi.gen.json
+        run: cargo +stable run --release -- gen-api ../twopi-ui/openapi.gen.json
         env:
           TWOPI_DATA_DIR: ../data
-          CURRENCY_API_KEY:
-          TWOPI_SECRET_KEY:
+          CURRENCY_API_KEY: ''
+          TWOPI_SECRET_KEY: ''
         working-directory: twopi-service
-      - name: twopi-web - fmt
+      - name: twopi-ui - fmt
         run: pnpm run fmt
-        working-directory: twopi-web
-      - name: twopi-web - lint
+        working-directory: twopi-ui
+      - name: twopi-ui - lint
         run: pnpm run lint
-        working-directory: twopi-web
-      - name: twopi-web - gen openapi types
+        working-directory: twopi-ui
+      - name: twopi-ui - gen openapi types
         run: pnpm run gen:api-file
-        working-directory: twopi-web
-      - name: twopi-web - type check
-        run: pnpm run typecheck
-        working-directory: twopi-web
-      - name: twopi-web - build
+        working-directory: twopi-ui
+      - name: twopi-ui - type check
+        run: pnpm run type-check
+        working-directory: twopi-ui
+      - name: twopi-ui - build
         run: pnpm run build
-        working-directory: twopi-web
+        working-directory: twopi-ui

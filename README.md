@@ -12,7 +12,7 @@ CURRENCY_API_KEY=<currency_api_key>
 ```
 
 ```sh
-$ cd twopi-web
+$ cd twopi-ui
 $ pnpm install
 $ pnpm run dev
 # Build for production
