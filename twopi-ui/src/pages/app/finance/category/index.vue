@@ -27,7 +27,7 @@ const router = useRouter();
       <p>Error loading categories: {{ state.error?.message }}</p>
     </div>
     <div v-else class="space-y-4">
-      <UCard v-for="item of state.data.categories" :key="item.id">
+      <UCard v-for="item in state.data.categories" :key="item.id">
         <div class="flex">
           <div>{{ item.name }}</div>
           <UBadge v-if="item.group" class="mx-2">{{ item.group }}</UBadge>

@@ -37,7 +37,7 @@ const { mutate } = useDeleteCurrencyMutation();
       <p>Error loading currencies: {{ state.error?.message }}</p>
     </div>
     <div v-else class="space-y-4">
-      <UCard v-for="item of state.data.currency" :key="item.code">
+      <UCard v-for="item in state.data.currency" :key="item.code">
         <div class="flex gap-2">
           <div class="flex-1 overflow-hidden text-ellipsis text-nowrap">{{ item.name }}</div>
           <UBadge class="text-nowrap" variant="outline" color="neutral">

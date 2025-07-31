@@ -38,7 +38,7 @@ const iconMap: Record<AccountTypeOrigin, string> = {
       <p>Error loading accounts: {{ state.error?.message }}</p>
     </div>
     <div v-else class="space-y-4">
-      <UCard v-for="item of state.data.accounts" :key="item.account.id">
+      <UCard v-for="item in state.data.accounts" :key="item.account.id">
         <div class="flex">
           <div>{{ item.account.name }}</div>
           <UBadge class="mx-2" :icon="iconMap[item.account.account_type]">{{
