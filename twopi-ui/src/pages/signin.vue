@@ -68,16 +68,16 @@ watchEffect(() => {
   <div v-if="user">
     <div>You are already signed in.</div>
   </div>
-  <div v-else class="flex gap-4 p-4">
+  <div v-else class="flex flex-col gap-4 p-4">
     <div class="flex-1">
       <h2 class="mb-4 text-2xl font-bold">Sign In</h2>
       <UForm :schema="signInSchema" :state="signInState" class="space-y-4" @submit="onSignIn">
         <UFormField label="Email" name="email">
-          <UInput v-model="signInState.email" />
+          <UInput v-model="signInState.email" class="w-full" />
         </UFormField>
 
         <UFormField label="Password" name="password">
-          <UInput v-model="signInState.password" type="password" />
+          <UInput v-model="signInState.password" type="password" class="w-full" />
         </UFormField>
 
         <UButton type="submit"> Submit </UButton>
@@ -89,15 +89,15 @@ watchEffect(() => {
       <h2 class="mb-4 text-2xl font-bold">Sign Up</h2>
       <UForm :schema="signUpSchema" :state="signUpState" class="space-y-4" @submit="onSignUp">
         <UFormField label="Name" name="name">
-          <UInput v-model="signUpState.name" />
+          <UInput v-model="signUpState.name" class="w-full" />
         </UFormField>
 
         <UFormField label="Email" name="email">
-          <UInput v-model="signUpState.email" />
+          <UInput v-model="signUpState.email" class="w-full" />
         </UFormField>
 
         <UFormField label="Password" name="password">
-          <UInput v-model="signUpState.password" type="password" />
+          <UInput v-model="signUpState.password" type="password" class="w-full" />
         </UFormField>
 
         <UButton type="submit"> Submit </UButton>

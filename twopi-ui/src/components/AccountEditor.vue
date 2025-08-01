@@ -36,7 +36,7 @@ const schema = z.object({
   isActive: z.boolean(),
 });
 type FormState = z.infer<typeof schema>;
-const state = reactive<Partial<FormState>>({
+const state = reactive<FormState>({
   name: props.account?.name ?? "",
   accountType: props.account?.accountType ?? "Bank",
   createdAt: props.account?.createdAt ?? createdAt,
@@ -70,27 +70,30 @@ async function createAccount(event: FormSubmitEvent<FormState>) {
 <template>
   <UForm :state="state" :schema="schema" class="space-y-4" @submit="createAccount">
     <UFormField label="Name" name="name">
-      <UInput v-model="state.name" />
+      <UInput v-model="state.name" class="w-full" />
     </UFormField>
     <UFormField label="Account Type" name="accountType">
-      <USelect v-model="state.accountType" :items="Object.values(AccountType)" />
+      <USelectMenu v-model="state.accountType" :items="Object.values(AccountType)" class="w-full" />
     </UFormField>
     <UFormField label="Created At" name="createdAt">
       <UInput
         :model-value="dayjs(state.createdAt).format('YYYY-MM-DDTHH:mm')"
         type="datetime-local"
+        class="w-full"
         @update:model-value="($event) => (state.createdAt = dayjs($event).toDate())"
       />
     </UFormField>
     <UFormField label="Currency Code" name="currencyCode">
-      <USelect
+      <USelectMenu
         v-model="state.currencyCode"
         :items="
           currencies?.currency.map((c) => ({
-            label: `${c.name} - (${c.code})`,
+            label: `${c.code} - ${c.name}`,
             value: c.code,
           }))
         "
+        :value-key="'value'"
+        class="w-full"
       />
     </UFormField>
     <UFormField label="Starting Balance" name="startingBalance">
@@ -102,13 +105,14 @@ async function createAccount(event: FormSubmitEvent<FormState>) {
           currencyDisplay: 'code',
           currencySign: 'standard',
         }"
+        class="w-full"
       />
     </UFormField>
-    <UFormField label="Is Cash Flow" name="isCashFlow">
-      <UCheckbox v-model="state.isCashFlow" />
+    <UFormField name="isCashFlow">
+      <UCheckbox v-model="state.isCashFlow" label="Is cash flow?" />
     </UFormField>
-    <UFormField label="Is Active" name="isActive">
-      <UCheckbox v-model="state.isActive" />
+    <UFormField name="isActive">
+      <UCheckbox v-model="state.isActive" label="Is active?" />
     </UFormField>
     <UButton v-if="account" type="submit"> <UIcon name="i-lucide-save" /> Save </UButton>
     <UButton v-else type="submit"> <UIcon name="i-lucide-plus" /> Create </UButton>

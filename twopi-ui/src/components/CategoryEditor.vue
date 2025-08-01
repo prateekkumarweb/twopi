@@ -46,13 +46,13 @@ async function createCategory(event: FormSubmitEvent<FormState>) {
 <template>
   <UForm :state="state" :schema="schema" class="space-y-4" @submit="createCategory">
     <UFormField label="Name" name="name">
-      <UInput v-model="state.name" />
+      <UInput v-model="state.name" class="w-full" />
     </UFormField>
     <UFormField label="Group" name="group">
-      <UInput v-model="state.group" />
+      <UInput v-model="state.group" class="w-full" />
     </UFormField>
     <UFormField label="Icon" name="icon">
-      <UInput v-model="state.icon" :trailing-icon="state.icon" />
+      <UInput v-model="state.icon" :trailing-icon="state.icon" class="w-full" />
     </UFormField>
     <UButton v-if="category" type="submit"> <UIcon name="i-lucide-save" /> Save </UButton>
     <UButton v-else type="submit"> <UIcon name="i-lucide-plus" /> Create </UButton>

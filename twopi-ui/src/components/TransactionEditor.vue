@@ -72,12 +72,13 @@ async function createTransaction(event: FormSubmitEvent<FormState>) {
 <template>
   <UForm :state="state" :schema="schema" class="space-y-4" @submit="createTransaction">
     <UFormField label="Title" name="title">
-      <UInput v-model="state.title" />
+      <UInput v-model="state.title" class="w-full" />
     </UFormField>
     <UFormField label="Timestamp" name="timestamp">
       <UInput
         :model-value="dayjs(state.timestamp).format('YYYY-MM-DDTHH:mm')"
         type="datetime-local"
+        class="w-full"
         @update:model-value="($event) => (state.timestamp = dayjs($event).toDate())"
       />
     </UFormField>
@@ -92,17 +93,19 @@ async function createTransaction(event: FormSubmitEvent<FormState>) {
       >
         <UCard>
           <UFormField label="Notes" name="notes">
-            <UInput v-model="item.notes" />
+            <UInput v-model="item.notes" class="w-full" />
           </UFormField>
           <UFormField label="Account" name="accountName">
-            <USelect
+            <USelectMenu
               v-model="item.accountName"
               :items="accounts?.accounts.map((a) => a.account.name)"
+              class="w-full"
             />
           </UFormField>
           <UFormField label="Amount" name="amount">
             <UInputNumber
               v-model="item.amount"
+              class="w-full"
               :format-options="{
                 style: 'currency',
                 currency:
@@ -114,9 +117,10 @@ async function createTransaction(event: FormSubmitEvent<FormState>) {
             />
           </UFormField>
           <UFormField label="Category" name="categoryName">
-            <USelect
+            <USelectMenu
               v-model="item.categoryName"
               :items="categories?.categories.map((c) => c.name)"
+              class="w-full"
             />
           </UFormField>
           <UButton type="button" color="error" class="mt-2" @click="state.items.splice(index, 1)">
