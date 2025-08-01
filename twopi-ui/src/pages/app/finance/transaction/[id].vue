@@ -80,7 +80,7 @@ const category = (id?: string | null) => {
                   <LabelAndValue label="Account">
                     <ULink
                       :to="{
-                        name: '/app/finance/account/[id].detail',
+                        name: '/app/finance/account/[id]',
                         params: { id: scope.account.id },
                       }"
                     >
@@ -112,7 +112,7 @@ const category = (id?: string | null) => {
                 <LabelAndValue v-if="scope" label="Category">
                   <ULink
                     :to="{
-                      name: '/app/finance/category/[id].detail',
+                      name: '/app/finance/category/[id]',
                       params: { id: scope.id },
                     }"
                   >

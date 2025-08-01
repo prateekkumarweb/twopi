@@ -40,7 +40,7 @@ const router = useRouter();
               @click="
                 () => {
                   router.push({
-                    name: '/app/finance/category/[id].detail',
+                    name: '/app/finance/category/[id]',
                     params: { id: item.id },
                   });
                 }

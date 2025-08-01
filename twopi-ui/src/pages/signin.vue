@@ -57,7 +57,7 @@ watchEffect(() => {
       router.push(route.query.next as string);
     } else {
       router.push({
-        name: "/app",
+        name: "/app/",
       });
     }
   }

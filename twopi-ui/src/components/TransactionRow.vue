@@ -27,7 +27,7 @@ const category = (id?: string | null) => {
   <UCard>
     <ULink
       :to="{
-        name: '/app/finance/transaction/[id].detail',
+        name: '/app/finance/transaction/[id]',
         params: {
           id: props.transaction.transaction.id,
         },

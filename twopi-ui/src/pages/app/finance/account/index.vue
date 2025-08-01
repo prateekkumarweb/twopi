@@ -81,7 +81,7 @@ function calculateBalance(account: Account) {
               @click="
                 () => {
                   router.push({
-                    name: '/app/finance/account/[id].detail',
+                    name: '/app/finance/account/[id]',
                     params: { id: item.account.id },
                   });
                 }

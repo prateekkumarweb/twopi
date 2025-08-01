@@ -376,6 +376,7 @@ const categories = computed(() =>
             </td>
             <td class="w-1/6 px-4 py-2">
               <UProgress
+                v-if="Math.max(...categories.map((c) => Math.abs(c.current_value))) > 0"
                 :model-value="
                   Math.abs(c.current_value * 100) /
                   Math.max(...categories.map((c) => Math.abs(c.current_value)))
