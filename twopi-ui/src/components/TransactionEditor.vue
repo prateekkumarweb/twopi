@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
 import { useCategoryQuery } from "@/lib/category";
-import { useCreateTransaactionMutation } from "@/lib/transaction";
+import { useCreateTransaactionMutation, useTransactionsQuery } from "@/lib/transaction";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import dayjs from "dayjs";
 import z from "zod";
@@ -21,12 +21,15 @@ const props = defineProps<{
   };
 }>();
 
+const autoCompleteOpen = ref(false);
+
 const timestamp = new Date();
 timestamp.setMilliseconds(0);
 timestamp.setSeconds(0);
 
 const { data: accounts } = useAccountsQuery();
 const { data: categories } = useCategoryQuery();
+const { data: allTransactions } = useTransactionsQuery();
 
 const router = useRouter();
 const itemSchema = z.object({
@@ -67,12 +70,47 @@ async function createTransaction(event: FormSubmitEvent<FormState>) {
     });
   }
 }
+
+const matchingTransactions = computed(() => {
+  if (!state.title) return [];
+  return allTransactions?.value?.transactions.filter((transaction) =>
+    transaction.transaction.title.toLowerCase().includes(state.title.toLowerCase()),
+  );
+});
 </script>
 
 <template>
   <UForm :state="state" :schema="schema" class="space-y-4" @submit="createTransaction">
     <UFormField label="Title" name="title">
-      <UInput v-model="state.title" class="w-full" />
+      <UPopover
+        v-model:open="autoCompleteOpen"
+        :dismissible="false"
+        :ui="{ content: 'w-(--reka-popper-anchor-width) p-4' }"
+      >
+        <template #anchor>
+          <UInput
+            v-model="state.title"
+            class="w-full"
+            @focus="autoCompleteOpen = true"
+            @blur="autoCompleteOpen = false"
+          />
+        </template>
+        <template #content>
+          <div class="flex flex-col gap-1">
+            <div
+              v-for="t in matchingTransactions"
+              :key="t.transaction.id"
+              class="hover:bg-accented cursor-pointer rounded-lg p-2"
+              @click="
+                state.title = t.transaction.title;
+                autoCompleteOpen = false;
+              "
+            >
+              {{ t.transaction.title }}
+            </div>
+          </div>
+        </template>
+      </UPopover>
     </UFormField>
     <UFormField label="Timestamp" name="timestamp">
       <UInput

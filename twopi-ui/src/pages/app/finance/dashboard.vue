@@ -222,7 +222,6 @@ const categories = computed(() =>
     <UCard>
       <template #header>
         <div class="text-xl font-semibold">Total Wealth</div>
-        <div class="text-sm">(Till now)</div>
       </template>
       <CurrencyDisplay
         :value="
