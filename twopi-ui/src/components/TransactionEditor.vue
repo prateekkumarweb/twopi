@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
 import { useCategoryQuery } from "@/lib/category";
+import type { Paths } from "@/lib/openapi";
 import { useCreateTransaactionMutation, useTransactionsQuery } from "@/lib/transaction";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import dayjs from "dayjs";
@@ -77,15 +78,30 @@ const matchingTransactions = computed(() => {
     transaction.transaction.title.toLowerCase().includes(state.title.toLowerCase()),
   );
 });
+
+type Transaction =
+  Paths["/twopi-api/transaction"]["get"]["responses"]["200"]["content"]["application/json"][number];
+
+function selectTransaction(t: Transaction) {
+  state.title = t.transaction.title;
+  state.items = t.items.map((item) => ({
+    notes: item.notes || "",
+    accountName:
+      accounts.value?.accounts.find((a) => a.account.id === item.account_id)?.account.name ?? "",
+    amount: item.amount,
+    categoryName: categories.value?.categories.find((c) => c.id === item.category_id)?.name,
+  }));
+  console.log("Selected transaction:", state);
+}
 </script>
 
 <template>
   <UForm :state="state" :schema="schema" class="space-y-4" @submit="createTransaction">
     <UFormField label="Title" name="title">
       <UPopover
-        v-model:open="autoCompleteOpen"
+        :open="autoCompleteOpen && Boolean(matchingTransactions?.length)"
         :dismissible="false"
-        :ui="{ content: 'w-(--reka-popper-anchor-width) p-4' }"
+        :ui="{ content: 'w-(--reka-popper-anchor-width) p-2' }"
       >
         <template #anchor>
           <UInput
@@ -96,13 +112,13 @@ const matchingTransactions = computed(() => {
           />
         </template>
         <template #content>
-          <div class="flex flex-col gap-1">
+          <div class="flex max-h-64 flex-col gap-1 overflow-auto">
             <div
               v-for="t in matchingTransactions"
               :key="t.transaction.id"
               class="hover:bg-accented cursor-pointer rounded-lg p-2"
               @click="
-                state.title = t.transaction.title;
+                selectTransaction(t);
                 autoCompleteOpen = false;
               "
             >
