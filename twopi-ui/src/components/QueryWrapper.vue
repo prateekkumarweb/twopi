@@ -10,6 +10,9 @@ defineProps<{ data: QT; transform: (data: T) => U }>();
   <div v-if="data.status.value === 'pending'">
     <USkeleton class="h-32 w-full" />
   </div>
+  <div v-else-if="data.status.value === 'error'" class="text-error">
+    <p>Error loading data: {{ data.error.value?.message }}</p>
+  </div>
   <div v-else-if="data.data.value">
     <slot :data="transform(data.data.value)" />
   </div>
