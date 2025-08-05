@@ -104,7 +104,7 @@ const items: NavigationMenuItem[] = [
     >
       <div
         v-if="showNav"
-        class="border-b-accented bg-default absolute top-20 z-10 w-full border-b pb-4"
+        class="border-b-accented bg-default absolute top-16 z-10 mt-[1px] w-full border-b py-2"
       >
         <UNavigationMenu orientation="vertical" :items="items" class="w-full" />
         <div class="flex flex-col gap-2 pl-3 pt-2">
@@ -112,7 +112,7 @@ const items: NavigationMenuItem[] = [
             <UIcon name="i-lucide-user" />
             <div>{{ user.name }}</div>
           </div>
-          <div>
+          <div class="pb-2">
             <UButton
               variant="outline"
               icon="i-lucide-log-out"
@@ -128,7 +128,7 @@ const items: NavigationMenuItem[] = [
         </div>
       </div>
     </Transition>
-    <div class="w-full p-4">
+    <div class="w-full overflow-auto p-4">
       <RouterView />
     </div>
   </div>

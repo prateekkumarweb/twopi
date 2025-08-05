@@ -40,4 +40,112 @@ declare module 'vue-router/auto-routes' {
     '/app/settings': RouteRecordInfo<'/app/settings', '/app/settings', Record<never, never>, Record<never, never>>,
     '/signin': RouteRecordInfo<'/signin', '/signin', Record<never, never>, Record<never, never>>,
   }
+
+  /**
+   * Route file to route info map by unplugin-vue-router.
+   * Used by the volar plugin to automatically type useRoute()
+   *
+   * Each key is a file path relative to the project root with 2 properties:
+   * - routes: union of route names of the possible routes when in this page (passed to useRoute<...>())
+   * - views: names of nested views (can be passed to <RouterView name="...">)
+   *
+   * @internal
+   */
+  export interface _RouteFileInfoMap {
+    'src/pages/index.vue': {
+      routes: '/'
+      views: never
+    }
+    'src/pages/app.vue': {
+      routes: '/app' | '/app/' | '/app/finance/account/' | '/app/finance/category/' | '/app/finance/transaction/' | '/app/finance/currency/' | '/app/finance/account/[id]' | '/app/finance/category/[id]' | '/app/finance/transaction/[id]' | '/app/finance/account/[id].edit' | '/app/finance/category/[id].edit' | '/app/finance/transaction/[id].edit' | '/app/finance/account' | '/app/finance/category' | '/app/finance/currency' | '/app/finance/dashboard' | '/app/finance' | '/app/finance/import-export' | '/app/finance/account/new' | '/app/finance/category/new' | '/app/finance/transaction/new' | '/app/finance/currency/new' | '/app/settings' | '/app/finance/transaction'
+      views: 'default'
+    }
+    'src/pages/app/index.vue': {
+      routes: '/app/'
+      views: never
+    }
+    'src/pages/app/finance/account/index.vue': {
+      routes: '/app/finance/account/'
+      views: never
+    }
+    'src/pages/app/finance/account/[id].vue': {
+      routes: '/app/finance/account/[id]'
+      views: never
+    }
+    'src/pages/app/finance/account/[id].edit.vue': {
+      routes: '/app/finance/account/[id].edit'
+      views: never
+    }
+    'src/pages/app/finance/account/new.vue': {
+      routes: '/app/finance/account/new'
+      views: never
+    }
+    'src/pages/app/finance/category/index.vue': {
+      routes: '/app/finance/category/'
+      views: never
+    }
+    'src/pages/app/finance/category/[id].vue': {
+      routes: '/app/finance/category/[id]'
+      views: never
+    }
+    'src/pages/app/finance/category/[id].edit.vue': {
+      routes: '/app/finance/category/[id].edit'
+      views: never
+    }
+    'src/pages/app/finance/category/new.vue': {
+      routes: '/app/finance/category/new'
+      views: never
+    }
+    'src/pages/app/finance/currency/index.vue': {
+      routes: '/app/finance/currency/'
+      views: never
+    }
+    'src/pages/app/finance/currency/new.vue': {
+      routes: '/app/finance/currency/new'
+      views: never
+    }
+    'src/pages/app/finance/dashboard.vue': {
+      routes: '/app/finance/dashboard'
+      views: never
+    }
+    'src/pages/app/finance/import-export.vue': {
+      routes: '/app/finance/import-export'
+      views: never
+    }
+    'src/pages/app/finance/transaction/index.vue': {
+      routes: '/app/finance/transaction/'
+      views: never
+    }
+    'src/pages/app/finance/transaction/[id].vue': {
+      routes: '/app/finance/transaction/[id]'
+      views: never
+    }
+    'src/pages/app/finance/transaction/[id].edit.vue': {
+      routes: '/app/finance/transaction/[id].edit'
+      views: never
+    }
+    'src/pages/app/finance/transaction/new.vue': {
+      routes: '/app/finance/transaction/new'
+      views: never
+    }
+    'src/pages/app/settings.vue': {
+      routes: '/app/settings'
+      views: never
+    }
+    'src/pages/signin.vue': {
+      routes: '/signin'
+      views: never
+    }
+  }
+
+  /**
+   * Get a union of possible route names in a certain route component file.
+   * Used by the volar plugin to automatically type useRoute()
+   *
+   * @internal
+   */
+  export type _RouteNamesForFilePath<FilePath extends string> =
+    _RouteFileInfoMap extends Record<FilePath, infer Info>
+      ? Info['routes']
+      : keyof RouteNamedMap
 }

@@ -299,92 +299,94 @@ const categories = computed(() =>
       <template #header>
         <div class="text-xl font-semibold">Categories table</div>
       </template>
-      <table class="w-full table-auto border-collapse">
-        <thead>
-          <tr class="border border-gray-300 dark:border-gray-700">
-            <th class="p-2 text-left">Category</th>
-            <th class="p-2 text-right">
-              {{
-                prev_prev_month &&
-                Intl.DateTimeFormat("en", {
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(prev_prev_month[1], prev_prev_month[0] - 1))
-              }}
-            </th>
-            <th class="p-2 text-right">
-              {{
-                prev_month &&
-                Intl.DateTimeFormat("en", {
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(prev_month[1], prev_month[0] - 1))
-              }}
-            </th>
-            <th class="p-2 text-right">
-              {{
-                current_month &&
-                Intl.DateTimeFormat("en", {
-                  month: "long",
-                  year: "numeric",
-                }).format(new Date(current_month[1], current_month[0] - 1))
-              }}
-            </th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="c in categories"
-            :key="c.name"
-            class="border border-gray-300 dark:border-gray-700"
-          >
-            <td class="p-2">{{ c.name }}</td>
-            <td class="p-2 text-right">
-              <CurrencyDisplay
-                :value="
-                  c.prev_prev_value *
-                  (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
-                  Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
-                "
-                :currency-code="currentCurrency"
-                :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
-              />
-            </td>
-            <td class="p-2 text-right">
-              <CurrencyDisplay
-                :value="
-                  c.prev_value *
-                  (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
-                  Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
-                "
-                :currency-code="currentCurrency"
-                :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
-              />
-            </td>
-            <td class="p-2 text-right">
-              <CurrencyDisplay
-                :value="
-                  c.current_value *
-                  (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
-                  Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
-                "
-                :currency-code="currentCurrency"
-                :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
-              />
-            </td>
-            <td class="w-1/6 px-4 py-2">
-              <UProgress
-                v-if="Math.max(...categories.map((c) => Math.abs(c.current_value))) > 0"
-                :model-value="
-                  Math.abs(c.current_value * 100) /
-                  Math.max(...categories.map((c) => Math.abs(c.current_value)))
-                "
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="overflow-auto">
+        <table class="w-full table-auto border-collapse">
+          <thead>
+            <tr class="border border-gray-300 dark:border-gray-700">
+              <th class="p-2 text-left">Category</th>
+              <th class="p-2 text-right">
+                {{
+                  prev_prev_month &&
+                  Intl.DateTimeFormat("en", {
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(prev_prev_month[1], prev_prev_month[0] - 1))
+                }}
+              </th>
+              <th class="p-2 text-right">
+                {{
+                  prev_month &&
+                  Intl.DateTimeFormat("en", {
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(prev_month[1], prev_month[0] - 1))
+                }}
+              </th>
+              <th class="p-2 text-right">
+                {{
+                  current_month &&
+                  Intl.DateTimeFormat("en", {
+                    month: "long",
+                    year: "numeric",
+                  }).format(new Date(current_month[1], current_month[0] - 1))
+                }}
+              </th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="c in categories"
+              :key="c.name"
+              class="border border-gray-300 dark:border-gray-700"
+            >
+              <td class="p-2">{{ c.name }}</td>
+              <td class="p-2 text-right">
+                <CurrencyDisplay
+                  :value="
+                    c.prev_prev_value *
+                    (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
+                    Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                  "
+                  :currency-code="currentCurrency"
+                  :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
+                />
+              </td>
+              <td class="p-2 text-right">
+                <CurrencyDisplay
+                  :value="
+                    c.prev_value *
+                    (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
+                    Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                  "
+                  :currency-code="currentCurrency"
+                  :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
+                />
+              </td>
+              <td class="p-2 text-right">
+                <CurrencyDisplay
+                  :value="
+                    c.current_value *
+                    (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1) *
+                    Math.pow(10, currentCurrencyData?.decimal_digits ?? 0)
+                  "
+                  :currency-code="currentCurrency"
+                  :decimal-digits="currentCurrencyData?.decimal_digits ?? 0"
+                />
+              </td>
+              <td class="w-1/6 px-4 py-2">
+                <UProgress
+                  v-if="Math.max(...categories.map((c) => Math.abs(c.current_value))) > 0"
+                  :model-value="
+                    Math.abs(c.current_value * 100) /
+                    Math.max(...categories.map((c) => Math.abs(c.current_value)))
+                  "
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <template #footer>Income/Expense in each category</template>
     </UCard>
   </AppPage>

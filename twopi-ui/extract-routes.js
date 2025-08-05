@@ -7,7 +7,7 @@ const inputFile = join(__dirname, "typed-router.d.ts");
 const outputFile = join(__dirname, process.argv[2] ?? "routes.txt");
 
 const fileContent = await readFile(inputFile, "utf-8");
-const routeMapMatch = fileContent.match(/export interface RouteNamedMap\s*{([\s\S]*?)^}/m);
+const routeMapMatch = fileContent.match(/export interface RouteNamedMap\s*{([\s\S]*?)^\s*}/m);
 
 if (!routeMapMatch) {
   console.error("RouteNamedMap interface not found.");
