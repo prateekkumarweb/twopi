@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 const { mutate } = useDeleteCategoryMutation();
 const { data: transactions } = useTransactionsQuery();
 
-const { state, data: accounts } = useAccountsQuery();
+const query = useAccountsQuery();
 const router = useRouter();
 
 type Account = NonNullable<
@@ -17,13 +17,13 @@ type Account = NonNullable<
 >;
 
 const filteredTransactions = computed(() => {
-  if (!transactions.value?.transactions || !accounts.value?.accounts) {
+  if (!transactions.value?.transactions || !query.data.value?.accounts) {
     return [];
   }
   return transactions.value.transactions?.filter((transaction) => {
     return (
       transaction.items?.some((item) =>
-        accounts.value?.accounts.some((account) => account.account.id === item.account_id),
+        query.data.value?.accounts.some((account) => account.account.id === item.account_id),
       ) ?? false
     );
   });
@@ -60,14 +60,13 @@ function calculateBalance(account: Account) {
         <UIcon name="i-lucide-plus" /> Add
       </UButton>
     </template>
-    <div v-if="state.status == 'pending'">
-      <USkeleton class="h-32 w-full" />
-    </div>
-    <div v-else-if="state.status == 'error'" class="text-error">
-      <p>Error loading accounts: {{ state.error?.message }}</p>
-    </div>
-    <div v-else class="space-y-4">
-      <UCard v-for="item in state.data.accounts" :key="item.account.id">
+    <QueryWrapper
+      v-slot="{ data: accounts }"
+      :data="query"
+      :transform="(data) => data.accounts"
+      class="space-y-4"
+    >
+      <UCard v-for="item in accounts" :key="item.account.id">
         <div class="flex">
           <div>{{ item.account.name }}</div>
           <UBadge class="mx-2" :icon="iconMap[item.account.account_type]">{{
@@ -124,6 +123,6 @@ function calculateBalance(account: Account) {
           </UBadge>
         </div>
       </UCard>
-    </div>
+    </QueryWrapper>
   </AppPage>
 </template>

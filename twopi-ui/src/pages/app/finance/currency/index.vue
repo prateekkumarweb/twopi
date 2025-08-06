@@ -5,7 +5,7 @@ import {
   useSyncCurrencyMutation,
 } from "@/lib/currency";
 
-const { state } = useCurrencyQuery();
+const query = useCurrencyQuery();
 const router = useRouter();
 
 const { mutate: syncCurrencies } = useSyncCurrencyMutation();
@@ -30,14 +30,13 @@ const { mutate } = useDeleteCurrencyMutation();
         <UIcon name="i-lucide-refresh-cw" /> Sync
       </UButton>
     </template>
-    <div v-if="state.status == 'pending'">
-      <USkeleton class="h-32 w-full" />
-    </div>
-    <div v-else-if="state.status == 'error'" class="text-error">
-      <p>Error loading currencies: {{ state.error?.message }}</p>
-    </div>
-    <div v-else class="space-y-4">
-      <UCard v-for="item in state.data.currency" :key="item.code">
+    <QueryWrapper
+      v-slot="{ data: currency }"
+      :data="query"
+      :transform="(data) => data.currency"
+      class="space-y-4"
+    >
+      <UCard v-for="item in currency" :key="item.code">
         <div class="flex gap-2">
           <div class="flex-1 overflow-hidden text-ellipsis text-nowrap">{{ item.name }}</div>
           <UBadge class="text-nowrap" variant="outline" color="neutral">
@@ -49,6 +48,6 @@ const { mutate } = useDeleteCurrencyMutation();
           </UButton>
         </div>
       </UCard>
-    </div>
+    </QueryWrapper>
   </AppPage>
 </template>

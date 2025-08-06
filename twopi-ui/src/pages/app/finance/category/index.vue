@@ -3,7 +3,7 @@ import { useCategoryQuery, useDeleteCategoryMutation } from "@/lib/category";
 
 const { mutate } = useDeleteCategoryMutation();
 
-const { state } = useCategoryQuery();
+const query = useCategoryQuery();
 const router = useRouter();
 </script>
 
@@ -20,14 +20,13 @@ const router = useRouter();
         <UIcon name="i-lucide-plus" /> Add
       </UButton>
     </template>
-    <div v-if="state.status == 'pending'">
-      <USkeleton class="h-32 w-full" />
-    </div>
-    <div v-else-if="state.status == 'error'" class="text-error">
-      <p>Error loading categories: {{ state.error?.message }}</p>
-    </div>
-    <div v-else class="space-y-4">
-      <UCard v-for="item in state.data.categories" :key="item.id">
+    <QueryWrapper
+      v-slot="{ data: categories }"
+      :data="query"
+      :transform="(data) => data.categories"
+      class="space-y-4"
+    >
+      <UCard v-for="item in categories" :key="item.id">
         <div class="flex">
           <div>{{ item.name }}</div>
           <UBadge v-if="item.group" class="mx-2">{{ item.group }}</UBadge>
@@ -65,6 +64,6 @@ const router = useRouter();
           </div>
         </div>
       </UCard>
-    </div>
+    </QueryWrapper>
   </AppPage>
 </template>

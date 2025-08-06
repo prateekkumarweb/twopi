@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { useCategoryQuery } from "@/lib/category";
 
-const { data: categoryies, state: categoriesState } = useCategoryQuery();
+const query = useCategoryQuery();
 const route = useRoute();
 const params = route.params as { id: string };
-
-const category = computed(() => {
-  return params.id ? categoryies.value?.categories.find((c) => c.id === params.id) : undefined;
-});
 </script>
 
 <template>
@@ -17,9 +13,12 @@ const category = computed(() => {
         <UIcon name="i-lucide-arrow-left" /> All
       </ULink>
     </template>
-    <div v-if="categoriesState.status === 'pending'">
-      <p>Loading category...</p>
-    </div>
-    <CategoryEditor v-else-if="category" :category="category" />
+    <QueryWrapper
+      v-slot="{ data: category }"
+      :data="query"
+      :transform="(data) => data.categories.find((c) => c.id === params.id)"
+    >
+      <CategoryEditor v-if="category" :category="category" />
+    </QueryWrapper>
   </AppPage>
 </template>
