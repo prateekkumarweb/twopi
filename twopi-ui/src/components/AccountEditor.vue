@@ -4,7 +4,7 @@ import { useCurrencyQuery } from "@/lib/currency";
 import { AccountType, type AccountTypeOrigin } from "@/lib/hacks/account-type";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import dayjs from "dayjs";
-import z from "zod";
+import * as z from "zod/mini";
 
 const props = defineProps<{
   account?: {
@@ -27,10 +27,10 @@ createdAt.setMilliseconds(0);
 createdAt.setSeconds(0);
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().check(z.minLength(1, "Name is required")),
   accountType: z.enum(AccountType),
   createdAt: z.date(),
-  currencyCode: z.string().min(1, "Currency code is required"),
+  currencyCode: z.string().check(z.minLength(1, "Currency code is required")),
   startingBalance: z.number(),
   isCashFlow: z.boolean(),
   isActive: z.boolean(),

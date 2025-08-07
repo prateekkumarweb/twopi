@@ -5,7 +5,7 @@ import type { Paths } from "@/lib/openapi";
 import { useCreateTransaactionMutation, useTransactionsQuery } from "@/lib/transaction";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import dayjs from "dayjs";
-import z from "zod";
+import * as z from "zod/mini";
 
 const props = defineProps<{
   transaction?: {
@@ -34,11 +34,11 @@ const { data: allTransactions } = useTransactionsQuery();
 
 const router = useRouter();
 const itemSchema = z.object({
-  id: z.string().optional(),
+  id: z.optional(z.string()),
   notes: z.string(),
   accountName: z.string(),
   amount: z.number(),
-  categoryName: z.string().optional(),
+  categoryName: z.optional(z.string()),
 });
 const schema = z.object({
   title: z.string(),

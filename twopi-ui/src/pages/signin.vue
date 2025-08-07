@@ -1,21 +1,21 @@
 <script setup lang="ts">
 import { useAuthUser, useSignIn, useSignUp } from "@/lib/auth";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import z from "zod";
+import * as z from "zod/mini";
 
 const route = useRoute();
 const router = useRouter();
 
 const signInSchema = z.object({
   email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z.string().check(z.minLength(8, "Password must be at least 8 characters long")),
 });
 type SignInForm = z.infer<typeof signInSchema>;
 
 const signUpSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().check(z.minLength(1, "Name is required")),
   email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
+  password: z.string().check(z.minLength(8, "Password must be at least 8 characters long")),
 });
 type SignUpForm = z.infer<typeof signUpSchema>;
 

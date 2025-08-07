@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCreateCategoryMutation } from "@/lib/category";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import z from "zod";
+import * as z from "zod/mini";
 
 const props = defineProps<{
   category?: {
@@ -15,7 +15,7 @@ const props = defineProps<{
 const router = useRouter();
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().check(z.minLength(1, "Name is required")),
   group: z.string(),
   icon: z.string(),
 });

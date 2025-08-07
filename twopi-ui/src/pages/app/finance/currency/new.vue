@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { useCreateCurrencyMutation } from "@/lib/currency";
 import type { FormSubmitEvent } from "@nuxt/ui";
-import z from "zod";
+import * as z from "zod/mini";
 
 const router = useRouter();
 
 const schema = z.object({
-  code: z.string().length(3, "Code must be exactly 3 characters").min(1, "Code is required"),
-  name: z.string().min(1, "Name is required"),
-  decimal_digits: z.number().int().min(0, "Decimal digits must be a non-negative integer"),
+  code: z.string().check(z.length(3, "Code must be exactly 3 characters")),
+  name: z.string().check(z.minLength(1, "Name is required")),
+  decimal_digits: z
+    .number()
+    .check(z.int())
+    .check(z.minimum(0, "Decimal digits must be a non-negative integer")),
 });
 type FormState = z.infer<typeof schema>;
 const state = reactive<Partial<FormState>>({
