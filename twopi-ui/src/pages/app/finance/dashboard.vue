@@ -3,6 +3,7 @@ import { useAccountsQuery } from "@/lib/account";
 import { useCategoryQuery } from "@/lib/category";
 import { useCurrencyQuery, useCurrencyRatesQuery, useDashboardQuery } from "@/lib/currency";
 import { useTransactionsQuery } from "@/lib/transaction";
+import { VisAxis, VisLine, VisXYContainer } from "@unovis/vue";
 
 const { data: dashboardData } = useDashboardQuery();
 const { data: currencies } = useCurrencyQuery();
@@ -154,7 +155,7 @@ const chartData = computed(() => {
     cumulative += wealth;
     cashFlowCumulative += cashFlow;
     return {
-      date: `${d.getUTCDate()}`,
+      date: d.getUTCDate(),
       wealth: cumulative,
       cashFlow: cashFlowCumulative,
     };
@@ -196,6 +197,21 @@ const categories = computed(() =>
     })
     .toSorted((a, b) => (a.name < b.name ? -1 : 1)),
 );
+
+type ChartDataRecord = {
+  date: number;
+  wealth: number;
+  cashFlow: number;
+};
+const chartDataRecords: ComputedRef<ChartDataRecord[]> = computed(() =>
+  chartData.value.wealthData.map((d) => ({
+    date: d.date,
+    wealth: d.wealth * (currencyRates.value?.rates.data?.[currentCurrency.value]?.value ?? 1),
+    cashFlow: d.cashFlow * (currencyRates.value?.rates.data?.[currentCurrency.value]?.value ?? 1),
+  })),
+);
+const x = (d: ChartDataRecord) => d.date;
+const y = [(d: ChartDataRecord) => d.wealth, (d: ChartDataRecord) => d.cashFlow];
 </script>
 
 <template>
@@ -235,7 +251,7 @@ const categories = computed(() =>
     </UCard>
     <UCard>
       <template #header>
-        <div class="text-xl font-semibold">Wealth</div>
+        <div class="text-xl font-semibold">Wealth chart</div>
         <div class="text-sm">
           {{
             Intl.DateTimeFormat("en", {
@@ -245,28 +261,25 @@ const categories = computed(() =>
           }}
         </div>
       </template>
-      <pre class="max-h-64 overflow-auto">{{
-        JSON.stringify(
-          chartData.wealthData.map(({ date, wealth, cashFlow }) => ({
-            date: Intl.DateTimeFormat("en", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }).format(new Date(monthAndYear.year, monthAndYear.month, Number(date))),
-            wealth: Intl.NumberFormat("en", {
-              currency: currentCurrency,
-              style: "currency",
-            }).format(wealth * (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1)),
-          })),
-          null,
-          2,
-        )
-      }}</pre>
+      <VisXYContainer :data="chartDataRecords">
+        <VisLine :x="x" :y="y[0]" />
+        <VisAxis type="x" />
+        <VisAxis
+          type="y"
+          :tick-format="
+            (x: number) =>
+              Intl.NumberFormat('en', {
+                currency: currentCurrency,
+                style: 'currency',
+              }).format(x)
+          "
+        />
+      </VisXYContainer>
       <template #footer>Cumulative wealth over the month</template>
     </UCard>
     <UCard>
       <template #header>
-        <div class="text-xl font-semibold">Cash flow</div>
+        <div class="text-xl font-semibold">Cash flow chart</div>
         <div class="text-sm">
           {{
             Intl.DateTimeFormat("en", {
@@ -276,24 +289,21 @@ const categories = computed(() =>
           }}
         </div>
       </template>
-      <pre class="max-h-64 overflow-auto">{{
-        JSON.stringify(
-          chartData.wealthData.map(({ date, wealth, cashFlow }) => ({
-            date: Intl.DateTimeFormat("en", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            }).format(new Date(monthAndYear.year, monthAndYear.month, Number(date))),
-            cashFlow: Intl.NumberFormat("en", {
-              currency: currentCurrency,
-              style: "currency",
-            }).format(cashFlow * (currencyRates?.rates.data?.[currentCurrency]?.value ?? 1)),
-          })),
-          null,
-          2,
-        )
-      }}</pre>
-      <template #footer>Cumulative wealth over the month</template>
+      <VisXYContainer :data="chartDataRecords">
+        <VisLine :x="x" :y="y[1]" />
+        <VisAxis type="x" />
+        <VisAxis
+          type="y"
+          :tick-format="
+            (x: number) =>
+              Intl.NumberFormat('en', {
+                currency: currentCurrency,
+                style: 'currency',
+              }).format(x)
+          "
+        />
+      </VisXYContainer>
+      <template #footer>Cumulative cash flow over the month</template>
     </UCard>
     <UCard>
       <template #header>
