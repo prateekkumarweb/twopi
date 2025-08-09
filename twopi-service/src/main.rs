@@ -89,16 +89,21 @@ enum Command {
     },
 }
 
-#[tokio::main]
-#[tracing::instrument]
-async fn main() -> anyhow::Result<()> {
+#[allow(clippy::needless_for_each)]
+mod api_doc {
+    use utoipa::OpenApi;
+
     #[derive(OpenApi)]
     #[openapi(info(
         title = "TwoPi API",
         license(name = "MIT", url = "https://opensource.org/licenses/MIT"),
     ))]
-    struct ApiDoc;
+    pub struct ApiDoc;
+}
 
+#[tokio::main]
+#[tracing::instrument]
+async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let cli = Cli::parse();
@@ -139,7 +144,7 @@ async fn main() -> anyhow::Result<()> {
         .filter(|l| !l.is_empty() && l.starts_with('/'))
         .collect();
 
-    let (mut router, api) = OpenApiRouter::with_openapi(ApiDoc::openapi())
+    let (mut router, api) = OpenApiRouter::with_openapi(api_doc::ApiDoc::openapi())
         .nest(
             "/twopi-api",
             OpenApiRouter::new()
