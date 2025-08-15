@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
+import { useDeleteCategoryMutation } from "@/lib/category";
 import { useTransactionsQuery } from "@/lib/transaction";
 import dayjs from "dayjs";
 
 const query = useAccountsQuery();
 const { data: transactions } = useTransactionsQuery();
 const route = useRoute();
+const router = useRouter();
 const params = route.params as { id: string };
 
 const filteredTransactions = computed(
@@ -14,6 +16,8 @@ const filteredTransactions = computed(
       transaction.items?.some((item) => item.account_id === params.id),
     ) ?? [],
 );
+
+const { mutate } = useDeleteCategoryMutation();
 </script>
 
 <template>
@@ -22,6 +26,23 @@ const filteredTransactions = computed(
       <ULink :to="{ name: '/app/finance/account/' }" class="flex items-center gap-2">
         <UIcon name="i-lucide-arrow-left" /> All
       </ULink>
+      <UButton
+        variant="outline"
+        color="secondary"
+        @click="
+          () => {
+            router.push({
+              name: '/app/finance/account/[id].edit',
+              params: { id: params.id },
+            });
+          }
+        "
+      >
+        <UIcon name="i-lucide-edit" />
+      </UButton>
+      <UButton variant="outline" color="error" @click="() => mutate(params.id)">
+        <UIcon name="i-lucide-trash" />
+      </UButton>
     </template>
     <QueryWrapper
       v-slot="{ data: account }"

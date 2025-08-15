@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { useAccountsQuery } from "@/lib/account";
-import { useDeleteCategoryMutation } from "@/lib/category";
 import { iconMap } from "@/lib/hacks/account-type";
 import type { Paths } from "@/lib/openapi";
 import { useTransactionsQuery } from "@/lib/transaction";
 import dayjs from "dayjs";
 
-const { mutate } = useDeleteCategoryMutation();
 const { data: transactions } = useTransactionsQuery();
 
 const query = useAccountsQuery();
@@ -87,23 +85,6 @@ function calculateBalance(account: Account) {
               "
             >
               <UIcon name="i-lucide-eye" />
-            </UButton>
-            <UButton
-              variant="outline"
-              color="secondary"
-              @click="
-                () => {
-                  router.push({
-                    name: '/app/finance/account/[id].edit',
-                    params: { id: item.account.id },
-                  });
-                }
-              "
-            >
-              <UIcon name="i-lucide-edit" />
-            </UButton>
-            <UButton variant="outline" color="error" @click="() => mutate(item.account.id)">
-              <UIcon name="i-lucide-trash" />
             </UButton>
           </div>
         </div>
