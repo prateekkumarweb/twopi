@@ -27,7 +27,7 @@ sea-orm = { version = "1.1.14", features = [
 secrecy = { version = "0.10.3", features = ["serde"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.142"
-thiserror = "2.0.14"
+thiserror = "2.0.15"
 tokio = { version = "1.47.1", features = ["full"] }
 tower-http = { version = "0.6.6", features = ["full"] }
 tower-sessions-sqlx-store = { version = "0.15.0", features = ["sqlite"] }
