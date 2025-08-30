@@ -25,6 +25,7 @@
     "@tanstack/vue-table": "^8.21.3",
     "@unhead/vue": "^2.0.14",
     "@unovis/vue": "1.5.2",
+    "@vueuse/core": "^13.8.0",
     "dayjs": "^1.11.15",
     "openapi-fetch": "^0.14.0",
     "pinia": "^3.0.3",

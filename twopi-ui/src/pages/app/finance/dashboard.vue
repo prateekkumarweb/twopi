@@ -4,6 +4,7 @@ import { useCategoryQuery } from "@/lib/category";
 import { useCurrencyQuery, useCurrencyRatesQuery, useDashboardQuery } from "@/lib/currency";
 import { useTransactionsQuery } from "@/lib/transaction";
 import { VisAxis, VisLine, VisXYContainer } from "@unovis/vue";
+import { useStorage } from "@vueuse/core";
 
 const { data: dashboardData } = useDashboardQuery();
 const { data: currencies } = useCurrencyQuery();
@@ -20,7 +21,7 @@ const category = (id?: string | null) => {
 };
 
 const currenciesToShow = ["USD", "INR", "AED", "CNY", "EUR", "GBP", "JPY"];
-const currentCurrency = ref("USD");
+const currentCurrency = useStorage("finance-dashboard-currency", "USD");
 const currentCurrencyData = computed(() =>
   currencies.value?.currency.find((c) => c.code === currentCurrency.value),
 );
