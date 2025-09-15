@@ -134,8 +134,8 @@ async fn main() -> anyhow::Result<()> {
 
     LazyLock::force(&KEYS);
 
-    let serve_dir = ServeDir::new("../twopi-ui/dist");
-    let serve_file = ServeFile::new("../twopi-ui/dist/index.html");
+    let serve_dir = ServeDir::new("../khata-ui/dist");
+    let serve_file = ServeFile::new("../khata-ui/dist/index.html");
     let routes = include_str!("../routes.gen.txt");
     let routes: HashSet<&str> = routes
         .trim()
@@ -146,7 +146,7 @@ async fn main() -> anyhow::Result<()> {
 
     let (mut router, api) = OpenApiRouter::with_openapi(api_doc::ApiDoc::openapi())
         .nest(
-            "/twopi-api",
+            "/khata-api",
             OpenApiRouter::new()
                 .nest(
                     "/currency",

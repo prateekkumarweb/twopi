@@ -6,7 +6,7 @@ import type { Paths } from "@/lib/openapi";
 import dayjs from "dayjs";
 
 type Transaction = NonNullable<
-  Paths["/twopi-api/transaction/{transaction_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+  Paths["/khata-api/transaction/{transaction_id}"]["get"]["responses"]["200"]["content"]["application/json"]
 >;
 
 const props = defineProps<{

@@ -7,7 +7,7 @@ const queryCache = useQueryCache();
 export const useAuthUser = defineQuery({
   key: USER_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/api/user");
+    const { data, error } = await apiClient.GET("/khata-api/api/user");
     if (data) {
       return { user: data };
     } else {
@@ -21,7 +21,7 @@ export const useAuthUser = defineQuery({
 
 export const useSignIn = defineMutation({
   mutation: async (data: { email: string; password: string }) => {
-    const { error } = await apiClient.POST("/twopi-api/api/signin", {
+    const { error } = await apiClient.POST("/khata-api/api/signin", {
       body: data,
     });
     if (error) {
@@ -37,7 +37,7 @@ export const useSignIn = defineMutation({
 
 export const useSignUp = defineMutation({
   mutation: async (data: { name: string; email: string; password: string }) => {
-    const { error } = await apiClient.POST("/twopi-api/api/signup", {
+    const { error } = await apiClient.POST("/khata-api/api/signup", {
       body: data,
     });
     if (error) {
@@ -53,7 +53,7 @@ export const useSignUp = defineMutation({
 
 export const useSignOut = defineMutation({
   mutation: async () => {
-    const { error } = await apiClient.POST("/twopi-api/api/signout");
+    const { error } = await apiClient.POST("/khata-api/api/signout");
     if (error) {
       console.error("Sign Out Error", error);
       return { success: false, error: error };
@@ -68,7 +68,7 @@ export const useSignOut = defineMutation({
 
 export const useResetAccount = defineMutation({
   mutation: async () => {
-    const { error } = await apiClient.POST("/twopi-api/api/reset-account");
+    const { error } = await apiClient.POST("/khata-api/api/reset-account");
     if (error) {
       throw new Error(`Reset Account Error: ${error}`);
     } else {

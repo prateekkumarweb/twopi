@@ -31,7 +31,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/twopi-api": "http://localhost:8000",
+      "/khata-api": "http://localhost:8000",
       "/swagger-ui": "http://localhost:8000",
       "/scalar": "http://localhost:8000",
       "/rapidoc": "http://localhost:8000",

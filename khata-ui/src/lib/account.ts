@@ -8,7 +8,7 @@ const queryCache = useQueryCache();
 export const useAccountsQuery = defineQuery({
   key: ACCOUNT_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/account");
+    const { data, error } = await apiClient.GET("/khata-api/account");
     if (data) {
       return { accounts: data };
     } else {
@@ -29,7 +29,7 @@ export const useCreateAccountMutation = defineMutation({
     isActive: boolean;
     createdAt: Date;
   }) => {
-    const currency = await apiClient.GET("/twopi-api/currency/{code}", {
+    const currency = await apiClient.GET("/khata-api/currency/{code}", {
       params: {
         path: {
           code: account.currencyCode,
@@ -39,7 +39,7 @@ export const useCreateAccountMutation = defineMutation({
     if (currency.error) {
       throw new Error(currency.error);
     }
-    const { error } = await apiClient.PUT("/twopi-api/account", {
+    const { error } = await apiClient.PUT("/khata-api/account", {
       body: {
         id: account.id,
         name: account.name,
@@ -77,7 +77,7 @@ export const useCreateAccountsMutation = defineMutation({
     }[],
   ) => {
     for (const item of accounts) {
-      const currency = await apiClient.GET("/twopi-api/currency/{code}", {
+      const currency = await apiClient.GET("/khata-api/currency/{code}", {
         params: {
           path: {
             code: item.currencyCode,
@@ -91,7 +91,7 @@ export const useCreateAccountsMutation = defineMutation({
         item.startingBalance * Math.pow(10, currency.data?.decimal_digits ?? 0),
       );
     }
-    const { error } = await apiClient.PUT("/twopi-api/account/import", {
+    const { error } = await apiClient.PUT("/khata-api/account/import", {
       body: accounts.map((item) => ({
         name: item.name,
         account_type: item.accountType,
@@ -117,7 +117,7 @@ export const useCreateAccountsMutation = defineMutation({
 export const useDeleteAccountMutation = defineMutation({
   key: ACCOUNT_QUERY_KEYS.root,
   mutation: async (accountId: string) => {
-    const { error } = await apiClient.DELETE("/twopi-api/account", {
+    const { error } = await apiClient.DELETE("/khata-api/account", {
       params: {
         query: {
           id: accountId,

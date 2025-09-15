@@ -7,7 +7,7 @@ const queryCache = useQueryCache();
 export const useTransactionsQuery = defineQuery({
   key: TRANSACTION_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/transaction");
+    const { data, error } = await apiClient.GET("/khata-api/transaction");
     if (data) {
       return { transactions: data };
     } else {
@@ -30,16 +30,16 @@ export const useCreateTransaactionMutation = defineMutation({
     }[];
     timestamp?: Date;
   }) => {
-    const accounts = await apiClient.GET("/twopi-api/account");
+    const accounts = await apiClient.GET("/khata-api/account");
     if (accounts.error) {
       throw new Error(accounts.error);
     }
-    const categories = await apiClient.GET("/twopi-api/category");
+    const categories = await apiClient.GET("/khata-api/category");
     if (categories.error) {
       throw new Error(categories.error);
     }
 
-    const { error } = await apiClient.PUT("/twopi-api/transaction", {
+    const { error } = await apiClient.PUT("/khata-api/transaction", {
       body: {
         id: transaction.id,
         title: transaction.title,
@@ -81,15 +81,15 @@ export const useCreateTransactionsMutation = defineMutation({
       timestamp: Date;
     }[],
   ) => {
-    const accounts = await apiClient.GET("/twopi-api/account");
+    const accounts = await apiClient.GET("/khata-api/account");
     if (accounts.error) {
       throw new Error(accounts.error);
     }
-    const categories = await apiClient.GET("/twopi-api/category");
+    const categories = await apiClient.GET("/khata-api/category");
     if (categories.error) {
       throw new Error(categories.error);
     }
-    const { error } = await apiClient.PUT("/twopi-api/transaction/import", {
+    const { error } = await apiClient.PUT("/khata-api/transaction/import", {
       body: transactions.map((transaction) => {
         return {
           id: transaction.id,
@@ -127,7 +127,7 @@ export const useCreateTransactionsMutation = defineMutation({
 export const useDeleteTransactionMutation = defineMutation({
   key: TRANSACTION_QUERY_KEYS.root,
   mutation: async (id: string) => {
-    const { error } = await apiClient.DELETE("/twopi-api/transaction", {
+    const { error } = await apiClient.DELETE("/khata-api/transaction", {
       params: {
         query: {
           id,
@@ -149,7 +149,7 @@ export const useDeleteTransactionMutation = defineMutation({
 export const useDeleteTransactionItemMutation = defineMutation({
   key: TRANSACTION_QUERY_KEYS.root,
   mutation: async (id: string) => {
-    const { error } = await apiClient.DELETE(`/twopi-api/transaction/item`, {
+    const { error } = await apiClient.DELETE(`/khata-api/transaction/item`, {
       params: {
         query: {
           id,

@@ -34,7 +34,7 @@ pub async fn generate_verify_url(id: Uuid, email: &str) -> jsonwebtoken::errors:
     };
     let token = encode(&Header::default(), &claim, &KEYS.encoding)?;
     Ok(format!(
-        "http://localhost:8000/twopi-api/api/verify-email?token={token}"
+        "http://localhost:8000/khata-api/api/verify-email?token={token}"
     ))
 }
 

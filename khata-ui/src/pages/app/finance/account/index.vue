@@ -11,7 +11,7 @@ const query = useAccountsQuery();
 const router = useRouter();
 
 type Account = NonNullable<
-  Paths["/twopi-api/account/{account_id}"]["get"]["responses"]["200"]["content"]["application/json"]
+  Paths["/khata-api/account/{account_id}"]["get"]["responses"]["200"]["content"]["application/json"]
 >;
 
 const filteredTransactions = computed(() => {

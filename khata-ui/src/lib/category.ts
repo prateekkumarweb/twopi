@@ -7,7 +7,7 @@ const queryCache = useQueryCache();
 export const useCategoryQuery = defineQuery({
   key: CATEGORY_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/category");
+    const { data, error } = await apiClient.GET("/khata-api/category");
     if (data) {
       return { categories: data };
     } else {
@@ -19,7 +19,7 @@ export const useCategoryQuery = defineQuery({
 export const useCreateCategoryMutation = defineMutation({
   key: CATEGORY_QUERY_KEYS.root,
   mutation: async (categoryData: { id?: string; name: string; group: string; icon: string }) => {
-    const { error } = await apiClient.POST("/twopi-api/category", {
+    const { error } = await apiClient.POST("/khata-api/category", {
       body: categoryData,
     });
     if (error) {
@@ -37,7 +37,7 @@ export const useCreateCategoryMutation = defineMutation({
 export const useDeleteCategoryMutation = defineMutation({
   key: CATEGORY_QUERY_KEYS.root,
   mutation: async (categoryId: string) => {
-    const { error } = await apiClient.DELETE("/twopi-api/category", {
+    const { error } = await apiClient.DELETE("/khata-api/category", {
       params: {
         query: {
           id: categoryId,

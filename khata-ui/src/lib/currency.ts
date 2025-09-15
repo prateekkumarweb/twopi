@@ -7,7 +7,7 @@ const queryCache = useQueryCache();
 export const useCurrencyQuery = defineQuery({
   key: CURRENCY_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/currency");
+    const { data, error } = await apiClient.GET("/khata-api/currency");
     if (data) {
       return { currency: data };
     } else {
@@ -18,7 +18,7 @@ export const useCurrencyQuery = defineQuery({
 
 export const useCreateCurrencyMutation = defineMutation({
   mutation: async (currencyData: { code: string; name: string; decimal_digits: number }) => {
-    const { error } = await apiClient.POST("/twopi-api/currency", {
+    const { error } = await apiClient.POST("/khata-api/currency", {
       body: currencyData,
     });
     if (error) {
@@ -33,7 +33,7 @@ export const useCreateCurrencyMutation = defineMutation({
 
 export const useDeleteCurrencyMutation = defineMutation({
   mutation: async (currencyCode: string) => {
-    const { error } = await apiClient.DELETE("/twopi-api/currency", {
+    const { error } = await apiClient.DELETE("/khata-api/currency", {
       params: {
         query: {
           code: currencyCode,
@@ -52,7 +52,7 @@ export const useDeleteCurrencyMutation = defineMutation({
 
 export const useSyncCurrencyMutation = defineMutation({
   mutation: async () => {
-    const { error } = await apiClient.PUT("/twopi-api/currency/sync");
+    const { error } = await apiClient.PUT("/khata-api/currency/sync");
     if (error) {
       throw new Error(`Failed to sync currency: ${error}`);
     }
@@ -66,7 +66,7 @@ export const useSyncCurrencyMutation = defineMutation({
 export const useCurrencyRatesQuery = defineQuery({
   key: CURRENCY_QUERY_KEYS.rates,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/currency-cache/latest");
+    const { data, error } = await apiClient.GET("/khata-api/currency-cache/latest");
     if (data) {
       return { rates: data };
     } else {
@@ -78,7 +78,7 @@ export const useCurrencyRatesQuery = defineQuery({
 export const useDashboardQuery = defineQuery({
   key: DASHBOARD_QUERY_KEYS.root,
   query: async () => {
-    const { data, error } = await apiClient.GET("/twopi-api/dashboard");
+    const { data, error } = await apiClient.GET("/khata-api/dashboard");
     if (data) {
       return { dashboard: data };
     } else {

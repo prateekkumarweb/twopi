@@ -80,7 +80,7 @@ const matchingTransactions = computed(() => {
 });
 
 type Transaction =
-  Paths["/twopi-api/transaction"]["get"]["responses"]["200"]["content"]["application/json"][number];
+  Paths["/khata-api/transaction"]["get"]["responses"]["200"]["content"]["application/json"][number];
 
 function selectTransaction(t: Transaction) {
   state.title = t.transaction.title;

@@ -1,18 +1,18 @@
-# TwoPi
+# Khata
 
 ## How to use?
 
 `.env` file
 
 ```txt
-TWOPI_DATA_DIR=../data
-TWOPI_API_URL=http://localhost:8000
-TWOPI_SECRET_KEY=<twopi_secret_key>
+KHATA_DATA_DIR=../data
+KHATA_API_URL=http://localhost:8000
+KHATA_SECRET_KEY=<khata_secret_key>
 CURRENCY_API_KEY=<currency_api_key>
 ```
 
 ```sh
-$ cd twopi-ui
+$ cd khata-ui
 $ pnpm install
 $ pnpm run dev
 # Build for production
@@ -20,10 +20,10 @@ $ pnpm run build
 $ pnpm run preview
 ```
 
-Running `twopi-service`:
+Running `khata-service`:
 
 ```sh
-$ cd twopi-service
+$ cd khata-service
 $ source .env
 $ RUST_LOG=debug cargo run --release
 ```
@@ -31,7 +31,7 @@ $ RUST_LOG=debug cargo run --release
 Migration:
 
 ```sh
-$ cd twopi-service
+$ cd khata-service
 # Generate migration
 $ sea-orm-cli migrate generate <migration_name>
 # Migrate
@@ -43,7 +43,7 @@ $ DATABASE_URL='sqlite://../data/dev.sqlite?mode=rwc' sea-orm-cli generate entit
 User Migration:
 
 ```sh
-$ cd twopi-service
+$ cd khata-service
 # Generate migration
 $ sea-orm-cli migrate generate <migration_name> -d user-migration
 # Migrate
