@@ -87,8 +87,8 @@ const items: NavigationMenuItem[] = [
   <div v-if="user" class="relative flex h-screen flex-col">
     <header class="border-b-accented flex w-full gap-4 border-b p-4">
       <RouterLink to="/app" class="flex items-center gap-2">
-        <img src="/2pi.svg" alt="TwoPi" class="h-8 w-8" />
-        <h1 class="flex-1 text-xl font-semibold">TwoPi</h1>
+        <img src="/2pi.svg" alt="Khata" class="h-8 w-8" />
+        <h1 class="flex-1 text-xl font-semibold">Khata</h1>
       </RouterLink>
       <div class="flex-1"></div>
       <button @click="showNav = !showNav">
