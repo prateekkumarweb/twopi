@@ -60,16 +60,16 @@ use validator::Validate;
 
 static DATA_DIR: LazyLock<PathBuf> = LazyLock::new(|| {
     #[allow(clippy::unwrap_used)]
-    let dir = std::env::var("TWOPI_DATA_DIR")
-        .context("TWOPI_DATA_DIR env var not set")
+    let dir = std::env::var("KHATA_DATA_DIR")
+        .context("KHATA_DATA_DIR env var not set")
         .unwrap();
     PathBuf::from(dir)
 });
 
 static KEYS: LazyLock<keys::Keys> = LazyLock::new(|| {
     #[allow(clippy::unwrap_used)]
-    let secret_key = std::env::var("TWOPI_SECRET_KEY")
-        .context("TWOPI_SECRET_KEY env var not set")
+    let secret_key = std::env::var("KHATA_SECRET_KEY")
+        .context("KHATA_SECRET_KEY env var not set")
         .unwrap();
     keys::Keys::new(secret_key.as_bytes())
 });
@@ -95,7 +95,7 @@ mod api_doc {
 
     #[derive(OpenApi)]
     #[openapi(info(
-        title = "TwoPi API",
+        title = "Khata API",
         license(name = "MIT", url = "https://opensource.org/licenses/MIT"),
     ))]
     pub struct ApiDoc;
@@ -178,7 +178,7 @@ async fn main() -> anyhow::Result<()> {
 
     router = router.fallback_service(serve_dir);
     for path in routes {
-        tracing::info!("TwoPi Web Route: {}", path);
+        tracing::info!("Khata Web Route: {}", path);
         router = router.route_service(path, serve_file.clone());
     }
 
