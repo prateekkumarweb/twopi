@@ -57,7 +57,7 @@ declare module 'vue-router/auto-routes' {
       views: never
     }
     'src/pages/app.vue': {
-      routes: '/app' | '/app/' | '/app/finance/account/' | '/app/finance/category/' | '/app/finance/transaction/' | '/app/finance/currency/' | '/app/finance/account/[id]' | '/app/finance/category/[id]' | '/app/finance/transaction/[id]' | '/app/finance/account/[id].edit' | '/app/finance/category/[id].edit' | '/app/finance/transaction/[id].edit' | '/app/finance/account' | '/app/finance/category' | '/app/finance/currency' | '/app/finance/dashboard' | '/app/finance' | '/app/finance/import-export' | '/app/finance/account/new' | '/app/finance/category/new' | '/app/finance/transaction/new' | '/app/finance/currency/new' | '/app/settings' | '/app/finance/transaction'
+      routes: '/app' | '/app/' | '/app/finance/account/' | '/app/finance/category/' | '/app/finance/currency/' | '/app/finance/transaction/' | '/app/finance/account/[id]' | '/app/finance/category/[id]' | '/app/finance/transaction/[id]' | '/app/finance/account/[id].edit' | '/app/finance/category/[id].edit' | '/app/finance/transaction/[id].edit' | '/app/finance/account' | '/app/finance/category' | '/app/finance/currency' | '/app/finance/dashboard' | '/app/finance' | '/app/finance/import-export' | '/app/finance/account/new' | '/app/finance/category/new' | '/app/finance/currency/new' | '/app/finance/transaction/new' | '/app/settings' | '/app/finance/transaction'
       views: 'default'
     }
     'src/pages/app/index.vue': {
